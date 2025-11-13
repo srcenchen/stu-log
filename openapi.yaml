@@ -1,0 +1,52 @@
+# Generated with protoc-gen-openapi
+# https://github.com/google/gnostic/tree/master/cmd/protoc-gen-openapi
+
+openapi: 3.0.3
+info:
+    title: Student API
+    version: 0.0.1
+paths:
+    v1/student/create:
+        post:
+            tags:
+                - Student
+            description: 学生创建
+            operationId: Student_CreateStudent
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.base_info.v1.CreateStudentRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.base_info.v1.CreateStudentReply'
+components:
+    schemas:
+        api.base_info.v1.CreateStudentReply:
+            type: object
+            properties:
+                message:
+                    type: string
+        api.base_info.v1.CreateStudentRequest:
+            type: object
+            properties:
+                name:
+                    type: string
+                sex:
+                    type: string
+                classId:
+                    type: integer
+                    format: int32
+                dormId:
+                    type: integer
+                    format: int32
+                gradeId:
+                    type: integer
+                    format: int32
+tags:
+    - name: Student
