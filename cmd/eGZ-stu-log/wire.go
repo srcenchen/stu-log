@@ -6,6 +6,7 @@
 package main
 
 import (
+	"eGZ-stu-log/internal/biz"
 	"eGZ-stu-log/internal/conf"
 	"eGZ-stu-log/internal/data"
 	"eGZ-stu-log/internal/server"
@@ -19,5 +20,5 @@ import (
 // wireApp init kratos application.
 func wireApp(*conf.Server, *conf.Data, log.Logger) (*kratos.App, func(), error) {
 	//
-	panic(wire.Build(server.ProviderSet, data.ProviderSet, service.ProviderSet, newApp))
+	panic(wire.Build(server.ProviderSet, data.ProviderSet, biz.ProviderSet, service.ProviderSet, newApp))
 }

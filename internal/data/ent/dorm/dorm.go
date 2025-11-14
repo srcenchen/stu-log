@@ -31,11 +31,13 @@ const (
 	StudentInverseTable = "students"
 	// StudentColumn is the table column denoting the student relation/edge.
 	StudentColumn = "student_dorm"
-	// GradeTable is the table that holds the grade relation/edge. The primary key declared below.
-	GradeTable = "dorm_grade"
+	// GradeTable is the table that holds the grade relation/edge.
+	GradeTable = "dorms"
 	// GradeInverseTable is the table name for the Grade entity.
 	// It exists in this package in order to avoid circular dependency with the "grade" package.
 	GradeInverseTable = "grades"
+	// GradeColumn is the table column denoting the grade relation/edge.
+	GradeColumn = "dorm_grade"
 )
 
 // Columns holds all SQL columns for dorm fields.
@@ -46,16 +48,21 @@ var Columns = []string{
 	FieldSex,
 }
 
-var (
-	// GradePrimaryKey and GradeColumn2 are the table columns denoting the
-	// primary key for the grade relation (M2M).
-	GradePrimaryKey = []string{"dorm_id", "grade_id"}
-)
+// ForeignKeys holds the SQL foreign-keys that are owned by the "dorms"
+// table and are not defined as standalone fields in the schema.
+var ForeignKeys = []string{
+	"dorm_grade",
+}
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -99,17 +106,10 @@ func ByStudent(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByGradeCount orders the results by grade count.
-func ByGradeCount(opts ...sql.OrderTermOption) OrderOption {
+// ByGradeField orders the results by grade field.
+func ByGradeField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newGradeStep(), opts...)
-	}
-}
-
-// ByGrade orders the results by grade terms.
-func ByGrade(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newGradeStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newGradeStep(), sql.OrderByField(field, opts...))
 	}
 }
 func newStudentStep() *sqlgraph.Step {
@@ -123,6 +123,6 @@ func newGradeStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(GradeInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2M, false, GradeTable, GradePrimaryKey...),
+		sqlgraph.Edge(sqlgraph.M2O, false, GradeTable, GradeColumn),
 	)
 }

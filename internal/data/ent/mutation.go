@@ -537,8 +537,7 @@ type DormMutation struct {
 	student        map[int64]struct{}
 	removedstudent map[int64]struct{}
 	clearedstudent bool
-	grade          map[int64]struct{}
-	removedgrade   map[int64]struct{}
+	grade          *int64
 	clearedgrade   bool
 	done           bool
 	oldValue       func(context.Context) (*Dorm, error)
@@ -811,14 +810,9 @@ func (m *DormMutation) ResetStudent() {
 	m.removedstudent = nil
 }
 
-// AddGradeIDs adds the "grade" edge to the Grade entity by ids.
-func (m *DormMutation) AddGradeIDs(ids ...int64) {
-	if m.grade == nil {
-		m.grade = make(map[int64]struct{})
-	}
-	for i := range ids {
-		m.grade[ids[i]] = struct{}{}
-	}
+// SetGradeID sets the "grade" edge to the Grade entity by id.
+func (m *DormMutation) SetGradeID(id int64) {
+	m.grade = &id
 }
 
 // ClearGrade clears the "grade" edge to the Grade entity.
@@ -831,29 +825,20 @@ func (m *DormMutation) GradeCleared() bool {
 	return m.clearedgrade
 }
 
-// RemoveGradeIDs removes the "grade" edge to the Grade entity by IDs.
-func (m *DormMutation) RemoveGradeIDs(ids ...int64) {
-	if m.removedgrade == nil {
-		m.removedgrade = make(map[int64]struct{})
-	}
-	for i := range ids {
-		delete(m.grade, ids[i])
-		m.removedgrade[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedGrade returns the removed IDs of the "grade" edge to the Grade entity.
-func (m *DormMutation) RemovedGradeIDs() (ids []int64) {
-	for id := range m.removedgrade {
-		ids = append(ids, id)
+// GradeID returns the "grade" edge ID in the mutation.
+func (m *DormMutation) GradeID() (id int64, exists bool) {
+	if m.grade != nil {
+		return *m.grade, true
 	}
 	return
 }
 
 // GradeIDs returns the "grade" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// GradeID instead. It exists only for internal usage by the builders.
 func (m *DormMutation) GradeIDs() (ids []int64) {
-	for id := range m.grade {
-		ids = append(ids, id)
+	if id := m.grade; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -862,7 +847,6 @@ func (m *DormMutation) GradeIDs() (ids []int64) {
 func (m *DormMutation) ResetGrade() {
 	m.grade = nil
 	m.clearedgrade = false
-	m.removedgrade = nil
 }
 
 // Where appends a list predicates to the DormMutation builder.
@@ -1053,11 +1037,9 @@ func (m *DormMutation) AddedIDs(name string) []ent.Value {
 		}
 		return ids
 	case dorm.EdgeGrade:
-		ids := make([]ent.Value, 0, len(m.grade))
-		for id := range m.grade {
-			ids = append(ids, id)
+		if id := m.grade; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	}
 	return nil
 }
@@ -1067,9 +1049,6 @@ func (m *DormMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 2)
 	if m.removedstudent != nil {
 		edges = append(edges, dorm.EdgeStudent)
-	}
-	if m.removedgrade != nil {
-		edges = append(edges, dorm.EdgeGrade)
 	}
 	return edges
 }
@@ -1081,12 +1060,6 @@ func (m *DormMutation) RemovedIDs(name string) []ent.Value {
 	case dorm.EdgeStudent:
 		ids := make([]ent.Value, 0, len(m.removedstudent))
 		for id := range m.removedstudent {
-			ids = append(ids, id)
-		}
-		return ids
-	case dorm.EdgeGrade:
-		ids := make([]ent.Value, 0, len(m.removedgrade))
-		for id := range m.removedgrade {
 			ids = append(ids, id)
 		}
 		return ids
@@ -1122,6 +1095,9 @@ func (m *DormMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *DormMutation) ClearEdge(name string) error {
 	switch name {
+	case dorm.EdgeGrade:
+		m.ClearGrade()
+		return nil
 	}
 	return fmt.Errorf("unknown Dorm unique edge %s", name)
 }
@@ -2070,7 +2046,8 @@ type RuleMutation struct {
 	typ           string
 	id            *int64
 	content       *string
-	score         *string
+	score         *int32
+	addscore      *int32
 	group         *string
 	clearedFields map[string]struct{}
 	done          bool
@@ -2219,12 +2196,13 @@ func (m *RuleMutation) ResetContent() {
 }
 
 // SetScore sets the "score" field.
-func (m *RuleMutation) SetScore(s string) {
-	m.score = &s
+func (m *RuleMutation) SetScore(i int32) {
+	m.score = &i
+	m.addscore = nil
 }
 
 // Score returns the value of the "score" field in the mutation.
-func (m *RuleMutation) Score() (r string, exists bool) {
+func (m *RuleMutation) Score() (r int32, exists bool) {
 	v := m.score
 	if v == nil {
 		return
@@ -2235,7 +2213,7 @@ func (m *RuleMutation) Score() (r string, exists bool) {
 // OldScore returns the old "score" field's value of the Rule entity.
 // If the Rule object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *RuleMutation) OldScore(ctx context.Context) (v string, err error) {
+func (m *RuleMutation) OldScore(ctx context.Context) (v int32, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldScore is only allowed on UpdateOne operations")
 	}
@@ -2249,9 +2227,28 @@ func (m *RuleMutation) OldScore(ctx context.Context) (v string, err error) {
 	return oldValue.Score, nil
 }
 
+// AddScore adds i to the "score" field.
+func (m *RuleMutation) AddScore(i int32) {
+	if m.addscore != nil {
+		*m.addscore += i
+	} else {
+		m.addscore = &i
+	}
+}
+
+// AddedScore returns the value that was added to the "score" field in this mutation.
+func (m *RuleMutation) AddedScore() (r int32, exists bool) {
+	v := m.addscore
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
 // ResetScore resets all changes to the "score" field.
 func (m *RuleMutation) ResetScore() {
 	m.score = nil
+	m.addscore = nil
 }
 
 // SetGroup sets the "group" field.
@@ -2380,7 +2377,7 @@ func (m *RuleMutation) SetField(name string, value ent.Value) error {
 		m.SetContent(v)
 		return nil
 	case rule.FieldScore:
-		v, ok := value.(string)
+		v, ok := value.(int32)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -2400,13 +2397,21 @@ func (m *RuleMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *RuleMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	if m.addscore != nil {
+		fields = append(fields, rule.FieldScore)
+	}
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *RuleMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case rule.FieldScore:
+		return m.AddedScore()
+	}
 	return nil, false
 }
 
@@ -2415,6 +2420,13 @@ func (m *RuleMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *RuleMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case rule.FieldScore:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddScore(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Rule numeric field %s", name)
 }

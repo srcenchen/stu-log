@@ -19,7 +19,7 @@ type Rule struct {
 	// 内容
 	Content string `json:"content,omitempty"`
 	// 分数，加分还是扣分
-	Score string `json:"score,omitempty"`
+	Score int32 `json:"score,omitempty"`
 	// 分组
 	Group        string `json:"group,omitempty"`
 	selectValues sql.SelectValues
@@ -30,9 +30,9 @@ func (*Rule) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case rule.FieldID:
+		case rule.FieldID, rule.FieldScore:
 			values[i] = new(sql.NullInt64)
-		case rule.FieldContent, rule.FieldScore, rule.FieldGroup:
+		case rule.FieldContent, rule.FieldGroup:
 			values[i] = new(sql.NullString)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -62,10 +62,10 @@ func (_m *Rule) assignValues(columns []string, values []any) error {
 				_m.Content = value.String
 			}
 		case rule.FieldScore:
-			if value, ok := values[i].(*sql.NullString); !ok {
+			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field score", values[i])
 			} else if value.Valid {
-				_m.Score = value.String
+				_m.Score = int32(value.Int64)
 			}
 		case rule.FieldGroup:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -113,7 +113,7 @@ func (_m *Rule) String() string {
 	builder.WriteString(_m.Content)
 	builder.WriteString(", ")
 	builder.WriteString("score=")
-	builder.WriteString(_m.Score)
+	builder.WriteString(fmt.Sprintf("%v", _m.Score))
 	builder.WriteString(", ")
 	builder.WriteString("group=")
 	builder.WriteString(_m.Group)

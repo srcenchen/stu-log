@@ -30,7 +30,7 @@ func NewData(c *conf.Data, logger log.Logger) (*Data, func(), error) {
 		logs.Errorf("failed creating schema resources: %v", err)
 		return nil, nil, err
 	}
-	client = client.Debug()
+	// client = client.Debug()
 	data := &Data{
 		DB: client,
 	}

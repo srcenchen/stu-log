@@ -59,7 +59,7 @@ func Content(v string) predicate.Rule {
 }
 
 // Score applies equality check predicate on the "score" field. It's identical to ScoreEQ.
-func Score(v string) predicate.Rule {
+func Score(v int32) predicate.Rule {
 	return predicate.Rule(sql.FieldEQ(FieldScore, v))
 }
 
@@ -134,68 +134,43 @@ func ContentContainsFold(v string) predicate.Rule {
 }
 
 // ScoreEQ applies the EQ predicate on the "score" field.
-func ScoreEQ(v string) predicate.Rule {
+func ScoreEQ(v int32) predicate.Rule {
 	return predicate.Rule(sql.FieldEQ(FieldScore, v))
 }
 
 // ScoreNEQ applies the NEQ predicate on the "score" field.
-func ScoreNEQ(v string) predicate.Rule {
+func ScoreNEQ(v int32) predicate.Rule {
 	return predicate.Rule(sql.FieldNEQ(FieldScore, v))
 }
 
 // ScoreIn applies the In predicate on the "score" field.
-func ScoreIn(vs ...string) predicate.Rule {
+func ScoreIn(vs ...int32) predicate.Rule {
 	return predicate.Rule(sql.FieldIn(FieldScore, vs...))
 }
 
 // ScoreNotIn applies the NotIn predicate on the "score" field.
-func ScoreNotIn(vs ...string) predicate.Rule {
+func ScoreNotIn(vs ...int32) predicate.Rule {
 	return predicate.Rule(sql.FieldNotIn(FieldScore, vs...))
 }
 
 // ScoreGT applies the GT predicate on the "score" field.
-func ScoreGT(v string) predicate.Rule {
+func ScoreGT(v int32) predicate.Rule {
 	return predicate.Rule(sql.FieldGT(FieldScore, v))
 }
 
 // ScoreGTE applies the GTE predicate on the "score" field.
-func ScoreGTE(v string) predicate.Rule {
+func ScoreGTE(v int32) predicate.Rule {
 	return predicate.Rule(sql.FieldGTE(FieldScore, v))
 }
 
 // ScoreLT applies the LT predicate on the "score" field.
-func ScoreLT(v string) predicate.Rule {
+func ScoreLT(v int32) predicate.Rule {
 	return predicate.Rule(sql.FieldLT(FieldScore, v))
 }
 
 // ScoreLTE applies the LTE predicate on the "score" field.
-func ScoreLTE(v string) predicate.Rule {
+func ScoreLTE(v int32) predicate.Rule {
 	return predicate.Rule(sql.FieldLTE(FieldScore, v))
-}
-
-// ScoreContains applies the Contains predicate on the "score" field.
-func ScoreContains(v string) predicate.Rule {
-	return predicate.Rule(sql.FieldContains(FieldScore, v))
-}
-
-// ScoreHasPrefix applies the HasPrefix predicate on the "score" field.
-func ScoreHasPrefix(v string) predicate.Rule {
-	return predicate.Rule(sql.FieldHasPrefix(FieldScore, v))
-}
-
-// ScoreHasSuffix applies the HasSuffix predicate on the "score" field.
-func ScoreHasSuffix(v string) predicate.Rule {
-	return predicate.Rule(sql.FieldHasSuffix(FieldScore, v))
-}
-
-// ScoreEqualFold applies the EqualFold predicate on the "score" field.
-func ScoreEqualFold(v string) predicate.Rule {
-	return predicate.Rule(sql.FieldEqualFold(FieldScore, v))
-}
-
-// ScoreContainsFold applies the ContainsFold predicate on the "score" field.
-func ScoreContainsFold(v string) predicate.Rule {
-	return predicate.Rule(sql.FieldContainsFold(FieldScore, v))
 }
 
 // GroupEQ applies the EQ predicate on the "group" field.

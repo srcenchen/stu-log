@@ -42,16 +42,23 @@ func (_u *RuleUpdate) SetNillableContent(v *string) *RuleUpdate {
 }
 
 // SetScore sets the "score" field.
-func (_u *RuleUpdate) SetScore(v string) *RuleUpdate {
+func (_u *RuleUpdate) SetScore(v int32) *RuleUpdate {
+	_u.mutation.ResetScore()
 	_u.mutation.SetScore(v)
 	return _u
 }
 
 // SetNillableScore sets the "score" field if the given value is not nil.
-func (_u *RuleUpdate) SetNillableScore(v *string) *RuleUpdate {
+func (_u *RuleUpdate) SetNillableScore(v *int32) *RuleUpdate {
 	if v != nil {
 		_u.SetScore(*v)
 	}
+	return _u
+}
+
+// AddScore adds value to the "score" field.
+func (_u *RuleUpdate) AddScore(v int32) *RuleUpdate {
+	_u.mutation.AddScore(v)
 	return _u
 }
 
@@ -114,7 +121,10 @@ func (_u *RuleUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		_spec.SetField(rule.FieldContent, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Score(); ok {
-		_spec.SetField(rule.FieldScore, field.TypeString, value)
+		_spec.SetField(rule.FieldScore, field.TypeInt32, value)
+	}
+	if value, ok := _u.mutation.AddedScore(); ok {
+		_spec.AddField(rule.FieldScore, field.TypeInt32, value)
 	}
 	if value, ok := _u.mutation.Group(); ok {
 		_spec.SetField(rule.FieldGroup, field.TypeString, value)
@@ -154,16 +164,23 @@ func (_u *RuleUpdateOne) SetNillableContent(v *string) *RuleUpdateOne {
 }
 
 // SetScore sets the "score" field.
-func (_u *RuleUpdateOne) SetScore(v string) *RuleUpdateOne {
+func (_u *RuleUpdateOne) SetScore(v int32) *RuleUpdateOne {
+	_u.mutation.ResetScore()
 	_u.mutation.SetScore(v)
 	return _u
 }
 
 // SetNillableScore sets the "score" field if the given value is not nil.
-func (_u *RuleUpdateOne) SetNillableScore(v *string) *RuleUpdateOne {
+func (_u *RuleUpdateOne) SetNillableScore(v *int32) *RuleUpdateOne {
 	if v != nil {
 		_u.SetScore(*v)
 	}
+	return _u
+}
+
+// AddScore adds value to the "score" field.
+func (_u *RuleUpdateOne) AddScore(v int32) *RuleUpdateOne {
+	_u.mutation.AddScore(v)
 	return _u
 }
 
@@ -256,7 +273,10 @@ func (_u *RuleUpdateOne) sqlSave(ctx context.Context) (_node *Rule, err error) {
 		_spec.SetField(rule.FieldContent, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Score(); ok {
-		_spec.SetField(rule.FieldScore, field.TypeString, value)
+		_spec.SetField(rule.FieldScore, field.TypeInt32, value)
+	}
+	if value, ok := _u.mutation.AddedScore(); ok {
+		_spec.AddField(rule.FieldScore, field.TypeInt32, value)
 	}
 	if value, ok := _u.mutation.Group(); ok {
 		_spec.SetField(rule.FieldGroup, field.TypeString, value)

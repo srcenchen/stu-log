@@ -60,19 +60,15 @@ func (_c *DormCreate) AddStudent(v ...*Student) *DormCreate {
 	return _c.AddStudentIDs(ids...)
 }
 
-// AddGradeIDs adds the "grade" edge to the Grade entity by IDs.
-func (_c *DormCreate) AddGradeIDs(ids ...int64) *DormCreate {
-	_c.mutation.AddGradeIDs(ids...)
+// SetGradeID sets the "grade" edge to the Grade entity by ID.
+func (_c *DormCreate) SetGradeID(id int64) *DormCreate {
+	_c.mutation.SetGradeID(id)
 	return _c
 }
 
-// AddGrade adds the "grade" edges to the Grade entity.
-func (_c *DormCreate) AddGrade(v ...*Grade) *DormCreate {
-	ids := make([]int64, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddGradeIDs(ids...)
+// SetGrade sets the "grade" edge to the Grade entity.
+func (_c *DormCreate) SetGrade(v *Grade) *DormCreate {
+	return _c.SetGradeID(v.ID)
 }
 
 // Mutation returns the DormMutation object of the builder.
@@ -183,10 +179,10 @@ func (_c *DormCreate) createSpec() (*Dorm, *sqlgraph.CreateSpec) {
 	}
 	if nodes := _c.mutation.GradeIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   dorm.GradeTable,
-			Columns: dorm.GradePrimaryKey,
+			Columns: []string{dorm.GradeColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(grade.FieldID, field.TypeInt64),
@@ -195,6 +191,7 @@ func (_c *DormCreate) createSpec() (*Dorm, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.dorm_grade = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

@@ -41,12 +41,21 @@ var (
 		{Name: "building", Type: field.TypeString},
 		{Name: "dorm_num", Type: field.TypeString},
 		{Name: "sex", Type: field.TypeString},
+		{Name: "dorm_grade", Type: field.TypeInt64},
 	}
 	// DormsTable holds the schema information for the "dorms" table.
 	DormsTable = &schema.Table{
 		Name:       "dorms",
 		Columns:    DormsColumns,
 		PrimaryKey: []*schema.Column{DormsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "dorms_grades_grade",
+				Columns:    []*schema.Column{DormsColumns[4]},
+				RefColumns: []*schema.Column{GradesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
 	}
 	// GradesColumns holds the columns for the "grades" table.
 	GradesColumns = []*schema.Column{
@@ -82,8 +91,8 @@ var (
 	// RulesColumns holds the columns for the "rules" table.
 	RulesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt64, Increment: true},
-		{Name: "content", Type: field.TypeString},
-		{Name: "score", Type: field.TypeString},
+		{Name: "content", Type: field.TypeString, Unique: true},
+		{Name: "score", Type: field.TypeInt32},
 		{Name: "group", Type: field.TypeString},
 	}
 	// RulesTable holds the schema information for the "rules" table.
@@ -183,31 +192,6 @@ var (
 		Columns:    UsersColumns,
 		PrimaryKey: []*schema.Column{UsersColumns[0]},
 	}
-	// DormGradeColumns holds the columns for the "dorm_grade" table.
-	DormGradeColumns = []*schema.Column{
-		{Name: "dorm_id", Type: field.TypeInt64},
-		{Name: "grade_id", Type: field.TypeInt64},
-	}
-	// DormGradeTable holds the schema information for the "dorm_grade" table.
-	DormGradeTable = &schema.Table{
-		Name:       "dorm_grade",
-		Columns:    DormGradeColumns,
-		PrimaryKey: []*schema.Column{DormGradeColumns[0], DormGradeColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "dorm_grade_dorm_id",
-				Columns:    []*schema.Column{DormGradeColumns[0]},
-				RefColumns: []*schema.Column{DormsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:     "dorm_grade_grade_id",
-				Columns:    []*schema.Column{DormGradeColumns[1]},
-				RefColumns: []*schema.Column{GradesColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		ClassesTable,
@@ -218,13 +202,13 @@ var (
 		StuLogsTable,
 		StudentsTable,
 		UsersTable,
-		DormGradeTable,
 	}
 )
 
 func init() {
 	ClassesTable.ForeignKeys[0].RefTable = GradesTable
 	ClassesTable.ForeignKeys[1].RefTable = StuLogsTable
+	DormsTable.ForeignKeys[0].RefTable = GradesTable
 	ImagesTable.ForeignKeys[0].RefTable = StuLogsTable
 	StuLogsTable.ForeignKeys[0].RefTable = GradesTable
 	StuLogsTable.ForeignKeys[1].RefTable = RulesTable
@@ -233,6 +217,4 @@ func init() {
 	StudentsTable.ForeignKeys[1].RefTable = GradesTable
 	StudentsTable.ForeignKeys[2].RefTable = ClassesTable
 	StudentsTable.ForeignKeys[3].RefTable = DormsTable
-	DormGradeTable.ForeignKeys[0].RefTable = DormsTable
-	DormGradeTable.ForeignKeys[1].RefTable = GradesTable
 }

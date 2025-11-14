@@ -288,10 +288,10 @@ func (_u *GradeUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.DormCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   grade.DormTable,
-			Columns: grade.DormPrimaryKey,
+			Columns: []string{grade.DormColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(dorm.FieldID, field.TypeInt64),
@@ -301,10 +301,10 @@ func (_u *GradeUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if nodes := _u.mutation.RemovedDormIDs(); len(nodes) > 0 && !_u.mutation.DormCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   grade.DormTable,
-			Columns: grade.DormPrimaryKey,
+			Columns: []string{grade.DormColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(dorm.FieldID, field.TypeInt64),
@@ -317,10 +317,10 @@ func (_u *GradeUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if nodes := _u.mutation.DormIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   grade.DormTable,
-			Columns: grade.DormPrimaryKey,
+			Columns: []string{grade.DormColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(dorm.FieldID, field.TypeInt64),
@@ -639,10 +639,10 @@ func (_u *GradeUpdateOne) sqlSave(ctx context.Context) (_node *Grade, err error)
 	}
 	if _u.mutation.DormCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   grade.DormTable,
-			Columns: grade.DormPrimaryKey,
+			Columns: []string{grade.DormColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(dorm.FieldID, field.TypeInt64),
@@ -652,10 +652,10 @@ func (_u *GradeUpdateOne) sqlSave(ctx context.Context) (_node *Grade, err error)
 	}
 	if nodes := _u.mutation.RemovedDormIDs(); len(nodes) > 0 && !_u.mutation.DormCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   grade.DormTable,
-			Columns: grade.DormPrimaryKey,
+			Columns: []string{grade.DormColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(dorm.FieldID, field.TypeInt64),
@@ -668,10 +668,10 @@ func (_u *GradeUpdateOne) sqlSave(ctx context.Context) (_node *Grade, err error)
 	}
 	if nodes := _u.mutation.DormIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   grade.DormTable,
-			Columns: grade.DormPrimaryKey,
+			Columns: []string{grade.DormColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(dorm.FieldID, field.TypeInt64),

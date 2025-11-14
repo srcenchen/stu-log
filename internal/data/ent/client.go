@@ -559,7 +559,7 @@ func (c *DormClient) QueryGrade(_m *Dorm) *GradeQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(dorm.Table, dorm.FieldID, id),
 			sqlgraph.To(grade.Table, grade.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, dorm.GradeTable, dorm.GradePrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, dorm.GradeTable, dorm.GradeColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -740,7 +740,7 @@ func (c *GradeClient) QueryDorm(_m *Grade) *DormQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(grade.Table, grade.FieldID, id),
 			sqlgraph.To(dorm.Table, dorm.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, grade.DormTable, grade.DormPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, true, grade.DormTable, grade.DormColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil

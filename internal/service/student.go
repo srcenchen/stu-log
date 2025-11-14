@@ -68,17 +68,16 @@ func (s *StudentService) QueryStudent(ctx context.Context, req *pb.QueryStudentR
 	}, nil
 }
 func (s *StudentService) QueryStudentList(ctx context.Context, req *pb.QueryStudentListRequest) (*pb.QueryStudentListReply, error) {
-	// 查询总页数
-	total, err := s.data.DB.Student.Query().Count(ctx)
-	totalPages := (int32(total) + req.PageSize - 1) / req.PageSize
-	dbQuery := s.data.DB.Student.Query().WithDorm().WithGrade().WithClass().Offset(int((req.Page - 1) * req.PageSize))
+	dbQuery := s.data.DB.Student.Query().WithDorm().WithGrade().WithClass()
 	if req.GradeId != nil {
 		dbQuery.Where(student.HasGradeWith(grade.ID(*req.GradeId)))
 	}
 	if req.ClassId != nil {
 		dbQuery.Where(student.HasClassWith(class.ID(*req.ClassId)))
 	}
-	studentList, err := dbQuery.Limit(int(req.PageSize)).All(ctx)
+	total, err := dbQuery.Count(ctx)
+	totalPages := (int32(total) + req.PageSize - 1) / req.PageSize
+	studentList, err := dbQuery.Offset(int((req.Page - 1) * req.PageSize)).Limit(int(req.PageSize)).All(ctx)
 	if err != nil {
 		return nil, err
 	}

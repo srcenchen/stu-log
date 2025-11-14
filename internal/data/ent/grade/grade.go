@@ -36,11 +36,13 @@ const (
 	StudentInverseTable = "students"
 	// StudentColumn is the table column denoting the student relation/edge.
 	StudentColumn = "student_grade"
-	// DormTable is the table that holds the dorm relation/edge. The primary key declared below.
-	DormTable = "dorm_grade"
+	// DormTable is the table that holds the dorm relation/edge.
+	DormTable = "dorms"
 	// DormInverseTable is the table name for the Dorm entity.
 	// It exists in this package in order to avoid circular dependency with the "dorm" package.
 	DormInverseTable = "dorms"
+	// DormColumn is the table column denoting the dorm relation/edge.
+	DormColumn = "dorm_grade"
 )
 
 // Columns holds all SQL columns for grade fields.
@@ -48,12 +50,6 @@ var Columns = []string{
 	FieldID,
 	FieldGradeName,
 }
-
-var (
-	// DormPrimaryKey and DormColumn2 are the table columns denoting the
-	// primary key for the dorm relation (M2M).
-	DormPrimaryKey = []string{"dorm_id", "grade_id"}
-)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -137,6 +133,6 @@ func newDormStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(DormInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2M, true, DormTable, DormPrimaryKey...),
+		sqlgraph.Edge(sqlgraph.O2M, true, DormTable, DormColumn),
 	)
 }

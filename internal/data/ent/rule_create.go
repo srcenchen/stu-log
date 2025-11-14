@@ -26,7 +26,7 @@ func (_c *RuleCreate) SetContent(v string) *RuleCreate {
 }
 
 // SetScore sets the "score" field.
-func (_c *RuleCreate) SetScore(v string) *RuleCreate {
+func (_c *RuleCreate) SetScore(v int32) *RuleCreate {
 	_c.mutation.SetScore(v)
 	return _c
 }
@@ -123,7 +123,7 @@ func (_c *RuleCreate) createSpec() (*Rule, *sqlgraph.CreateSpec) {
 		_node.Content = value
 	}
 	if value, ok := _c.mutation.Score(); ok {
-		_spec.SetField(rule.FieldScore, field.TypeString, value)
+		_spec.SetField(rule.FieldScore, field.TypeInt32, value)
 		_node.Score = value
 	}
 	if value, ok := _c.mutation.Group(); ok {

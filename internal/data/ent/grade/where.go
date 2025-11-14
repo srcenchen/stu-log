@@ -175,7 +175,7 @@ func HasDorm() predicate.Grade {
 	return predicate.Grade(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, DormTable, DormPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, true, DormTable, DormColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})

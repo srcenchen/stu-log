@@ -4,6 +4,7 @@ package ent
 
 import (
 	"eGZ-stu-log/internal/data/ent/dorm"
+	"eGZ-stu-log/internal/data/ent/grade"
 	"fmt"
 	"strings"
 
@@ -25,6 +26,7 @@ type Dorm struct {
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the DormQuery when eager-loading is set.
 	Edges        DormEdges `json:"edges"`
+	dorm_grade   *int64
 	selectValues sql.SelectValues
 }
 
@@ -33,7 +35,7 @@ type DormEdges struct {
 	// Student holds the value of the student edge.
 	Student []*Student `json:"student,omitempty"`
 	// Grade holds the value of the grade edge.
-	Grade []*Grade `json:"grade,omitempty"`
+	Grade *Grade `json:"grade,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [2]bool
@@ -49,10 +51,12 @@ func (e DormEdges) StudentOrErr() ([]*Student, error) {
 }
 
 // GradeOrErr returns the Grade value or an error if the edge
-// was not loaded in eager-loading.
-func (e DormEdges) GradeOrErr() ([]*Grade, error) {
-	if e.loadedTypes[1] {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e DormEdges) GradeOrErr() (*Grade, error) {
+	if e.Grade != nil {
 		return e.Grade, nil
+	} else if e.loadedTypes[1] {
+		return nil, &NotFoundError{label: grade.Label}
 	}
 	return nil, &NotLoadedError{edge: "grade"}
 }
@@ -66,6 +70,8 @@ func (*Dorm) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case dorm.FieldBuilding, dorm.FieldDormNum, dorm.FieldSex:
 			values[i] = new(sql.NullString)
+		case dorm.ForeignKeys[0]: // dorm_grade
+			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -104,6 +110,13 @@ func (_m *Dorm) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field sex", values[i])
 			} else if value.Valid {
 				_m.Sex = value.String
+			}
+		case dorm.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field dorm_grade", value)
+			} else if value.Valid {
+				_m.dorm_grade = new(int64)
+				*_m.dorm_grade = int64(value.Int64)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])

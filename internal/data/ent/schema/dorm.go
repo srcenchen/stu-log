@@ -25,6 +25,6 @@ func (Dorm) Fields() []ent.Field {
 func (Dorm) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("student", Student.Type).Ref("dorm"),
-		edge.To("grade", Grade.Type).Required(),
+		edge.To("grade", Grade.Type).Unique().Required(),
 	}
 }

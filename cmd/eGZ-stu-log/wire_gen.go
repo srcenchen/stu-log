@@ -7,6 +7,7 @@
 package main
 
 import (
+	"eGZ-stu-log/internal/biz"
 	"eGZ-stu-log/internal/conf"
 	"eGZ-stu-log/internal/data"
 	"eGZ-stu-log/internal/server"
@@ -32,7 +33,9 @@ func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*
 	studentService := service.NewStudentService(dataData)
 	classService := service.NewClassService(dataData)
 	gradeService := service.NewGradeService(dataData)
-	httpServer := server.NewHTTPServer(confServer, studentService, classService, gradeService, logger)
+	importUseCase := biz.NewImportUseCase(dataData, logger)
+	uploadService := service.NewUploadService(importUseCase)
+	httpServer := server.NewHTTPServer(confServer, studentService, classService, gradeService, uploadService, logger)
 	app := newApp(logger, grpcServer, httpServer)
 	return app, func() {
 		cleanup()

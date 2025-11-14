@@ -292,7 +292,7 @@ func HasGrade() predicate.Dorm {
 	return predicate.Dorm(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, GradeTable, GradePrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, GradeTable, GradeColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
