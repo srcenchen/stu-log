@@ -19,6 +19,7 @@ message StudentItem {
   int64 id = 1;
   string name = 2;
   string sex = 3;
+  string stuNum = 12;
   int64 classId = 4;
   string className = 10;
   int64 dormId = 5;
@@ -27,26 +28,27 @@ message StudentItem {
   int64 gradeId = 6;
   string gradeName = 8;
   string dormPos = 7;
+  int32 score = 13;
 }
 
 service Student {
   // 学生创建
   rpc CreateStudent (CreateStudentRequest) returns (CreateStudentReply) {
     option (google.api.http) = {
-      post: "v1/base_info/student/create",
+      post: "/v1/base_info/student/create",
       body: "*"
     };
   };
   // 学生查询
-  rpc QueryStudent (QueryStudentRequest) returns (CreateStudentReply) {
+  rpc QueryStudent (QueryStudentRequest) returns (QueryStudentReply) {
     option (google.api.http) = {
-      get: "v1/base_info/student/{id}",
+      get: "/v1/base_info/student/{id}",
     };
   };
   // 学生列表查询
   rpc QueryStudentList (QueryStudentListRequest) returns (QueryStudentListReply) {
     option (google.api.http) = {
-      get: "v1/base_info/student",
+      get: "/v1/base_info/student",
     };
   };
 }
@@ -58,6 +60,7 @@ message CreateStudentRequest {
   int64 dormId = 4;
   int64 gradeId = 5;
   string dormPos = 6;
+  string stuNum = 7;
 }
 message CreateStudentReply {
   string message = 1;
@@ -69,9 +72,12 @@ message QueryStudentReply {
   StudentItem student = 1;
 }
 message QueryStudentListRequest {
-  int64 page = 1;
-  int64 pageSize = 2;
+  int32 page = 1;
+  int32 pageSize = 2;
+  optional int64 gradeId = 3;
+  optional int64 classId = 4;
 }
 message QueryStudentListReply {
   repeated StudentItem students = 1;
+  int32 totalPages = 2;
 }

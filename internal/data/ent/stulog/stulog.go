@@ -14,8 +14,8 @@ const (
 	FieldID = "id"
 	// FieldContent holds the string denoting the content field in the database.
 	FieldContent = "content"
-	// FieldInvoked holds the string denoting the invoked field in the database.
-	FieldInvoked = "invoked"
+	// FieldRevoked holds the string denoting the revoked field in the database.
+	FieldRevoked = "revoked"
 	// FieldTime holds the string denoting the time field in the database.
 	FieldTime = "time"
 	// EdgeClass holds the string denoting the class edge name in mutations.
@@ -71,7 +71,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldContent,
-	FieldInvoked,
+	FieldRevoked,
 	FieldTime,
 }
 
@@ -99,8 +99,8 @@ func ValidColumn(column string) bool {
 }
 
 var (
-	// DefaultInvoked holds the default value on creation for the "invoked" field.
-	DefaultInvoked bool
+	// DefaultRevoked holds the default value on creation for the "revoked" field.
+	DefaultRevoked bool
 )
 
 // OrderOption defines the ordering options for the StuLog queries.
@@ -116,9 +116,9 @@ func ByContent(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldContent, opts...).ToFunc()
 }
 
-// ByInvoked orders the results by the invoked field.
-func ByInvoked(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldInvoked, opts...).ToFunc()
+// ByRevoked orders the results by the revoked field.
+func ByRevoked(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRevoked, opts...).ToFunc()
 }
 
 // ByTime orders the results by the time field.

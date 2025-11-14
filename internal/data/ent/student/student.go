@@ -105,6 +105,8 @@ var (
 	SexValidator func(string) error
 	// DefaultScore holds the default value on creation for the "score" field.
 	DefaultScore int32
+	// DefaultDormPos holds the default value on creation for the "dormPos" field.
+	DefaultDormPos string
 )
 
 // OrderOption defines the ordering options for the Student queries.

@@ -31,16 +31,16 @@ func (_c *StuLogCreate) SetContent(v string) *StuLogCreate {
 	return _c
 }
 
-// SetInvoked sets the "invoked" field.
-func (_c *StuLogCreate) SetInvoked(v bool) *StuLogCreate {
-	_c.mutation.SetInvoked(v)
+// SetRevoked sets the "revoked" field.
+func (_c *StuLogCreate) SetRevoked(v bool) *StuLogCreate {
+	_c.mutation.SetRevoked(v)
 	return _c
 }
 
-// SetNillableInvoked sets the "invoked" field if the given value is not nil.
-func (_c *StuLogCreate) SetNillableInvoked(v *bool) *StuLogCreate {
+// SetNillableRevoked sets the "revoked" field if the given value is not nil.
+func (_c *StuLogCreate) SetNillableRevoked(v *bool) *StuLogCreate {
 	if v != nil {
-		_c.SetInvoked(*v)
+		_c.SetRevoked(*v)
 	}
 	return _c
 }
@@ -167,9 +167,9 @@ func (_c *StuLogCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *StuLogCreate) defaults() {
-	if _, ok := _c.mutation.Invoked(); !ok {
-		v := stulog.DefaultInvoked
-		_c.mutation.SetInvoked(v)
+	if _, ok := _c.mutation.Revoked(); !ok {
+		v := stulog.DefaultRevoked
+		_c.mutation.SetRevoked(v)
 	}
 }
 
@@ -178,8 +178,8 @@ func (_c *StuLogCreate) check() error {
 	if _, ok := _c.mutation.Content(); !ok {
 		return &ValidationError{Name: "content", err: errors.New(`ent: missing required field "StuLog.content"`)}
 	}
-	if _, ok := _c.mutation.Invoked(); !ok {
-		return &ValidationError{Name: "invoked", err: errors.New(`ent: missing required field "StuLog.invoked"`)}
+	if _, ok := _c.mutation.Revoked(); !ok {
+		return &ValidationError{Name: "revoked", err: errors.New(`ent: missing required field "StuLog.revoked"`)}
 	}
 	if _, ok := _c.mutation.Time(); !ok {
 		return &ValidationError{Name: "time", err: errors.New(`ent: missing required field "StuLog.time"`)}
@@ -223,9 +223,9 @@ func (_c *StuLogCreate) createSpec() (*StuLog, *sqlgraph.CreateSpec) {
 		_spec.SetField(stulog.FieldContent, field.TypeString, value)
 		_node.Content = value
 	}
-	if value, ok := _c.mutation.Invoked(); ok {
-		_spec.SetField(stulog.FieldInvoked, field.TypeBool, value)
-		_node.Invoked = value
+	if value, ok := _c.mutation.Revoked(); ok {
+		_spec.SetField(stulog.FieldRevoked, field.TypeBool, value)
+		_node.Revoked = value
 	}
 	if value, ok := _c.mutation.Time(); ok {
 		_spec.SetField(stulog.FieldTime, field.TypeTime, value)

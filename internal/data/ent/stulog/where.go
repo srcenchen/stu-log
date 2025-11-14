@@ -60,9 +60,9 @@ func Content(v string) predicate.StuLog {
 	return predicate.StuLog(sql.FieldEQ(FieldContent, v))
 }
 
-// Invoked applies equality check predicate on the "invoked" field. It's identical to InvokedEQ.
-func Invoked(v bool) predicate.StuLog {
-	return predicate.StuLog(sql.FieldEQ(FieldInvoked, v))
+// Revoked applies equality check predicate on the "revoked" field. It's identical to RevokedEQ.
+func Revoked(v bool) predicate.StuLog {
+	return predicate.StuLog(sql.FieldEQ(FieldRevoked, v))
 }
 
 // Time applies equality check predicate on the "time" field. It's identical to TimeEQ.
@@ -135,14 +135,14 @@ func ContentContainsFold(v string) predicate.StuLog {
 	return predicate.StuLog(sql.FieldContainsFold(FieldContent, v))
 }
 
-// InvokedEQ applies the EQ predicate on the "invoked" field.
-func InvokedEQ(v bool) predicate.StuLog {
-	return predicate.StuLog(sql.FieldEQ(FieldInvoked, v))
+// RevokedEQ applies the EQ predicate on the "revoked" field.
+func RevokedEQ(v bool) predicate.StuLog {
+	return predicate.StuLog(sql.FieldEQ(FieldRevoked, v))
 }
 
-// InvokedNEQ applies the NEQ predicate on the "invoked" field.
-func InvokedNEQ(v bool) predicate.StuLog {
-	return predicate.StuLog(sql.FieldNEQ(FieldInvoked, v))
+// RevokedNEQ applies the NEQ predicate on the "revoked" field.
+func RevokedNEQ(v bool) predicate.StuLog {
+	return predicate.StuLog(sql.FieldNEQ(FieldRevoked, v))
 }
 
 // TimeEQ applies the EQ predicate on the "time" field.

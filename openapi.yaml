@@ -6,7 +6,7 @@ info:
     title: ""
     version: 0.0.1
 paths:
-    /api/base_info/class/create:
+    /v1/base_info/class/create:
         post:
             tags:
                 - Class
@@ -24,7 +24,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.base_info.v1.CreateClassReply'
-    /api/base_info/grade/create:
+    /v1/base_info/grade/create:
         post:
             tags:
                 - Grade
@@ -42,7 +42,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.base_info.v1.CreateGradeReply'
-    v1/base_info/student:
+    /v1/base_info/student:
         get:
             tags:
                 - Student
@@ -52,8 +52,18 @@ paths:
                 - name: page
                   in: query
                   schema:
-                    type: string
+                    type: integer
+                    format: int32
                 - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: gradeId
+                  in: query
+                  schema:
+                    type: string
+                - name: classId
                   in: query
                   schema:
                     type: string
@@ -64,7 +74,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.base_info.v1.QueryStudentListReply'
-    v1/base_info/student/create:
+    /v1/base_info/student/create:
         post:
             tags:
                 - Student
@@ -83,7 +93,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.base_info.v1.CreateStudentReply'
-    v1/base_info/student/{id}:
+    /v1/base_info/student/{id}:
         get:
             tags:
                 - Student
@@ -101,7 +111,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/api.base_info.v1.CreateStudentReply'
+                                $ref: '#/components/schemas/api.base_info.v1.QueryStudentReply'
 components:
     schemas:
         api.base_info.v1.CreateClassReply:
@@ -146,6 +156,8 @@ components:
                     type: string
                 dormPos:
                     type: string
+                stuNum:
+                    type: string
         api.base_info.v1.QueryStudentListReply:
             type: object
             properties:
@@ -153,6 +165,14 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.base_info.v1.StudentItem'
+                totalPages:
+                    type: integer
+                    format: int32
+        api.base_info.v1.QueryStudentReply:
+            type: object
+            properties:
+                student:
+                    $ref: '#/components/schemas/api.base_info.v1.StudentItem'
         api.base_info.v1.StudentItem:
             type: object
             properties:
@@ -161,6 +181,8 @@ components:
                 name:
                     type: string
                 sex:
+                    type: string
+                stuNum:
                     type: string
                 classId:
                     type: string
@@ -178,6 +200,9 @@ components:
                     type: string
                 dormPos:
                     type: string
+                score:
+                    type: integer
+                    format: int32
 tags:
     - name: Class
     - name: Grade

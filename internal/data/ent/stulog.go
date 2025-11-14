@@ -22,7 +22,7 @@ type StuLog struct {
 	// 违纪备注
 	Content string `json:"content,omitempty"`
 	// 是否被撤销
-	Invoked bool `json:"invoked,omitempty"`
+	Revoked bool `json:"revoked,omitempty"`
 	// 违纪时间
 	Time time.Time `json:"time,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -105,7 +105,7 @@ func (*StuLog) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case stulog.FieldInvoked:
+		case stulog.FieldRevoked:
 			values[i] = new(sql.NullBool)
 		case stulog.FieldID:
 			values[i] = new(sql.NullInt64)
@@ -146,11 +146,11 @@ func (_m *StuLog) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Content = value.String
 			}
-		case stulog.FieldInvoked:
+		case stulog.FieldRevoked:
 			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field invoked", values[i])
+				return fmt.Errorf("unexpected type %T for field revoked", values[i])
 			} else if value.Valid {
-				_m.Invoked = value.Bool
+				_m.Revoked = value.Bool
 			}
 		case stulog.FieldTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -243,8 +243,8 @@ func (_m *StuLog) String() string {
 	builder.WriteString("content=")
 	builder.WriteString(_m.Content)
 	builder.WriteString(", ")
-	builder.WriteString("invoked=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Invoked))
+	builder.WriteString("revoked=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Revoked))
 	builder.WriteString(", ")
 	builder.WriteString("time=")
 	builder.WriteString(_m.Time.Format(time.ANSIC))

@@ -9,7 +9,7 @@ option java_package = "api.base_info.v1";
 service Class {
 	rpc CreateClass (CreateClassRequest) returns (CreateClassReply) {
 		option (google.api.http) = {
-			post: "/api/base_info/class/create",
+			post: "/v1/base_info/class/create",
 			body: "*"
 		};
 	}

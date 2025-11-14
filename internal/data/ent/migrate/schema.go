@@ -96,7 +96,7 @@ var (
 	StuLogsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt64, Increment: true},
 		{Name: "content", Type: field.TypeString},
-		{Name: "invoked", Type: field.TypeBool, Default: false},
+		{Name: "revoked", Type: field.TypeBool, Default: false},
 		{Name: "time", Type: field.TypeTime},
 		{Name: "stu_log_grade", Type: field.TypeInt64, Nullable: true},
 		{Name: "stu_log_rule", Type: field.TypeInt64},
@@ -135,7 +135,7 @@ var (
 		{Name: "stu_num", Type: field.TypeString, Unique: true},
 		{Name: "sex", Type: field.TypeString},
 		{Name: "score", Type: field.TypeInt32, Default: 100},
-		{Name: "dorm_pos", Type: field.TypeString},
+		{Name: "dorm_pos", Type: field.TypeString, Default: ""},
 		{Name: "stu_log_students", Type: field.TypeInt64, Nullable: true},
 		{Name: "student_grade", Type: field.TypeInt64},
 		{Name: "student_class", Type: field.TypeInt64},

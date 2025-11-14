@@ -61,6 +61,14 @@ func (_c *StudentCreate) SetDormPos(v string) *StudentCreate {
 	return _c
 }
 
+// SetNillableDormPos sets the "dormPos" field if the given value is not nil.
+func (_c *StudentCreate) SetNillableDormPos(v *string) *StudentCreate {
+	if v != nil {
+		_c.SetDormPos(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *StudentCreate) SetID(v int64) *StudentCreate {
 	_c.mutation.SetID(v)
@@ -161,6 +169,10 @@ func (_c *StudentCreate) defaults() {
 	if _, ok := _c.mutation.Score(); !ok {
 		v := student.DefaultScore
 		_c.mutation.SetScore(v)
+	}
+	if _, ok := _c.mutation.DormPos(); !ok {
+		v := student.DefaultDormPos
+		_c.mutation.SetDormPos(v)
 	}
 }
 

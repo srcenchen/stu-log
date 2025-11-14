@@ -47,16 +47,16 @@ func (_u *StuLogUpdate) SetNillableContent(v *string) *StuLogUpdate {
 	return _u
 }
 
-// SetInvoked sets the "invoked" field.
-func (_u *StuLogUpdate) SetInvoked(v bool) *StuLogUpdate {
-	_u.mutation.SetInvoked(v)
+// SetRevoked sets the "revoked" field.
+func (_u *StuLogUpdate) SetRevoked(v bool) *StuLogUpdate {
+	_u.mutation.SetRevoked(v)
 	return _u
 }
 
-// SetNillableInvoked sets the "invoked" field if the given value is not nil.
-func (_u *StuLogUpdate) SetNillableInvoked(v *bool) *StuLogUpdate {
+// SetNillableRevoked sets the "revoked" field if the given value is not nil.
+func (_u *StuLogUpdate) SetNillableRevoked(v *bool) *StuLogUpdate {
 	if v != nil {
-		_u.SetInvoked(*v)
+		_u.SetRevoked(*v)
 	}
 	return _u
 }
@@ -280,8 +280,8 @@ func (_u *StuLogUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.Content(); ok {
 		_spec.SetField(stulog.FieldContent, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.Invoked(); ok {
-		_spec.SetField(stulog.FieldInvoked, field.TypeBool, value)
+	if value, ok := _u.mutation.Revoked(); ok {
+		_spec.SetField(stulog.FieldRevoked, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.Time(); ok {
 		_spec.SetField(stulog.FieldTime, field.TypeTime, value)
@@ -513,16 +513,16 @@ func (_u *StuLogUpdateOne) SetNillableContent(v *string) *StuLogUpdateOne {
 	return _u
 }
 
-// SetInvoked sets the "invoked" field.
-func (_u *StuLogUpdateOne) SetInvoked(v bool) *StuLogUpdateOne {
-	_u.mutation.SetInvoked(v)
+// SetRevoked sets the "revoked" field.
+func (_u *StuLogUpdateOne) SetRevoked(v bool) *StuLogUpdateOne {
+	_u.mutation.SetRevoked(v)
 	return _u
 }
 
-// SetNillableInvoked sets the "invoked" field if the given value is not nil.
-func (_u *StuLogUpdateOne) SetNillableInvoked(v *bool) *StuLogUpdateOne {
+// SetNillableRevoked sets the "revoked" field if the given value is not nil.
+func (_u *StuLogUpdateOne) SetNillableRevoked(v *bool) *StuLogUpdateOne {
 	if v != nil {
-		_u.SetInvoked(*v)
+		_u.SetRevoked(*v)
 	}
 	return _u
 }
@@ -776,8 +776,8 @@ func (_u *StuLogUpdateOne) sqlSave(ctx context.Context) (_node *StuLog, err erro
 	if value, ok := _u.mutation.Content(); ok {
 		_spec.SetField(stulog.FieldContent, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.Invoked(); ok {
-		_spec.SetField(stulog.FieldInvoked, field.TypeBool, value)
+	if value, ok := _u.mutation.Revoked(); ok {
+		_spec.SetField(stulog.FieldRevoked, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.Time(); ok {
 		_spec.SetField(stulog.FieldTime, field.TypeTime, value)

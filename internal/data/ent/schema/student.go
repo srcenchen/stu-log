@@ -19,7 +19,7 @@ func (Student) Fields() []ent.Field {
 		field.String("stuNum").NotEmpty().Unique().Comment("学号"),
 		field.String("sex").NotEmpty().Comment("性别"),
 		field.Int32("score").Default(100).Comment("学生分数"),
-		field.String("dormPos").Comment("宿舍床铺的位置"),
+		field.String("dormPos").Default("").Comment("宿舍床铺的位置"),
 	}
 }
 

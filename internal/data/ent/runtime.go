@@ -14,10 +14,10 @@ import (
 func init() {
 	stulogFields := schema.StuLog{}.Fields()
 	_ = stulogFields
-	// stulogDescInvoked is the schema descriptor for invoked field.
-	stulogDescInvoked := stulogFields[2].Descriptor()
-	// stulog.DefaultInvoked holds the default value on creation for the invoked field.
-	stulog.DefaultInvoked = stulogDescInvoked.Default.(bool)
+	// stulogDescRevoked is the schema descriptor for revoked field.
+	stulogDescRevoked := stulogFields[2].Descriptor()
+	// stulog.DefaultRevoked holds the default value on creation for the revoked field.
+	stulog.DefaultRevoked = stulogDescRevoked.Default.(bool)
 	studentFields := schema.Student{}.Fields()
 	_ = studentFields
 	// studentDescName is the schema descriptor for name field.
@@ -36,4 +36,8 @@ func init() {
 	studentDescScore := studentFields[4].Descriptor()
 	// student.DefaultScore holds the default value on creation for the score field.
 	student.DefaultScore = studentDescScore.Default.(int32)
+	// studentDescDormPos is the schema descriptor for dormPos field.
+	studentDescDormPos := studentFields[5].Descriptor()
+	// student.DefaultDormPos holds the default value on creation for the dormPos field.
+	student.DefaultDormPos = studentDescDormPos.Default.(string)
 }

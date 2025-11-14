@@ -16,7 +16,7 @@ func (StuLog) Fields() []ent.Field {
 	return []ent.Field{
 		field.Int64("id"),
 		field.String("content").Comment("违纪备注"),
-		field.Bool("invoked").Default(false).Comment("是否被撤销"),
+		field.Bool("revoked").Default(false).Comment("是否被撤销"),
 		field.Time("time").Comment("违纪时间"),
 	}
 }

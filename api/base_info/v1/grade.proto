@@ -10,7 +10,7 @@ option java_package = "api.base_info.v1";
 service Grade {
 	rpc CreateGrade (CreateGradeRequest) returns (CreateGradeReply) {
 		option (google.api.http) = {
-			post: "/api/base_info/grade/create",
+			post: "/v1/base_info/grade/create",
 			body: "*"
 		};
 	}

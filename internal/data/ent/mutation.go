@@ -2510,7 +2510,7 @@ type StuLogMutation struct {
 	typ             string
 	id              *int64
 	content         *string
-	invoked         *bool
+	revoked         *bool
 	time            *time.Time
 	clearedFields   map[string]struct{}
 	class           map[int64]struct{}
@@ -2671,40 +2671,40 @@ func (m *StuLogMutation) ResetContent() {
 	m.content = nil
 }
 
-// SetInvoked sets the "invoked" field.
-func (m *StuLogMutation) SetInvoked(b bool) {
-	m.invoked = &b
+// SetRevoked sets the "revoked" field.
+func (m *StuLogMutation) SetRevoked(b bool) {
+	m.revoked = &b
 }
 
-// Invoked returns the value of the "invoked" field in the mutation.
-func (m *StuLogMutation) Invoked() (r bool, exists bool) {
-	v := m.invoked
+// Revoked returns the value of the "revoked" field in the mutation.
+func (m *StuLogMutation) Revoked() (r bool, exists bool) {
+	v := m.revoked
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldInvoked returns the old "invoked" field's value of the StuLog entity.
+// OldRevoked returns the old "revoked" field's value of the StuLog entity.
 // If the StuLog object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *StuLogMutation) OldInvoked(ctx context.Context) (v bool, err error) {
+func (m *StuLogMutation) OldRevoked(ctx context.Context) (v bool, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldInvoked is only allowed on UpdateOne operations")
+		return v, errors.New("OldRevoked is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldInvoked requires an ID field in the mutation")
+		return v, errors.New("OldRevoked requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldInvoked: %w", err)
+		return v, fmt.Errorf("querying old value for OldRevoked: %w", err)
 	}
-	return oldValue.Invoked, nil
+	return oldValue.Revoked, nil
 }
 
-// ResetInvoked resets all changes to the "invoked" field.
-func (m *StuLogMutation) ResetInvoked() {
-	m.invoked = nil
+// ResetRevoked resets all changes to the "revoked" field.
+func (m *StuLogMutation) ResetRevoked() {
+	m.revoked = nil
 }
 
 // SetTime sets the "time" field.
@@ -3021,8 +3021,8 @@ func (m *StuLogMutation) Fields() []string {
 	if m.content != nil {
 		fields = append(fields, stulog.FieldContent)
 	}
-	if m.invoked != nil {
-		fields = append(fields, stulog.FieldInvoked)
+	if m.revoked != nil {
+		fields = append(fields, stulog.FieldRevoked)
 	}
 	if m.time != nil {
 		fields = append(fields, stulog.FieldTime)
@@ -3037,8 +3037,8 @@ func (m *StuLogMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case stulog.FieldContent:
 		return m.Content()
-	case stulog.FieldInvoked:
-		return m.Invoked()
+	case stulog.FieldRevoked:
+		return m.Revoked()
 	case stulog.FieldTime:
 		return m.Time()
 	}
@@ -3052,8 +3052,8 @@ func (m *StuLogMutation) OldField(ctx context.Context, name string) (ent.Value, 
 	switch name {
 	case stulog.FieldContent:
 		return m.OldContent(ctx)
-	case stulog.FieldInvoked:
-		return m.OldInvoked(ctx)
+	case stulog.FieldRevoked:
+		return m.OldRevoked(ctx)
 	case stulog.FieldTime:
 		return m.OldTime(ctx)
 	}
@@ -3072,12 +3072,12 @@ func (m *StuLogMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetContent(v)
 		return nil
-	case stulog.FieldInvoked:
+	case stulog.FieldRevoked:
 		v, ok := value.(bool)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetInvoked(v)
+		m.SetRevoked(v)
 		return nil
 	case stulog.FieldTime:
 		v, ok := value.(time.Time)
@@ -3138,8 +3138,8 @@ func (m *StuLogMutation) ResetField(name string) error {
 	case stulog.FieldContent:
 		m.ResetContent()
 		return nil
-	case stulog.FieldInvoked:
-		m.ResetInvoked()
+	case stulog.FieldRevoked:
+		m.ResetRevoked()
 		return nil
 	case stulog.FieldTime:
 		m.ResetTime()

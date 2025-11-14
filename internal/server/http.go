@@ -11,7 +11,7 @@ import (
 )
 
 // NewHTTPServer new an HTTP server.
-func NewHTTPServer(c *conf.Server, student *service.StudentService, logger log.Logger) *http.Server {
+func NewHTTPServer(c *conf.Server, student *service.StudentService, class *service.ClassService, grade *service.GradeService, logger log.Logger) *http.Server {
 	var opts = []http.ServerOption{
 		http.Middleware(
 			recovery.Recovery(),
@@ -28,5 +28,7 @@ func NewHTTPServer(c *conf.Server, student *service.StudentService, logger log.L
 	}
 	srv := http.NewServer(opts...)
 	v1.RegisterStudentHTTPServer(srv, student)
+	v1.RegisterClassHTTPServer(srv, class)
+	v1.RegisterGradeHTTPServer(srv, grade)
 	return srv
 }
