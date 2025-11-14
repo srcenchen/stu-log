@@ -6,6 +6,7 @@ import (
 	"context"
 	"eGZ-stu-log/internal/data/ent/image"
 	"eGZ-stu-log/internal/data/ent/predicate"
+	"eGZ-stu-log/internal/data/ent/stulog"
 	"errors"
 	"fmt"
 
@@ -41,9 +42,45 @@ func (_u *ImageUpdate) SetNillableImageUrl(v *string) *ImageUpdate {
 	return _u
 }
 
+// AddStuLogIDs adds the "stuLogs" edge to the StuLog entity by IDs.
+func (_u *ImageUpdate) AddStuLogIDs(ids ...int64) *ImageUpdate {
+	_u.mutation.AddStuLogIDs(ids...)
+	return _u
+}
+
+// AddStuLogs adds the "stuLogs" edges to the StuLog entity.
+func (_u *ImageUpdate) AddStuLogs(v ...*StuLog) *ImageUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddStuLogIDs(ids...)
+}
+
 // Mutation returns the ImageMutation object of the builder.
 func (_u *ImageUpdate) Mutation() *ImageMutation {
 	return _u.mutation
+}
+
+// ClearStuLogs clears all "stuLogs" edges to the StuLog entity.
+func (_u *ImageUpdate) ClearStuLogs() *ImageUpdate {
+	_u.mutation.ClearStuLogs()
+	return _u
+}
+
+// RemoveStuLogIDs removes the "stuLogs" edge to StuLog entities by IDs.
+func (_u *ImageUpdate) RemoveStuLogIDs(ids ...int64) *ImageUpdate {
+	_u.mutation.RemoveStuLogIDs(ids...)
+	return _u
+}
+
+// RemoveStuLogs removes "stuLogs" edges to StuLog entities.
+func (_u *ImageUpdate) RemoveStuLogs(v ...*StuLog) *ImageUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveStuLogIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -85,6 +122,51 @@ func (_u *ImageUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.ImageUrl(); ok {
 		_spec.SetField(image.FieldImageUrl, field.TypeString, value)
 	}
+	if _u.mutation.StuLogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   image.StuLogsTable,
+			Columns: image.StuLogsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stulog.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedStuLogsIDs(); len(nodes) > 0 && !_u.mutation.StuLogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   image.StuLogsTable,
+			Columns: image.StuLogsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stulog.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.StuLogsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   image.StuLogsTable,
+			Columns: image.StuLogsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stulog.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{image.Label}
@@ -119,9 +201,45 @@ func (_u *ImageUpdateOne) SetNillableImageUrl(v *string) *ImageUpdateOne {
 	return _u
 }
 
+// AddStuLogIDs adds the "stuLogs" edge to the StuLog entity by IDs.
+func (_u *ImageUpdateOne) AddStuLogIDs(ids ...int64) *ImageUpdateOne {
+	_u.mutation.AddStuLogIDs(ids...)
+	return _u
+}
+
+// AddStuLogs adds the "stuLogs" edges to the StuLog entity.
+func (_u *ImageUpdateOne) AddStuLogs(v ...*StuLog) *ImageUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddStuLogIDs(ids...)
+}
+
 // Mutation returns the ImageMutation object of the builder.
 func (_u *ImageUpdateOne) Mutation() *ImageMutation {
 	return _u.mutation
+}
+
+// ClearStuLogs clears all "stuLogs" edges to the StuLog entity.
+func (_u *ImageUpdateOne) ClearStuLogs() *ImageUpdateOne {
+	_u.mutation.ClearStuLogs()
+	return _u
+}
+
+// RemoveStuLogIDs removes the "stuLogs" edge to StuLog entities by IDs.
+func (_u *ImageUpdateOne) RemoveStuLogIDs(ids ...int64) *ImageUpdateOne {
+	_u.mutation.RemoveStuLogIDs(ids...)
+	return _u
+}
+
+// RemoveStuLogs removes "stuLogs" edges to StuLog entities.
+func (_u *ImageUpdateOne) RemoveStuLogs(v ...*StuLog) *ImageUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveStuLogIDs(ids...)
 }
 
 // Where appends a list predicates to the ImageUpdate builder.
@@ -192,6 +310,51 @@ func (_u *ImageUpdateOne) sqlSave(ctx context.Context) (_node *Image, err error)
 	}
 	if value, ok := _u.mutation.ImageUrl(); ok {
 		_spec.SetField(image.FieldImageUrl, field.TypeString, value)
+	}
+	if _u.mutation.StuLogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   image.StuLogsTable,
+			Columns: image.StuLogsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stulog.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedStuLogsIDs(); len(nodes) > 0 && !_u.mutation.StuLogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   image.StuLogsTable,
+			Columns: image.StuLogsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stulog.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.StuLogsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   image.StuLogsTable,
+			Columns: image.StuLogsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stulog.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &Image{config: _u.config}
 	_spec.Assign = _node.assignValues

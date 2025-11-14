@@ -65,6 +65,11 @@ func Revoked(v bool) predicate.StuLog {
 	return predicate.StuLog(sql.FieldEQ(FieldRevoked, v))
 }
 
+// Score applies equality check predicate on the "score" field. It's identical to ScoreEQ.
+func Score(v int32) predicate.StuLog {
+	return predicate.StuLog(sql.FieldEQ(FieldScore, v))
+}
+
 // Time applies equality check predicate on the "time" field. It's identical to TimeEQ.
 func Time(v time.Time) predicate.StuLog {
 	return predicate.StuLog(sql.FieldEQ(FieldTime, v))
@@ -145,6 +150,46 @@ func RevokedNEQ(v bool) predicate.StuLog {
 	return predicate.StuLog(sql.FieldNEQ(FieldRevoked, v))
 }
 
+// ScoreEQ applies the EQ predicate on the "score" field.
+func ScoreEQ(v int32) predicate.StuLog {
+	return predicate.StuLog(sql.FieldEQ(FieldScore, v))
+}
+
+// ScoreNEQ applies the NEQ predicate on the "score" field.
+func ScoreNEQ(v int32) predicate.StuLog {
+	return predicate.StuLog(sql.FieldNEQ(FieldScore, v))
+}
+
+// ScoreIn applies the In predicate on the "score" field.
+func ScoreIn(vs ...int32) predicate.StuLog {
+	return predicate.StuLog(sql.FieldIn(FieldScore, vs...))
+}
+
+// ScoreNotIn applies the NotIn predicate on the "score" field.
+func ScoreNotIn(vs ...int32) predicate.StuLog {
+	return predicate.StuLog(sql.FieldNotIn(FieldScore, vs...))
+}
+
+// ScoreGT applies the GT predicate on the "score" field.
+func ScoreGT(v int32) predicate.StuLog {
+	return predicate.StuLog(sql.FieldGT(FieldScore, v))
+}
+
+// ScoreGTE applies the GTE predicate on the "score" field.
+func ScoreGTE(v int32) predicate.StuLog {
+	return predicate.StuLog(sql.FieldGTE(FieldScore, v))
+}
+
+// ScoreLT applies the LT predicate on the "score" field.
+func ScoreLT(v int32) predicate.StuLog {
+	return predicate.StuLog(sql.FieldLT(FieldScore, v))
+}
+
+// ScoreLTE applies the LTE predicate on the "score" field.
+func ScoreLTE(v int32) predicate.StuLog {
+	return predicate.StuLog(sql.FieldLTE(FieldScore, v))
+}
+
 // TimeEQ applies the EQ predicate on the "time" field.
 func TimeEQ(v time.Time) predicate.StuLog {
 	return predicate.StuLog(sql.FieldEQ(FieldTime, v))
@@ -190,7 +235,7 @@ func HasClass() predicate.StuLog {
 	return predicate.StuLog(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ClassTable, ClassColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, ClassTable, ClassPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -213,7 +258,7 @@ func HasGrade() predicate.StuLog {
 	return predicate.StuLog(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, GradeTable, GradeColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, GradeTable, GradePrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -236,7 +281,7 @@ func HasRule() predicate.StuLog {
 	return predicate.StuLog(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, RuleTable, RuleColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, RuleTable, RulePrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -259,7 +304,7 @@ func HasStudents() predicate.StuLog {
 	return predicate.StuLog(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, StudentsTable, StudentsColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, StudentsTable, StudentsPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -282,7 +327,7 @@ func HasImages() predicate.StuLog {
 	return predicate.StuLog(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ImagesTable, ImagesColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, ImagesTable, ImagesPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})

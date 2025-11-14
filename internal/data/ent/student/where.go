@@ -453,7 +453,7 @@ func HasStuLogs() predicate.Student {
 	return predicate.Student(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, StuLogsTable, StuLogsColumn),
+			sqlgraph.Edge(sqlgraph.M2M, true, StuLogsTable, StuLogsPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})

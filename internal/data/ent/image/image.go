@@ -4,6 +4,7 @@ package image
 
 import (
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 const (
@@ -13,8 +14,15 @@ const (
 	FieldID = "id"
 	// FieldImageUrl holds the string denoting the imageurl field in the database.
 	FieldImageUrl = "image_url"
+	// EdgeStuLogs holds the string denoting the stulogs edge name in mutations.
+	EdgeStuLogs = "stuLogs"
 	// Table holds the table name of the image in the database.
 	Table = "images"
+	// StuLogsTable is the table that holds the stuLogs relation/edge. The primary key declared below.
+	StuLogsTable = "stu_log_images"
+	// StuLogsInverseTable is the table name for the StuLog entity.
+	// It exists in this package in order to avoid circular dependency with the "stulog" package.
+	StuLogsInverseTable = "stu_logs"
 )
 
 // Columns holds all SQL columns for image fields.
@@ -23,21 +31,16 @@ var Columns = []string{
 	FieldImageUrl,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the "images"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"stu_log_images",
-}
+var (
+	// StuLogsPrimaryKey and StuLogsColumn2 are the table columns denoting the
+	// primary key for the stuLogs relation (M2M).
+	StuLogsPrimaryKey = []string{"stu_log_id", "image_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -55,4 +58,25 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 // ByImageUrl orders the results by the imageUrl field.
 func ByImageUrl(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldImageUrl, opts...).ToFunc()
+}
+
+// ByStuLogsCount orders the results by stuLogs count.
+func ByStuLogsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newStuLogsStep(), opts...)
+	}
+}
+
+// ByStuLogs orders the results by stuLogs terms.
+func ByStuLogs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newStuLogsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+func newStuLogsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(StuLogsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, StuLogsTable, StuLogsPrimaryKey...),
+	)
 }

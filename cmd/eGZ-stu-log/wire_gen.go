@@ -34,8 +34,9 @@ func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*
 	classService := service.NewClassService(dataData)
 	gradeService := service.NewGradeService(dataData)
 	importUseCase := biz.NewImportUseCase(dataData, logger)
-	uploadService := service.NewUploadService(importUseCase)
-	httpServer := server.NewHTTPServer(confServer, studentService, classService, gradeService, uploadService, logger)
+	uploadService := service.NewUploadService(importUseCase, dataData)
+	stuLogService := service.NewStuLogService(dataData)
+	httpServer := server.NewHTTPServer(confServer, studentService, classService, gradeService, uploadService, stuLogService, logger)
 	app := newApp(logger, grpcServer, httpServer)
 	return app, func() {
 		cleanup()

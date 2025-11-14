@@ -26,6 +26,8 @@ type Grade struct {
 
 // GradeEdges holds the relations/edges for other nodes in the graph.
 type GradeEdges struct {
+	// StuLogs holds the value of the stuLogs edge.
+	StuLogs []*StuLog `json:"stuLogs,omitempty"`
 	// Class holds the value of the class edge.
 	Class []*Class `json:"class,omitempty"`
 	// Student holds the value of the student edge.
@@ -34,13 +36,22 @@ type GradeEdges struct {
 	Dorm []*Dorm `json:"dorm,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
+}
+
+// StuLogsOrErr returns the StuLogs value or an error if the edge
+// was not loaded in eager-loading.
+func (e GradeEdges) StuLogsOrErr() ([]*StuLog, error) {
+	if e.loadedTypes[0] {
+		return e.StuLogs, nil
+	}
+	return nil, &NotLoadedError{edge: "stuLogs"}
 }
 
 // ClassOrErr returns the Class value or an error if the edge
 // was not loaded in eager-loading.
 func (e GradeEdges) ClassOrErr() ([]*Class, error) {
-	if e.loadedTypes[0] {
+	if e.loadedTypes[1] {
 		return e.Class, nil
 	}
 	return nil, &NotLoadedError{edge: "class"}
@@ -49,7 +60,7 @@ func (e GradeEdges) ClassOrErr() ([]*Class, error) {
 // StudentOrErr returns the Student value or an error if the edge
 // was not loaded in eager-loading.
 func (e GradeEdges) StudentOrErr() ([]*Student, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[2] {
 		return e.Student, nil
 	}
 	return nil, &NotLoadedError{edge: "student"}
@@ -58,7 +69,7 @@ func (e GradeEdges) StudentOrErr() ([]*Student, error) {
 // DormOrErr returns the Dorm value or an error if the edge
 // was not loaded in eager-loading.
 func (e GradeEdges) DormOrErr() ([]*Dorm, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[3] {
 		return e.Dorm, nil
 	}
 	return nil, &NotLoadedError{edge: "dorm"}
@@ -111,6 +122,11 @@ func (_m *Grade) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (_m *Grade) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
+}
+
+// QueryStuLogs queries the "stuLogs" edge of the Grade entity.
+func (_m *Grade) QueryStuLogs() *StuLogQuery {
+	return NewGradeClient(_m.config).QueryStuLogs(_m)
 }
 
 // QueryClass queries the "class" edge of the Grade entity.

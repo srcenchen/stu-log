@@ -12,6 +12,7 @@ import (
 	"github.com/xuri/excelize/v2"
 	_ "image/jpeg"
 	_ "image/png"
+	"os"
 	"strconv"
 )
 
@@ -98,6 +99,7 @@ func (uc *ImportUseCase) ImportStudent(ctx http.Context, excelPath string) (err 
 	if errCnt != 0 {
 		return errors.New("部分学生没有导入成功，可能因为导入过了？失败数：" + strconv.Itoa(errCnt))
 	}
+	_ = os.Remove(excelPath) // 导入结束 删除
 	return
 }
 
@@ -121,5 +123,6 @@ func (uc *ImportUseCase) ImportRule(ctx http.Context, excelPath string) (err err
 	if errCnt != 0 {
 		err = errors.New("部分条例没有导入成功，可能因为重复，失败数:" + strconv.Itoa(errCnt))
 	}
+	_ = os.Remove(excelPath) // 导入结束 删除
 	return
 }

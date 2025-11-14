@@ -14,6 +14,8 @@ const (
 	FieldID = "id"
 	// FieldGradeName holds the string denoting the gradename field in the database.
 	FieldGradeName = "grade_name"
+	// EdgeStuLogs holds the string denoting the stulogs edge name in mutations.
+	EdgeStuLogs = "stuLogs"
 	// EdgeClass holds the string denoting the class edge name in mutations.
 	EdgeClass = "class"
 	// EdgeStudent holds the string denoting the student edge name in mutations.
@@ -22,6 +24,11 @@ const (
 	EdgeDorm = "dorm"
 	// Table holds the table name of the grade in the database.
 	Table = "grades"
+	// StuLogsTable is the table that holds the stuLogs relation/edge. The primary key declared below.
+	StuLogsTable = "stu_log_grade"
+	// StuLogsInverseTable is the table name for the StuLog entity.
+	// It exists in this package in order to avoid circular dependency with the "stulog" package.
+	StuLogsInverseTable = "stu_logs"
 	// ClassTable is the table that holds the class relation/edge.
 	ClassTable = "classes"
 	// ClassInverseTable is the table name for the Class entity.
@@ -51,6 +58,12 @@ var Columns = []string{
 	FieldGradeName,
 }
 
+var (
+	// StuLogsPrimaryKey and StuLogsColumn2 are the table columns denoting the
+	// primary key for the stuLogs relation (M2M).
+	StuLogsPrimaryKey = []string{"stu_log_id", "grade_id"}
+)
+
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
@@ -72,6 +85,20 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 // ByGradeName orders the results by the gradeName field.
 func ByGradeName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldGradeName, opts...).ToFunc()
+}
+
+// ByStuLogsCount orders the results by stuLogs count.
+func ByStuLogsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newStuLogsStep(), opts...)
+	}
+}
+
+// ByStuLogs orders the results by stuLogs terms.
+func ByStuLogs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newStuLogsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
 }
 
 // ByClassCount orders the results by class count.
@@ -114,6 +141,13 @@ func ByDorm(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newDormStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
+}
+func newStuLogsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(StuLogsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, StuLogsTable, StuLogsPrimaryKey...),
+	)
 }
 func newClassStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(

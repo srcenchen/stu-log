@@ -4,6 +4,7 @@ package rule
 
 import (
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 const (
@@ -17,8 +18,15 @@ const (
 	FieldScore = "score"
 	// FieldGroup holds the string denoting the group field in the database.
 	FieldGroup = "group"
+	// EdgeStuLogs holds the string denoting the stulogs edge name in mutations.
+	EdgeStuLogs = "stuLogs"
 	// Table holds the table name of the rule in the database.
 	Table = "rules"
+	// StuLogsTable is the table that holds the stuLogs relation/edge. The primary key declared below.
+	StuLogsTable = "stu_log_rule"
+	// StuLogsInverseTable is the table name for the StuLog entity.
+	// It exists in this package in order to avoid circular dependency with the "stulog" package.
+	StuLogsInverseTable = "stu_logs"
 )
 
 // Columns holds all SQL columns for rule fields.
@@ -28,6 +36,12 @@ var Columns = []string{
 	FieldScore,
 	FieldGroup,
 }
+
+var (
+	// StuLogsPrimaryKey and StuLogsColumn2 are the table columns denoting the
+	// primary key for the stuLogs relation (M2M).
+	StuLogsPrimaryKey = []string{"stu_log_id", "rule_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -60,4 +74,25 @@ func ByScore(opts ...sql.OrderTermOption) OrderOption {
 // ByGroup orders the results by the group field.
 func ByGroup(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldGroup, opts...).ToFunc()
+}
+
+// ByStuLogsCount orders the results by stuLogs count.
+func ByStuLogsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newStuLogsStep(), opts...)
+	}
+}
+
+// ByStuLogs orders the results by stuLogs terms.
+func ByStuLogs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newStuLogsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+func newStuLogsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(StuLogsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, StuLogsTable, StuLogsPrimaryKey...),
+	)
 }

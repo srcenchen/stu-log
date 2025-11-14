@@ -9,6 +9,7 @@ import (
 	"eGZ-stu-log/internal/data/ent/grade"
 	"eGZ-stu-log/internal/data/ent/predicate"
 	"eGZ-stu-log/internal/data/ent/student"
+	"eGZ-stu-log/internal/data/ent/stulog"
 	"fmt"
 	"math"
 
@@ -27,6 +28,7 @@ type ClassQuery struct {
 	predicates  []predicate.Class
 	withGrade   *GradeQuery
 	withStudent *StudentQuery
+	withStuLogs *StuLogQuery
 	withFKs     bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -101,6 +103,28 @@ func (_q *ClassQuery) QueryStudent() *StudentQuery {
 			sqlgraph.From(class.Table, class.FieldID, selector),
 			sqlgraph.To(student.Table, student.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, class.StudentTable, class.StudentColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryStuLogs chains the current query on the "stuLogs" edge.
+func (_q *ClassQuery) QueryStuLogs() *StuLogQuery {
+	query := (&StuLogClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(class.Table, class.FieldID, selector),
+			sqlgraph.To(stulog.Table, stulog.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, class.StuLogsTable, class.StuLogsPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -302,6 +326,7 @@ func (_q *ClassQuery) Clone() *ClassQuery {
 		predicates:  append([]predicate.Class{}, _q.predicates...),
 		withGrade:   _q.withGrade.Clone(),
 		withStudent: _q.withStudent.Clone(),
+		withStuLogs: _q.withStuLogs.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -327,6 +352,17 @@ func (_q *ClassQuery) WithStudent(opts ...func(*StudentQuery)) *ClassQuery {
 		opt(query)
 	}
 	_q.withStudent = query
+	return _q
+}
+
+// WithStuLogs tells the query-builder to eager-load the nodes that are connected to
+// the "stuLogs" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *ClassQuery) WithStuLogs(opts ...func(*StuLogQuery)) *ClassQuery {
+	query := (&StuLogClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withStuLogs = query
 	return _q
 }
 
@@ -409,9 +445,10 @@ func (_q *ClassQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Class,
 		nodes       = []*Class{}
 		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			_q.withGrade != nil,
 			_q.withStudent != nil,
+			_q.withStuLogs != nil,
 		}
 	)
 	if _q.withGrade != nil {
@@ -448,6 +485,13 @@ func (_q *ClassQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Class,
 		if err := _q.loadStudent(ctx, query, nodes,
 			func(n *Class) { n.Edges.Student = []*Student{} },
 			func(n *Class, e *Student) { n.Edges.Student = append(n.Edges.Student, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withStuLogs; query != nil {
+		if err := _q.loadStuLogs(ctx, query, nodes,
+			func(n *Class) { n.Edges.StuLogs = []*StuLog{} },
+			func(n *Class, e *StuLog) { n.Edges.StuLogs = append(n.Edges.StuLogs, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -514,6 +558,67 @@ func (_q *ClassQuery) loadStudent(ctx context.Context, query *StudentQuery, node
 			return fmt.Errorf(`unexpected referenced foreign-key "student_class" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
+	}
+	return nil
+}
+func (_q *ClassQuery) loadStuLogs(ctx context.Context, query *StuLogQuery, nodes []*Class, init func(*Class), assign func(*Class, *StuLog)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int64]*Class)
+	nids := make(map[int64]map[*Class]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(class.StuLogsTable)
+		s.Join(joinT).On(s.C(stulog.FieldID), joinT.C(class.StuLogsPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(class.StuLogsPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(class.StuLogsPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := values[0].(*sql.NullInt64).Int64
+				inValue := values[1].(*sql.NullInt64).Int64
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Class]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*StuLog](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "stuLogs" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
 	}
 	return nil
 }

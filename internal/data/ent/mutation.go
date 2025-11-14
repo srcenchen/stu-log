@@ -53,6 +53,9 @@ type ClassMutation struct {
 	student        map[int64]struct{}
 	removedstudent map[int64]struct{}
 	clearedstudent bool
+	stuLogs        map[int64]struct{}
+	removedstuLogs map[int64]struct{}
+	clearedstuLogs bool
 	done           bool
 	oldValue       func(context.Context) (*Class, error)
 	predicates     []predicate.Class
@@ -291,6 +294,60 @@ func (m *ClassMutation) ResetStudent() {
 	m.removedstudent = nil
 }
 
+// AddStuLogIDs adds the "stuLogs" edge to the StuLog entity by ids.
+func (m *ClassMutation) AddStuLogIDs(ids ...int64) {
+	if m.stuLogs == nil {
+		m.stuLogs = make(map[int64]struct{})
+	}
+	for i := range ids {
+		m.stuLogs[ids[i]] = struct{}{}
+	}
+}
+
+// ClearStuLogs clears the "stuLogs" edge to the StuLog entity.
+func (m *ClassMutation) ClearStuLogs() {
+	m.clearedstuLogs = true
+}
+
+// StuLogsCleared reports if the "stuLogs" edge to the StuLog entity was cleared.
+func (m *ClassMutation) StuLogsCleared() bool {
+	return m.clearedstuLogs
+}
+
+// RemoveStuLogIDs removes the "stuLogs" edge to the StuLog entity by IDs.
+func (m *ClassMutation) RemoveStuLogIDs(ids ...int64) {
+	if m.removedstuLogs == nil {
+		m.removedstuLogs = make(map[int64]struct{})
+	}
+	for i := range ids {
+		delete(m.stuLogs, ids[i])
+		m.removedstuLogs[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedStuLogs returns the removed IDs of the "stuLogs" edge to the StuLog entity.
+func (m *ClassMutation) RemovedStuLogsIDs() (ids []int64) {
+	for id := range m.removedstuLogs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// StuLogsIDs returns the "stuLogs" edge IDs in the mutation.
+func (m *ClassMutation) StuLogsIDs() (ids []int64) {
+	for id := range m.stuLogs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetStuLogs resets all changes to the "stuLogs" edge.
+func (m *ClassMutation) ResetStuLogs() {
+	m.stuLogs = nil
+	m.clearedstuLogs = false
+	m.removedstuLogs = nil
+}
+
 // Where appends a list predicates to the ClassMutation builder.
 func (m *ClassMutation) Where(ps ...predicate.Class) {
 	m.predicates = append(m.predicates, ps...)
@@ -424,12 +481,15 @@ func (m *ClassMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ClassMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.grade != nil {
 		edges = append(edges, class.EdgeGrade)
 	}
 	if m.student != nil {
 		edges = append(edges, class.EdgeStudent)
+	}
+	if m.stuLogs != nil {
+		edges = append(edges, class.EdgeStuLogs)
 	}
 	return edges
 }
@@ -448,15 +508,24 @@ func (m *ClassMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case class.EdgeStuLogs:
+		ids := make([]ent.Value, 0, len(m.stuLogs))
+		for id := range m.stuLogs {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ClassMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.removedstudent != nil {
 		edges = append(edges, class.EdgeStudent)
+	}
+	if m.removedstuLogs != nil {
+		edges = append(edges, class.EdgeStuLogs)
 	}
 	return edges
 }
@@ -471,18 +540,27 @@ func (m *ClassMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case class.EdgeStuLogs:
+		ids := make([]ent.Value, 0, len(m.removedstuLogs))
+		for id := range m.removedstuLogs {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ClassMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.clearedgrade {
 		edges = append(edges, class.EdgeGrade)
 	}
 	if m.clearedstudent {
 		edges = append(edges, class.EdgeStudent)
+	}
+	if m.clearedstuLogs {
+		edges = append(edges, class.EdgeStuLogs)
 	}
 	return edges
 }
@@ -495,6 +573,8 @@ func (m *ClassMutation) EdgeCleared(name string) bool {
 		return m.clearedgrade
 	case class.EdgeStudent:
 		return m.clearedstudent
+	case class.EdgeStuLogs:
+		return m.clearedstuLogs
 	}
 	return false
 }
@@ -519,6 +599,9 @@ func (m *ClassMutation) ResetEdge(name string) error {
 		return nil
 	case class.EdgeStudent:
 		m.ResetStudent()
+		return nil
+	case class.EdgeStuLogs:
+		m.ResetStuLogs()
 		return nil
 	}
 	return fmt.Errorf("unknown Class edge %s", name)
@@ -1124,6 +1207,9 @@ type GradeMutation struct {
 	id             *int64
 	gradeName      *string
 	clearedFields  map[string]struct{}
+	stuLogs        map[int64]struct{}
+	removedstuLogs map[int64]struct{}
+	clearedstuLogs bool
 	class          map[int64]struct{}
 	removedclass   map[int64]struct{}
 	clearedclass   bool
@@ -1276,6 +1362,60 @@ func (m *GradeMutation) OldGradeName(ctx context.Context) (v string, err error) 
 // ResetGradeName resets all changes to the "gradeName" field.
 func (m *GradeMutation) ResetGradeName() {
 	m.gradeName = nil
+}
+
+// AddStuLogIDs adds the "stuLogs" edge to the StuLog entity by ids.
+func (m *GradeMutation) AddStuLogIDs(ids ...int64) {
+	if m.stuLogs == nil {
+		m.stuLogs = make(map[int64]struct{})
+	}
+	for i := range ids {
+		m.stuLogs[ids[i]] = struct{}{}
+	}
+}
+
+// ClearStuLogs clears the "stuLogs" edge to the StuLog entity.
+func (m *GradeMutation) ClearStuLogs() {
+	m.clearedstuLogs = true
+}
+
+// StuLogsCleared reports if the "stuLogs" edge to the StuLog entity was cleared.
+func (m *GradeMutation) StuLogsCleared() bool {
+	return m.clearedstuLogs
+}
+
+// RemoveStuLogIDs removes the "stuLogs" edge to the StuLog entity by IDs.
+func (m *GradeMutation) RemoveStuLogIDs(ids ...int64) {
+	if m.removedstuLogs == nil {
+		m.removedstuLogs = make(map[int64]struct{})
+	}
+	for i := range ids {
+		delete(m.stuLogs, ids[i])
+		m.removedstuLogs[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedStuLogs returns the removed IDs of the "stuLogs" edge to the StuLog entity.
+func (m *GradeMutation) RemovedStuLogsIDs() (ids []int64) {
+	for id := range m.removedstuLogs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// StuLogsIDs returns the "stuLogs" edge IDs in the mutation.
+func (m *GradeMutation) StuLogsIDs() (ids []int64) {
+	for id := range m.stuLogs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetStuLogs resets all changes to the "stuLogs" edge.
+func (m *GradeMutation) ResetStuLogs() {
+	m.stuLogs = nil
+	m.clearedstuLogs = false
+	m.removedstuLogs = nil
 }
 
 // AddClasIDs adds the "class" edge to the Class entity by ids.
@@ -1573,7 +1713,10 @@ func (m *GradeMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *GradeMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
+	if m.stuLogs != nil {
+		edges = append(edges, grade.EdgeStuLogs)
+	}
 	if m.class != nil {
 		edges = append(edges, grade.EdgeClass)
 	}
@@ -1590,6 +1733,12 @@ func (m *GradeMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *GradeMutation) AddedIDs(name string) []ent.Value {
 	switch name {
+	case grade.EdgeStuLogs:
+		ids := make([]ent.Value, 0, len(m.stuLogs))
+		for id := range m.stuLogs {
+			ids = append(ids, id)
+		}
+		return ids
 	case grade.EdgeClass:
 		ids := make([]ent.Value, 0, len(m.class))
 		for id := range m.class {
@@ -1614,7 +1763,10 @@ func (m *GradeMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *GradeMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
+	if m.removedstuLogs != nil {
+		edges = append(edges, grade.EdgeStuLogs)
+	}
 	if m.removedclass != nil {
 		edges = append(edges, grade.EdgeClass)
 	}
@@ -1631,6 +1783,12 @@ func (m *GradeMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *GradeMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
+	case grade.EdgeStuLogs:
+		ids := make([]ent.Value, 0, len(m.removedstuLogs))
+		for id := range m.removedstuLogs {
+			ids = append(ids, id)
+		}
+		return ids
 	case grade.EdgeClass:
 		ids := make([]ent.Value, 0, len(m.removedclass))
 		for id := range m.removedclass {
@@ -1655,7 +1813,10 @@ func (m *GradeMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *GradeMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
+	if m.clearedstuLogs {
+		edges = append(edges, grade.EdgeStuLogs)
+	}
 	if m.clearedclass {
 		edges = append(edges, grade.EdgeClass)
 	}
@@ -1672,6 +1833,8 @@ func (m *GradeMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *GradeMutation) EdgeCleared(name string) bool {
 	switch name {
+	case grade.EdgeStuLogs:
+		return m.clearedstuLogs
 	case grade.EdgeClass:
 		return m.clearedclass
 	case grade.EdgeStudent:
@@ -1694,6 +1857,9 @@ func (m *GradeMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *GradeMutation) ResetEdge(name string) error {
 	switch name {
+	case grade.EdgeStuLogs:
+		m.ResetStuLogs()
+		return nil
 	case grade.EdgeClass:
 		m.ResetClass()
 		return nil
@@ -1710,14 +1876,17 @@ func (m *GradeMutation) ResetEdge(name string) error {
 // ImageMutation represents an operation that mutates the Image nodes in the graph.
 type ImageMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int64
-	imageUrl      *string
-	clearedFields map[string]struct{}
-	done          bool
-	oldValue      func(context.Context) (*Image, error)
-	predicates    []predicate.Image
+	op             Op
+	typ            string
+	id             *int64
+	imageUrl       *string
+	clearedFields  map[string]struct{}
+	stuLogs        map[int64]struct{}
+	removedstuLogs map[int64]struct{}
+	clearedstuLogs bool
+	done           bool
+	oldValue       func(context.Context) (*Image, error)
+	predicates     []predicate.Image
 }
 
 var _ ent.Mutation = (*ImageMutation)(nil)
@@ -1860,6 +2029,60 @@ func (m *ImageMutation) ResetImageUrl() {
 	m.imageUrl = nil
 }
 
+// AddStuLogIDs adds the "stuLogs" edge to the StuLog entity by ids.
+func (m *ImageMutation) AddStuLogIDs(ids ...int64) {
+	if m.stuLogs == nil {
+		m.stuLogs = make(map[int64]struct{})
+	}
+	for i := range ids {
+		m.stuLogs[ids[i]] = struct{}{}
+	}
+}
+
+// ClearStuLogs clears the "stuLogs" edge to the StuLog entity.
+func (m *ImageMutation) ClearStuLogs() {
+	m.clearedstuLogs = true
+}
+
+// StuLogsCleared reports if the "stuLogs" edge to the StuLog entity was cleared.
+func (m *ImageMutation) StuLogsCleared() bool {
+	return m.clearedstuLogs
+}
+
+// RemoveStuLogIDs removes the "stuLogs" edge to the StuLog entity by IDs.
+func (m *ImageMutation) RemoveStuLogIDs(ids ...int64) {
+	if m.removedstuLogs == nil {
+		m.removedstuLogs = make(map[int64]struct{})
+	}
+	for i := range ids {
+		delete(m.stuLogs, ids[i])
+		m.removedstuLogs[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedStuLogs returns the removed IDs of the "stuLogs" edge to the StuLog entity.
+func (m *ImageMutation) RemovedStuLogsIDs() (ids []int64) {
+	for id := range m.removedstuLogs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// StuLogsIDs returns the "stuLogs" edge IDs in the mutation.
+func (m *ImageMutation) StuLogsIDs() (ids []int64) {
+	for id := range m.stuLogs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetStuLogs resets all changes to the "stuLogs" edge.
+func (m *ImageMutation) ResetStuLogs() {
+	m.stuLogs = nil
+	m.clearedstuLogs = false
+	m.removedstuLogs = nil
+}
+
 // Where appends a list predicates to the ImageMutation builder.
 func (m *ImageMutation) Where(ps ...predicate.Image) {
 	m.predicates = append(m.predicates, ps...)
@@ -1993,66 +2216,105 @@ func (m *ImageMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ImageMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.stuLogs != nil {
+		edges = append(edges, image.EdgeStuLogs)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *ImageMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case image.EdgeStuLogs:
+		ids := make([]ent.Value, 0, len(m.stuLogs))
+		for id := range m.stuLogs {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ImageMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.removedstuLogs != nil {
+		edges = append(edges, image.EdgeStuLogs)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *ImageMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case image.EdgeStuLogs:
+		ids := make([]ent.Value, 0, len(m.removedstuLogs))
+		for id := range m.removedstuLogs {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ImageMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.clearedstuLogs {
+		edges = append(edges, image.EdgeStuLogs)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *ImageMutation) EdgeCleared(name string) bool {
+	switch name {
+	case image.EdgeStuLogs:
+		return m.clearedstuLogs
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *ImageMutation) ClearEdge(name string) error {
+	switch name {
+	}
 	return fmt.Errorf("unknown Image unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *ImageMutation) ResetEdge(name string) error {
+	switch name {
+	case image.EdgeStuLogs:
+		m.ResetStuLogs()
+		return nil
+	}
 	return fmt.Errorf("unknown Image edge %s", name)
 }
 
 // RuleMutation represents an operation that mutates the Rule nodes in the graph.
 type RuleMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int64
-	content       *string
-	score         *int32
-	addscore      *int32
-	group         *string
-	clearedFields map[string]struct{}
-	done          bool
-	oldValue      func(context.Context) (*Rule, error)
-	predicates    []predicate.Rule
+	op             Op
+	typ            string
+	id             *int64
+	content        *string
+	score          *int32
+	addscore       *int32
+	group          *string
+	clearedFields  map[string]struct{}
+	stuLogs        map[int64]struct{}
+	removedstuLogs map[int64]struct{}
+	clearedstuLogs bool
+	done           bool
+	oldValue       func(context.Context) (*Rule, error)
+	predicates     []predicate.Rule
 }
 
 var _ ent.Mutation = (*RuleMutation)(nil)
@@ -2287,6 +2549,60 @@ func (m *RuleMutation) ResetGroup() {
 	m.group = nil
 }
 
+// AddStuLogIDs adds the "stuLogs" edge to the StuLog entity by ids.
+func (m *RuleMutation) AddStuLogIDs(ids ...int64) {
+	if m.stuLogs == nil {
+		m.stuLogs = make(map[int64]struct{})
+	}
+	for i := range ids {
+		m.stuLogs[ids[i]] = struct{}{}
+	}
+}
+
+// ClearStuLogs clears the "stuLogs" edge to the StuLog entity.
+func (m *RuleMutation) ClearStuLogs() {
+	m.clearedstuLogs = true
+}
+
+// StuLogsCleared reports if the "stuLogs" edge to the StuLog entity was cleared.
+func (m *RuleMutation) StuLogsCleared() bool {
+	return m.clearedstuLogs
+}
+
+// RemoveStuLogIDs removes the "stuLogs" edge to the StuLog entity by IDs.
+func (m *RuleMutation) RemoveStuLogIDs(ids ...int64) {
+	if m.removedstuLogs == nil {
+		m.removedstuLogs = make(map[int64]struct{})
+	}
+	for i := range ids {
+		delete(m.stuLogs, ids[i])
+		m.removedstuLogs[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedStuLogs returns the removed IDs of the "stuLogs" edge to the StuLog entity.
+func (m *RuleMutation) RemovedStuLogsIDs() (ids []int64) {
+	for id := range m.removedstuLogs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// StuLogsIDs returns the "stuLogs" edge IDs in the mutation.
+func (m *RuleMutation) StuLogsIDs() (ids []int64) {
+	for id := range m.stuLogs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetStuLogs resets all changes to the "stuLogs" edge.
+func (m *RuleMutation) ResetStuLogs() {
+	m.stuLogs = nil
+	m.clearedstuLogs = false
+	m.removedstuLogs = nil
+}
+
 // Where appends a list predicates to the RuleMutation builder.
 func (m *RuleMutation) Where(ps ...predicate.Rule) {
 	m.predicates = append(m.predicates, ps...)
@@ -2469,49 +2785,85 @@ func (m *RuleMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *RuleMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.stuLogs != nil {
+		edges = append(edges, rule.EdgeStuLogs)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *RuleMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case rule.EdgeStuLogs:
+		ids := make([]ent.Value, 0, len(m.stuLogs))
+		for id := range m.stuLogs {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *RuleMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.removedstuLogs != nil {
+		edges = append(edges, rule.EdgeStuLogs)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *RuleMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case rule.EdgeStuLogs:
+		ids := make([]ent.Value, 0, len(m.removedstuLogs))
+		for id := range m.removedstuLogs {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *RuleMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.clearedstuLogs {
+		edges = append(edges, rule.EdgeStuLogs)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *RuleMutation) EdgeCleared(name string) bool {
+	switch name {
+	case rule.EdgeStuLogs:
+		return m.clearedstuLogs
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *RuleMutation) ClearEdge(name string) error {
+	switch name {
+	}
 	return fmt.Errorf("unknown Rule unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *RuleMutation) ResetEdge(name string) error {
+	switch name {
+	case rule.EdgeStuLogs:
+		m.ResetStuLogs()
+		return nil
+	}
 	return fmt.Errorf("unknown Rule edge %s", name)
 }
 
@@ -2523,14 +2875,18 @@ type StuLogMutation struct {
 	id              *int64
 	content         *string
 	revoked         *bool
+	score           *int32
+	addscore        *int32
 	time            *time.Time
 	clearedFields   map[string]struct{}
 	class           map[int64]struct{}
 	removedclass    map[int64]struct{}
 	clearedclass    bool
-	grade           *int64
+	grade           map[int64]struct{}
+	removedgrade    map[int64]struct{}
 	clearedgrade    bool
-	rule            *int64
+	rule            map[int64]struct{}
+	removedrule     map[int64]struct{}
 	clearedrule     bool
 	students        map[int64]struct{}
 	removedstudents map[int64]struct{}
@@ -2719,6 +3075,62 @@ func (m *StuLogMutation) ResetRevoked() {
 	m.revoked = nil
 }
 
+// SetScore sets the "score" field.
+func (m *StuLogMutation) SetScore(i int32) {
+	m.score = &i
+	m.addscore = nil
+}
+
+// Score returns the value of the "score" field in the mutation.
+func (m *StuLogMutation) Score() (r int32, exists bool) {
+	v := m.score
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldScore returns the old "score" field's value of the StuLog entity.
+// If the StuLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *StuLogMutation) OldScore(ctx context.Context) (v int32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldScore is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldScore requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldScore: %w", err)
+	}
+	return oldValue.Score, nil
+}
+
+// AddScore adds i to the "score" field.
+func (m *StuLogMutation) AddScore(i int32) {
+	if m.addscore != nil {
+		*m.addscore += i
+	} else {
+		m.addscore = &i
+	}
+}
+
+// AddedScore returns the value that was added to the "score" field in this mutation.
+func (m *StuLogMutation) AddedScore() (r int32, exists bool) {
+	v := m.addscore
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetScore resets all changes to the "score" field.
+func (m *StuLogMutation) ResetScore() {
+	m.score = nil
+	m.addscore = nil
+}
+
 // SetTime sets the "time" field.
 func (m *StuLogMutation) SetTime(t time.Time) {
 	m.time = &t
@@ -2809,9 +3221,14 @@ func (m *StuLogMutation) ResetClass() {
 	m.removedclass = nil
 }
 
-// SetGradeID sets the "grade" edge to the Grade entity by id.
-func (m *StuLogMutation) SetGradeID(id int64) {
-	m.grade = &id
+// AddGradeIDs adds the "grade" edge to the Grade entity by ids.
+func (m *StuLogMutation) AddGradeIDs(ids ...int64) {
+	if m.grade == nil {
+		m.grade = make(map[int64]struct{})
+	}
+	for i := range ids {
+		m.grade[ids[i]] = struct{}{}
+	}
 }
 
 // ClearGrade clears the "grade" edge to the Grade entity.
@@ -2824,20 +3241,29 @@ func (m *StuLogMutation) GradeCleared() bool {
 	return m.clearedgrade
 }
 
-// GradeID returns the "grade" edge ID in the mutation.
-func (m *StuLogMutation) GradeID() (id int64, exists bool) {
-	if m.grade != nil {
-		return *m.grade, true
+// RemoveGradeIDs removes the "grade" edge to the Grade entity by IDs.
+func (m *StuLogMutation) RemoveGradeIDs(ids ...int64) {
+	if m.removedgrade == nil {
+		m.removedgrade = make(map[int64]struct{})
+	}
+	for i := range ids {
+		delete(m.grade, ids[i])
+		m.removedgrade[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedGrade returns the removed IDs of the "grade" edge to the Grade entity.
+func (m *StuLogMutation) RemovedGradeIDs() (ids []int64) {
+	for id := range m.removedgrade {
+		ids = append(ids, id)
 	}
 	return
 }
 
 // GradeIDs returns the "grade" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// GradeID instead. It exists only for internal usage by the builders.
 func (m *StuLogMutation) GradeIDs() (ids []int64) {
-	if id := m.grade; id != nil {
-		ids = append(ids, *id)
+	for id := range m.grade {
+		ids = append(ids, id)
 	}
 	return
 }
@@ -2846,11 +3272,17 @@ func (m *StuLogMutation) GradeIDs() (ids []int64) {
 func (m *StuLogMutation) ResetGrade() {
 	m.grade = nil
 	m.clearedgrade = false
+	m.removedgrade = nil
 }
 
-// SetRuleID sets the "rule" edge to the Rule entity by id.
-func (m *StuLogMutation) SetRuleID(id int64) {
-	m.rule = &id
+// AddRuleIDs adds the "rule" edge to the Rule entity by ids.
+func (m *StuLogMutation) AddRuleIDs(ids ...int64) {
+	if m.rule == nil {
+		m.rule = make(map[int64]struct{})
+	}
+	for i := range ids {
+		m.rule[ids[i]] = struct{}{}
+	}
 }
 
 // ClearRule clears the "rule" edge to the Rule entity.
@@ -2863,20 +3295,29 @@ func (m *StuLogMutation) RuleCleared() bool {
 	return m.clearedrule
 }
 
-// RuleID returns the "rule" edge ID in the mutation.
-func (m *StuLogMutation) RuleID() (id int64, exists bool) {
-	if m.rule != nil {
-		return *m.rule, true
+// RemoveRuleIDs removes the "rule" edge to the Rule entity by IDs.
+func (m *StuLogMutation) RemoveRuleIDs(ids ...int64) {
+	if m.removedrule == nil {
+		m.removedrule = make(map[int64]struct{})
+	}
+	for i := range ids {
+		delete(m.rule, ids[i])
+		m.removedrule[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedRule returns the removed IDs of the "rule" edge to the Rule entity.
+func (m *StuLogMutation) RemovedRuleIDs() (ids []int64) {
+	for id := range m.removedrule {
+		ids = append(ids, id)
 	}
 	return
 }
 
 // RuleIDs returns the "rule" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// RuleID instead. It exists only for internal usage by the builders.
 func (m *StuLogMutation) RuleIDs() (ids []int64) {
-	if id := m.rule; id != nil {
-		ids = append(ids, *id)
+	for id := range m.rule {
+		ids = append(ids, id)
 	}
 	return
 }
@@ -2885,6 +3326,7 @@ func (m *StuLogMutation) RuleIDs() (ids []int64) {
 func (m *StuLogMutation) ResetRule() {
 	m.rule = nil
 	m.clearedrule = false
+	m.removedrule = nil
 }
 
 // AddStudentIDs adds the "students" edge to the Student entity by ids.
@@ -3029,12 +3471,15 @@ func (m *StuLogMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *StuLogMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 4)
 	if m.content != nil {
 		fields = append(fields, stulog.FieldContent)
 	}
 	if m.revoked != nil {
 		fields = append(fields, stulog.FieldRevoked)
+	}
+	if m.score != nil {
+		fields = append(fields, stulog.FieldScore)
 	}
 	if m.time != nil {
 		fields = append(fields, stulog.FieldTime)
@@ -3051,6 +3496,8 @@ func (m *StuLogMutation) Field(name string) (ent.Value, bool) {
 		return m.Content()
 	case stulog.FieldRevoked:
 		return m.Revoked()
+	case stulog.FieldScore:
+		return m.Score()
 	case stulog.FieldTime:
 		return m.Time()
 	}
@@ -3066,6 +3513,8 @@ func (m *StuLogMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldContent(ctx)
 	case stulog.FieldRevoked:
 		return m.OldRevoked(ctx)
+	case stulog.FieldScore:
+		return m.OldScore(ctx)
 	case stulog.FieldTime:
 		return m.OldTime(ctx)
 	}
@@ -3091,6 +3540,13 @@ func (m *StuLogMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetRevoked(v)
 		return nil
+	case stulog.FieldScore:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetScore(v)
+		return nil
 	case stulog.FieldTime:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -3105,13 +3561,21 @@ func (m *StuLogMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *StuLogMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	if m.addscore != nil {
+		fields = append(fields, stulog.FieldScore)
+	}
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *StuLogMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case stulog.FieldScore:
+		return m.AddedScore()
+	}
 	return nil, false
 }
 
@@ -3120,6 +3584,13 @@ func (m *StuLogMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *StuLogMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case stulog.FieldScore:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddScore(v)
+		return nil
 	}
 	return fmt.Errorf("unknown StuLog numeric field %s", name)
 }
@@ -3152,6 +3623,9 @@ func (m *StuLogMutation) ResetField(name string) error {
 		return nil
 	case stulog.FieldRevoked:
 		m.ResetRevoked()
+		return nil
+	case stulog.FieldScore:
+		m.ResetScore()
 		return nil
 	case stulog.FieldTime:
 		m.ResetTime()
@@ -3192,13 +3666,17 @@ func (m *StuLogMutation) AddedIDs(name string) []ent.Value {
 		}
 		return ids
 	case stulog.EdgeGrade:
-		if id := m.grade; id != nil {
-			return []ent.Value{*id}
+		ids := make([]ent.Value, 0, len(m.grade))
+		for id := range m.grade {
+			ids = append(ids, id)
 		}
+		return ids
 	case stulog.EdgeRule:
-		if id := m.rule; id != nil {
-			return []ent.Value{*id}
+		ids := make([]ent.Value, 0, len(m.rule))
+		for id := range m.rule {
+			ids = append(ids, id)
 		}
+		return ids
 	case stulog.EdgeStudents:
 		ids := make([]ent.Value, 0, len(m.students))
 		for id := range m.students {
@@ -3221,6 +3699,12 @@ func (m *StuLogMutation) RemovedEdges() []string {
 	if m.removedclass != nil {
 		edges = append(edges, stulog.EdgeClass)
 	}
+	if m.removedgrade != nil {
+		edges = append(edges, stulog.EdgeGrade)
+	}
+	if m.removedrule != nil {
+		edges = append(edges, stulog.EdgeRule)
+	}
 	if m.removedstudents != nil {
 		edges = append(edges, stulog.EdgeStudents)
 	}
@@ -3237,6 +3721,18 @@ func (m *StuLogMutation) RemovedIDs(name string) []ent.Value {
 	case stulog.EdgeClass:
 		ids := make([]ent.Value, 0, len(m.removedclass))
 		for id := range m.removedclass {
+			ids = append(ids, id)
+		}
+		return ids
+	case stulog.EdgeGrade:
+		ids := make([]ent.Value, 0, len(m.removedgrade))
+		for id := range m.removedgrade {
+			ids = append(ids, id)
+		}
+		return ids
+	case stulog.EdgeRule:
+		ids := make([]ent.Value, 0, len(m.removedrule))
+		for id := range m.removedrule {
 			ids = append(ids, id)
 		}
 		return ids
@@ -3299,12 +3795,6 @@ func (m *StuLogMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *StuLogMutation) ClearEdge(name string) error {
 	switch name {
-	case stulog.EdgeGrade:
-		m.ClearGrade()
-		return nil
-	case stulog.EdgeRule:
-		m.ClearRule()
-		return nil
 	}
 	return fmt.Errorf("unknown StuLog unique edge %s", name)
 }

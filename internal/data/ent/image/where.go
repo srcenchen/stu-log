@@ -6,6 +6,7 @@ import (
 	"eGZ-stu-log/internal/data/ent/predicate"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 // ID filters vertices based on their ID field.
@@ -121,6 +122,29 @@ func ImageUrlEqualFold(v string) predicate.Image {
 // ImageUrlContainsFold applies the ContainsFold predicate on the "imageUrl" field.
 func ImageUrlContainsFold(v string) predicate.Image {
 	return predicate.Image(sql.FieldContainsFold(FieldImageUrl, v))
+}
+
+// HasStuLogs applies the HasEdge predicate on the "stuLogs" edge.
+func HasStuLogs() predicate.Image {
+	return predicate.Image(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, StuLogsTable, StuLogsPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasStuLogsWith applies the HasEdge predicate on the "stuLogs" edge with a given conditions (other predicates).
+func HasStuLogsWith(preds ...predicate.StuLog) predicate.Image {
+	return predicate.Image(func(s *sql.Selector) {
+		step := newStuLogsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

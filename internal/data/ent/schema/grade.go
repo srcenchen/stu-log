@@ -22,6 +22,7 @@ func (Grade) Fields() []ent.Field {
 // Edges of the Grade.
 func (Grade) Edges() []ent.Edge {
 	return []ent.Edge{
+		edge.From("stuLogs", StuLog.Type).Ref("grade"),
 		edge.From("class", Class.Type).Ref("grade"),
 		edge.From("student", Student.Type).Ref("grade"),
 		edge.From("dorm", Dorm.Type).Ref("grade"),

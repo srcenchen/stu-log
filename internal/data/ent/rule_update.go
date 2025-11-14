@@ -6,6 +6,7 @@ import (
 	"context"
 	"eGZ-stu-log/internal/data/ent/predicate"
 	"eGZ-stu-log/internal/data/ent/rule"
+	"eGZ-stu-log/internal/data/ent/stulog"
 	"errors"
 	"fmt"
 
@@ -76,9 +77,45 @@ func (_u *RuleUpdate) SetNillableGroup(v *string) *RuleUpdate {
 	return _u
 }
 
+// AddStuLogIDs adds the "stuLogs" edge to the StuLog entity by IDs.
+func (_u *RuleUpdate) AddStuLogIDs(ids ...int64) *RuleUpdate {
+	_u.mutation.AddStuLogIDs(ids...)
+	return _u
+}
+
+// AddStuLogs adds the "stuLogs" edges to the StuLog entity.
+func (_u *RuleUpdate) AddStuLogs(v ...*StuLog) *RuleUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddStuLogIDs(ids...)
+}
+
 // Mutation returns the RuleMutation object of the builder.
 func (_u *RuleUpdate) Mutation() *RuleMutation {
 	return _u.mutation
+}
+
+// ClearStuLogs clears all "stuLogs" edges to the StuLog entity.
+func (_u *RuleUpdate) ClearStuLogs() *RuleUpdate {
+	_u.mutation.ClearStuLogs()
+	return _u
+}
+
+// RemoveStuLogIDs removes the "stuLogs" edge to StuLog entities by IDs.
+func (_u *RuleUpdate) RemoveStuLogIDs(ids ...int64) *RuleUpdate {
+	_u.mutation.RemoveStuLogIDs(ids...)
+	return _u
+}
+
+// RemoveStuLogs removes "stuLogs" edges to StuLog entities.
+func (_u *RuleUpdate) RemoveStuLogs(v ...*StuLog) *RuleUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveStuLogIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -128,6 +165,51 @@ func (_u *RuleUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.Group(); ok {
 		_spec.SetField(rule.FieldGroup, field.TypeString, value)
+	}
+	if _u.mutation.StuLogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   rule.StuLogsTable,
+			Columns: rule.StuLogsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stulog.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedStuLogsIDs(); len(nodes) > 0 && !_u.mutation.StuLogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   rule.StuLogsTable,
+			Columns: rule.StuLogsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stulog.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.StuLogsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   rule.StuLogsTable,
+			Columns: rule.StuLogsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stulog.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -198,9 +280,45 @@ func (_u *RuleUpdateOne) SetNillableGroup(v *string) *RuleUpdateOne {
 	return _u
 }
 
+// AddStuLogIDs adds the "stuLogs" edge to the StuLog entity by IDs.
+func (_u *RuleUpdateOne) AddStuLogIDs(ids ...int64) *RuleUpdateOne {
+	_u.mutation.AddStuLogIDs(ids...)
+	return _u
+}
+
+// AddStuLogs adds the "stuLogs" edges to the StuLog entity.
+func (_u *RuleUpdateOne) AddStuLogs(v ...*StuLog) *RuleUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddStuLogIDs(ids...)
+}
+
 // Mutation returns the RuleMutation object of the builder.
 func (_u *RuleUpdateOne) Mutation() *RuleMutation {
 	return _u.mutation
+}
+
+// ClearStuLogs clears all "stuLogs" edges to the StuLog entity.
+func (_u *RuleUpdateOne) ClearStuLogs() *RuleUpdateOne {
+	_u.mutation.ClearStuLogs()
+	return _u
+}
+
+// RemoveStuLogIDs removes the "stuLogs" edge to StuLog entities by IDs.
+func (_u *RuleUpdateOne) RemoveStuLogIDs(ids ...int64) *RuleUpdateOne {
+	_u.mutation.RemoveStuLogIDs(ids...)
+	return _u
+}
+
+// RemoveStuLogs removes "stuLogs" edges to StuLog entities.
+func (_u *RuleUpdateOne) RemoveStuLogs(v ...*StuLog) *RuleUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveStuLogIDs(ids...)
 }
 
 // Where appends a list predicates to the RuleUpdate builder.
@@ -280,6 +398,51 @@ func (_u *RuleUpdateOne) sqlSave(ctx context.Context) (_node *Rule, err error) {
 	}
 	if value, ok := _u.mutation.Group(); ok {
 		_spec.SetField(rule.FieldGroup, field.TypeString, value)
+	}
+	if _u.mutation.StuLogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   rule.StuLogsTable,
+			Columns: rule.StuLogsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stulog.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedStuLogsIDs(); len(nodes) > 0 && !_u.mutation.StuLogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   rule.StuLogsTable,
+			Columns: rule.StuLogsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stulog.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.StuLogsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   rule.StuLogsTable,
+			Columns: rule.StuLogsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stulog.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &Rule{config: _u.config}
 	_spec.Assign = _node.assignValues

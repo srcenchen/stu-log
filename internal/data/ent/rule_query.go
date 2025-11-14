@@ -4,8 +4,10 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"eGZ-stu-log/internal/data/ent/predicate"
 	"eGZ-stu-log/internal/data/ent/rule"
+	"eGZ-stu-log/internal/data/ent/stulog"
 	"fmt"
 	"math"
 
@@ -18,10 +20,11 @@ import (
 // RuleQuery is the builder for querying Rule entities.
 type RuleQuery struct {
 	config
-	ctx        *QueryContext
-	order      []rule.OrderOption
-	inters     []Interceptor
-	predicates []predicate.Rule
+	ctx         *QueryContext
+	order       []rule.OrderOption
+	inters      []Interceptor
+	predicates  []predicate.Rule
+	withStuLogs *StuLogQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -56,6 +59,28 @@ func (_q *RuleQuery) Unique(unique bool) *RuleQuery {
 func (_q *RuleQuery) Order(o ...rule.OrderOption) *RuleQuery {
 	_q.order = append(_q.order, o...)
 	return _q
+}
+
+// QueryStuLogs chains the current query on the "stuLogs" edge.
+func (_q *RuleQuery) QueryStuLogs() *StuLogQuery {
+	query := (&StuLogClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(rule.Table, rule.FieldID, selector),
+			sqlgraph.To(stulog.Table, stulog.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, rule.StuLogsTable, rule.StuLogsPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first Rule entity from the query.
@@ -245,15 +270,27 @@ func (_q *RuleQuery) Clone() *RuleQuery {
 		return nil
 	}
 	return &RuleQuery{
-		config:     _q.config,
-		ctx:        _q.ctx.Clone(),
-		order:      append([]rule.OrderOption{}, _q.order...),
-		inters:     append([]Interceptor{}, _q.inters...),
-		predicates: append([]predicate.Rule{}, _q.predicates...),
+		config:      _q.config,
+		ctx:         _q.ctx.Clone(),
+		order:       append([]rule.OrderOption{}, _q.order...),
+		inters:      append([]Interceptor{}, _q.inters...),
+		predicates:  append([]predicate.Rule{}, _q.predicates...),
+		withStuLogs: _q.withStuLogs.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
 	}
+}
+
+// WithStuLogs tells the query-builder to eager-load the nodes that are connected to
+// the "stuLogs" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *RuleQuery) WithStuLogs(opts ...func(*StuLogQuery)) *RuleQuery {
+	query := (&StuLogClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withStuLogs = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -332,8 +369,11 @@ func (_q *RuleQuery) prepareQuery(ctx context.Context) error {
 
 func (_q *RuleQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Rule, error) {
 	var (
-		nodes = []*Rule{}
-		_spec = _q.querySpec()
+		nodes       = []*Rule{}
+		_spec       = _q.querySpec()
+		loadedTypes = [1]bool{
+			_q.withStuLogs != nil,
+		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Rule).scanValues(nil, columns)
@@ -341,6 +381,7 @@ func (_q *RuleQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Rule, e
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &Rule{config: _q.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -352,7 +393,76 @@ func (_q *RuleQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Rule, e
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := _q.withStuLogs; query != nil {
+		if err := _q.loadStuLogs(ctx, query, nodes,
+			func(n *Rule) { n.Edges.StuLogs = []*StuLog{} },
+			func(n *Rule, e *StuLog) { n.Edges.StuLogs = append(n.Edges.StuLogs, e) }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
+}
+
+func (_q *RuleQuery) loadStuLogs(ctx context.Context, query *StuLogQuery, nodes []*Rule, init func(*Rule), assign func(*Rule, *StuLog)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int64]*Rule)
+	nids := make(map[int64]map[*Rule]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(rule.StuLogsTable)
+		s.Join(joinT).On(s.C(stulog.FieldID), joinT.C(rule.StuLogsPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(rule.StuLogsPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(rule.StuLogsPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := values[0].(*sql.NullInt64).Int64
+				inValue := values[1].(*sql.NullInt64).Int64
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Rule]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*StuLog](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "stuLogs" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
 }
 
 func (_q *RuleQuery) sqlCount(ctx context.Context) (int, error) {

@@ -17,6 +17,7 @@ func (StuLog) Fields() []ent.Field {
 		field.Int64("id"),
 		field.String("content").Comment("违纪备注"),
 		field.Bool("revoked").Default(false).Comment("是否被撤销"),
+		field.Int32("score").Comment("加减分情况"),
 		field.Time("time").Comment("违纪时间"),
 	}
 }
@@ -25,8 +26,8 @@ func (StuLog) Fields() []ent.Field {
 func (StuLog) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("class", Class.Type),
-		edge.To("grade", Grade.Type).Unique(),
-		edge.To("rule", Rule.Type).Unique().Required(),
+		edge.To("grade", Grade.Type).Required(),
+		edge.To("rule", Rule.Type).Required(),
 		edge.To("students", Student.Type),
 		edge.To("images", Image.Type),
 	}

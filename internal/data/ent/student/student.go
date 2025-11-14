@@ -53,13 +53,11 @@ const (
 	DormInverseTable = "dorms"
 	// DormColumn is the table column denoting the dorm relation/edge.
 	DormColumn = "student_dorm"
-	// StuLogsTable is the table that holds the stuLogs relation/edge.
-	StuLogsTable = "stu_logs"
+	// StuLogsTable is the table that holds the stuLogs relation/edge. The primary key declared below.
+	StuLogsTable = "stu_log_students"
 	// StuLogsInverseTable is the table name for the StuLog entity.
 	// It exists in this package in order to avoid circular dependency with the "stulog" package.
 	StuLogsInverseTable = "stu_logs"
-	// StuLogsColumn is the table column denoting the stuLogs relation/edge.
-	StuLogsColumn = "student_stu_logs"
 )
 
 // Columns holds all SQL columns for student fields.
@@ -75,11 +73,16 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the "students"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
-	"stu_log_students",
 	"student_grade",
 	"student_class",
 	"student_dorm",
 }
+
+var (
+	// StuLogsPrimaryKey and StuLogsColumn2 are the table columns denoting the
+	// primary key for the stuLogs relation (M2M).
+	StuLogsPrimaryKey = []string{"stu_log_id", "student_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -201,6 +204,6 @@ func newStuLogsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(StuLogsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, StuLogsTable, StuLogsColumn),
+		sqlgraph.Edge(sqlgraph.M2M, true, StuLogsTable, StuLogsPrimaryKey...),
 	)
 }

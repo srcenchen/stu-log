@@ -2,6 +2,7 @@ package service
 
 import (
 	"eGZ-stu-log/internal/biz"
+	"eGZ-stu-log/internal/data"
 	"fmt"
 	"github.com/go-kratos/kratos/v2/transport/http"
 	"io"
@@ -13,11 +14,13 @@ import (
 
 type UploadService struct {
 	importBiz *biz.ImportUseCase
+	data      *data.Data
 }
 
-func NewUploadService(importBiz *biz.ImportUseCase) *UploadService {
+func NewUploadService(importBiz *biz.ImportUseCase, data *data.Data) *UploadService {
 	return &UploadService{
 		importBiz: importBiz,
+		data:      data,
 	}
 }
 func (u *UploadService) UploadHandler(ctx http.Context) error {
@@ -50,7 +53,8 @@ func (u *UploadService) UploadHandler(ctx http.Context) error {
 		}
 	case "image":
 		savedPath, _ = saveFile(file, handler, "resource/upload/images")
-		resp["path"] = savedPath
+		imageData, _ := u.data.DB.Image.Create().SetImageUrl(savedPath).Save(ctx)
+		resp["imageId"] = imageData.ID
 	case "importRule":
 		savedPath, _ = saveFile(file, handler, "resource/upload/tmp")
 		err = u.importBiz.ImportRule(ctx, savedPath)

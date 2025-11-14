@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 )
 
@@ -22,5 +23,7 @@ func (Rule) Fields() []ent.Field {
 
 // Edges of the Rules.
 func (Rule) Edges() []ent.Edge {
-	return nil
+	return []ent.Edge{
+		edge.From("stuLogs", StuLog.Type).Ref("rule"),
+	}
 }

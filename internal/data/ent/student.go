@@ -31,12 +31,11 @@ type Student struct {
 	DormPos string `json:"dormPos,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the StudentQuery when eager-loading is set.
-	Edges            StudentEdges `json:"edges"`
-	stu_log_students *int64
-	student_grade    *int64
-	student_class    *int64
-	student_dorm     *int64
-	selectValues     sql.SelectValues
+	Edges         StudentEdges `json:"edges"`
+	student_grade *int64
+	student_class *int64
+	student_dorm  *int64
+	selectValues  sql.SelectValues
 }
 
 // StudentEdges holds the relations/edges for other nodes in the graph.
@@ -105,13 +104,11 @@ func (*Student) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case student.FieldName, student.FieldStuNum, student.FieldSex, student.FieldDormPos:
 			values[i] = new(sql.NullString)
-		case student.ForeignKeys[0]: // stu_log_students
+		case student.ForeignKeys[0]: // student_grade
 			values[i] = new(sql.NullInt64)
-		case student.ForeignKeys[1]: // student_grade
+		case student.ForeignKeys[1]: // student_class
 			values[i] = new(sql.NullInt64)
-		case student.ForeignKeys[2]: // student_class
-			values[i] = new(sql.NullInt64)
-		case student.ForeignKeys[3]: // student_dorm
+		case student.ForeignKeys[2]: // student_dorm
 			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -166,26 +163,19 @@ func (_m *Student) assignValues(columns []string, values []any) error {
 			}
 		case student.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field stu_log_students", value)
-			} else if value.Valid {
-				_m.stu_log_students = new(int64)
-				*_m.stu_log_students = int64(value.Int64)
-			}
-		case student.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field student_grade", value)
 			} else if value.Valid {
 				_m.student_grade = new(int64)
 				*_m.student_grade = int64(value.Int64)
 			}
-		case student.ForeignKeys[2]:
+		case student.ForeignKeys[1]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field student_class", value)
 			} else if value.Valid {
 				_m.student_class = new(int64)
 				*_m.student_class = int64(value.Int64)
 			}
-		case student.ForeignKeys[3]:
+		case student.ForeignKeys[2]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field student_dorm", value)
 			} else if value.Valid {

@@ -29,6 +29,6 @@ func (Student) Edges() []ent.Edge {
 		edge.To("grade", Grade.Type).Unique().Required(),
 		edge.To("class", Class.Type).Unique().Required(),
 		edge.To("dorm", Dorm.Type).Unique(),
-		edge.To("stuLogs", StuLog.Type),
+		edge.From("stuLogs", StuLog.Type).Ref("students"),
 	}
 }

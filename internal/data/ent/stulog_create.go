@@ -45,6 +45,12 @@ func (_c *StuLogCreate) SetNillableRevoked(v *bool) *StuLogCreate {
 	return _c
 }
 
+// SetScore sets the "score" field.
+func (_c *StuLogCreate) SetScore(v int32) *StuLogCreate {
+	_c.mutation.SetScore(v)
+	return _c
+}
+
 // SetTime sets the "time" field.
 func (_c *StuLogCreate) SetTime(v time.Time) *StuLogCreate {
 	_c.mutation.SetTime(v)
@@ -72,34 +78,34 @@ func (_c *StuLogCreate) AddClass(v ...*Class) *StuLogCreate {
 	return _c.AddClasIDs(ids...)
 }
 
-// SetGradeID sets the "grade" edge to the Grade entity by ID.
-func (_c *StuLogCreate) SetGradeID(id int64) *StuLogCreate {
-	_c.mutation.SetGradeID(id)
+// AddGradeIDs adds the "grade" edge to the Grade entity by IDs.
+func (_c *StuLogCreate) AddGradeIDs(ids ...int64) *StuLogCreate {
+	_c.mutation.AddGradeIDs(ids...)
 	return _c
 }
 
-// SetNillableGradeID sets the "grade" edge to the Grade entity by ID if the given value is not nil.
-func (_c *StuLogCreate) SetNillableGradeID(id *int64) *StuLogCreate {
-	if id != nil {
-		_c = _c.SetGradeID(*id)
+// AddGrade adds the "grade" edges to the Grade entity.
+func (_c *StuLogCreate) AddGrade(v ...*Grade) *StuLogCreate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
+	return _c.AddGradeIDs(ids...)
+}
+
+// AddRuleIDs adds the "rule" edge to the Rule entity by IDs.
+func (_c *StuLogCreate) AddRuleIDs(ids ...int64) *StuLogCreate {
+	_c.mutation.AddRuleIDs(ids...)
 	return _c
 }
 
-// SetGrade sets the "grade" edge to the Grade entity.
-func (_c *StuLogCreate) SetGrade(v *Grade) *StuLogCreate {
-	return _c.SetGradeID(v.ID)
-}
-
-// SetRuleID sets the "rule" edge to the Rule entity by ID.
-func (_c *StuLogCreate) SetRuleID(id int64) *StuLogCreate {
-	_c.mutation.SetRuleID(id)
-	return _c
-}
-
-// SetRule sets the "rule" edge to the Rule entity.
-func (_c *StuLogCreate) SetRule(v *Rule) *StuLogCreate {
-	return _c.SetRuleID(v.ID)
+// AddRule adds the "rule" edges to the Rule entity.
+func (_c *StuLogCreate) AddRule(v ...*Rule) *StuLogCreate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddRuleIDs(ids...)
 }
 
 // AddStudentIDs adds the "students" edge to the Student entity by IDs.
@@ -181,8 +187,14 @@ func (_c *StuLogCreate) check() error {
 	if _, ok := _c.mutation.Revoked(); !ok {
 		return &ValidationError{Name: "revoked", err: errors.New(`ent: missing required field "StuLog.revoked"`)}
 	}
+	if _, ok := _c.mutation.Score(); !ok {
+		return &ValidationError{Name: "score", err: errors.New(`ent: missing required field "StuLog.score"`)}
+	}
 	if _, ok := _c.mutation.Time(); !ok {
 		return &ValidationError{Name: "time", err: errors.New(`ent: missing required field "StuLog.time"`)}
+	}
+	if len(_c.mutation.GradeIDs()) == 0 {
+		return &ValidationError{Name: "grade", err: errors.New(`ent: missing required edge "StuLog.grade"`)}
 	}
 	if len(_c.mutation.RuleIDs()) == 0 {
 		return &ValidationError{Name: "rule", err: errors.New(`ent: missing required edge "StuLog.rule"`)}
@@ -227,16 +239,20 @@ func (_c *StuLogCreate) createSpec() (*StuLog, *sqlgraph.CreateSpec) {
 		_spec.SetField(stulog.FieldRevoked, field.TypeBool, value)
 		_node.Revoked = value
 	}
+	if value, ok := _c.mutation.Score(); ok {
+		_spec.SetField(stulog.FieldScore, field.TypeInt32, value)
+		_node.Score = value
+	}
 	if value, ok := _c.mutation.Time(); ok {
 		_spec.SetField(stulog.FieldTime, field.TypeTime, value)
 		_node.Time = value
 	}
 	if nodes := _c.mutation.ClassIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   stulog.ClassTable,
-			Columns: []string{stulog.ClassColumn},
+			Columns: stulog.ClassPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(class.FieldID, field.TypeInt64),
@@ -249,10 +265,10 @@ func (_c *StuLogCreate) createSpec() (*StuLog, *sqlgraph.CreateSpec) {
 	}
 	if nodes := _c.mutation.GradeIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   stulog.GradeTable,
-			Columns: []string{stulog.GradeColumn},
+			Columns: stulog.GradePrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(grade.FieldID, field.TypeInt64),
@@ -261,15 +277,14 @@ func (_c *StuLogCreate) createSpec() (*StuLog, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.stu_log_grade = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.RuleIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   stulog.RuleTable,
-			Columns: []string{stulog.RuleColumn},
+			Columns: stulog.RulePrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(rule.FieldID, field.TypeInt64),
@@ -278,15 +293,14 @@ func (_c *StuLogCreate) createSpec() (*StuLog, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.stu_log_rule = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.StudentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   stulog.StudentsTable,
-			Columns: []string{stulog.StudentsColumn},
+			Columns: stulog.StudentsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeInt64),
@@ -299,10 +313,10 @@ func (_c *StuLogCreate) createSpec() (*StuLog, *sqlgraph.CreateSpec) {
 	}
 	if nodes := _c.mutation.ImagesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   stulog.ImagesTable,
-			Columns: []string{stulog.ImagesColumn},
+			Columns: stulog.ImagesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(image.FieldID, field.TypeInt64),

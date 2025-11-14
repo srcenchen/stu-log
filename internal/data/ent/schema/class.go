@@ -24,5 +24,6 @@ func (Class) Edges() []ent.Edge {
 		// 每个 Class 属于一个 Grade
 		edge.To("grade", Grade.Type).Unique().Required(),
 		edge.From("student", Student.Type).Ref("class"),
+		edge.From("stuLogs", StuLog.Type).Ref("class"),
 	}
 }

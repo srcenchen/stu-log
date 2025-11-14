@@ -319,10 +319,10 @@ func (_c *StudentCreate) createSpec() (*Student, *sqlgraph.CreateSpec) {
 	}
 	if nodes := _c.mutation.StuLogsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
 			Table:   student.StuLogsTable,
-			Columns: []string{student.StuLogsColumn},
+			Columns: student.StuLogsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(stulog.FieldID, field.TypeInt64),

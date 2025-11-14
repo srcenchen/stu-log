@@ -8,6 +8,7 @@ import (
 	"eGZ-stu-log/internal/data/ent/grade"
 	"eGZ-stu-log/internal/data/ent/predicate"
 	"eGZ-stu-log/internal/data/ent/student"
+	"eGZ-stu-log/internal/data/ent/stulog"
 	"errors"
 	"fmt"
 
@@ -69,6 +70,21 @@ func (_u *ClassUpdate) AddStudent(v ...*Student) *ClassUpdate {
 	return _u.AddStudentIDs(ids...)
 }
 
+// AddStuLogIDs adds the "stuLogs" edge to the StuLog entity by IDs.
+func (_u *ClassUpdate) AddStuLogIDs(ids ...int64) *ClassUpdate {
+	_u.mutation.AddStuLogIDs(ids...)
+	return _u
+}
+
+// AddStuLogs adds the "stuLogs" edges to the StuLog entity.
+func (_u *ClassUpdate) AddStuLogs(v ...*StuLog) *ClassUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddStuLogIDs(ids...)
+}
+
 // Mutation returns the ClassMutation object of the builder.
 func (_u *ClassUpdate) Mutation() *ClassMutation {
 	return _u.mutation
@@ -99,6 +115,27 @@ func (_u *ClassUpdate) RemoveStudent(v ...*Student) *ClassUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveStudentIDs(ids...)
+}
+
+// ClearStuLogs clears all "stuLogs" edges to the StuLog entity.
+func (_u *ClassUpdate) ClearStuLogs() *ClassUpdate {
+	_u.mutation.ClearStuLogs()
+	return _u
+}
+
+// RemoveStuLogIDs removes the "stuLogs" edge to StuLog entities by IDs.
+func (_u *ClassUpdate) RemoveStuLogIDs(ids ...int64) *ClassUpdate {
+	_u.mutation.RemoveStuLogIDs(ids...)
+	return _u
+}
+
+// RemoveStuLogs removes "stuLogs" edges to StuLog entities.
+func (_u *ClassUpdate) RemoveStuLogs(v ...*StuLog) *ClassUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveStuLogIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -225,6 +262,51 @@ func (_u *ClassUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.StuLogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   class.StuLogsTable,
+			Columns: class.StuLogsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stulog.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedStuLogsIDs(); len(nodes) > 0 && !_u.mutation.StuLogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   class.StuLogsTable,
+			Columns: class.StuLogsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stulog.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.StuLogsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   class.StuLogsTable,
+			Columns: class.StuLogsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stulog.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{class.Label}
@@ -285,6 +367,21 @@ func (_u *ClassUpdateOne) AddStudent(v ...*Student) *ClassUpdateOne {
 	return _u.AddStudentIDs(ids...)
 }
 
+// AddStuLogIDs adds the "stuLogs" edge to the StuLog entity by IDs.
+func (_u *ClassUpdateOne) AddStuLogIDs(ids ...int64) *ClassUpdateOne {
+	_u.mutation.AddStuLogIDs(ids...)
+	return _u
+}
+
+// AddStuLogs adds the "stuLogs" edges to the StuLog entity.
+func (_u *ClassUpdateOne) AddStuLogs(v ...*StuLog) *ClassUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddStuLogIDs(ids...)
+}
+
 // Mutation returns the ClassMutation object of the builder.
 func (_u *ClassUpdateOne) Mutation() *ClassMutation {
 	return _u.mutation
@@ -315,6 +412,27 @@ func (_u *ClassUpdateOne) RemoveStudent(v ...*Student) *ClassUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveStudentIDs(ids...)
+}
+
+// ClearStuLogs clears all "stuLogs" edges to the StuLog entity.
+func (_u *ClassUpdateOne) ClearStuLogs() *ClassUpdateOne {
+	_u.mutation.ClearStuLogs()
+	return _u
+}
+
+// RemoveStuLogIDs removes the "stuLogs" edge to StuLog entities by IDs.
+func (_u *ClassUpdateOne) RemoveStuLogIDs(ids ...int64) *ClassUpdateOne {
+	_u.mutation.RemoveStuLogIDs(ids...)
+	return _u
+}
+
+// RemoveStuLogs removes "stuLogs" edges to StuLog entities.
+func (_u *ClassUpdateOne) RemoveStuLogs(v ...*StuLog) *ClassUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveStuLogIDs(ids...)
 }
 
 // Where appends a list predicates to the ClassUpdate builder.
@@ -464,6 +582,51 @@ func (_u *ClassUpdateOne) sqlSave(ctx context.Context) (_node *Class, err error)
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.StuLogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   class.StuLogsTable,
+			Columns: class.StuLogsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stulog.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedStuLogsIDs(); len(nodes) > 0 && !_u.mutation.StuLogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   class.StuLogsTable,
+			Columns: class.StuLogsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stulog.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.StuLogsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   class.StuLogsTable,
+			Columns: class.StuLogsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stulog.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {

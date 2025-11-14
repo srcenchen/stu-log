@@ -5,6 +5,7 @@ package ent
 import (
 	"context"
 	"eGZ-stu-log/internal/data/ent/rule"
+	"eGZ-stu-log/internal/data/ent/stulog"
 	"errors"
 	"fmt"
 
@@ -41,6 +42,21 @@ func (_c *RuleCreate) SetGroup(v string) *RuleCreate {
 func (_c *RuleCreate) SetID(v int64) *RuleCreate {
 	_c.mutation.SetID(v)
 	return _c
+}
+
+// AddStuLogIDs adds the "stuLogs" edge to the StuLog entity by IDs.
+func (_c *RuleCreate) AddStuLogIDs(ids ...int64) *RuleCreate {
+	_c.mutation.AddStuLogIDs(ids...)
+	return _c
+}
+
+// AddStuLogs adds the "stuLogs" edges to the StuLog entity.
+func (_c *RuleCreate) AddStuLogs(v ...*StuLog) *RuleCreate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddStuLogIDs(ids...)
 }
 
 // Mutation returns the RuleMutation object of the builder.
@@ -129,6 +145,22 @@ func (_c *RuleCreate) createSpec() (*Rule, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Group(); ok {
 		_spec.SetField(rule.FieldGroup, field.TypeString, value)
 		_node.Group = value
+	}
+	if nodes := _c.mutation.StuLogsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   rule.StuLogsTable,
+			Columns: rule.StuLogsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stulog.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

@@ -112,6 +112,24 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.base_info.v1.QueryStudentReply'
+    /v1/stu_log/report:
+        post:
+            tags:
+                - StuLog
+            operationId: StuLog_ReportStuLog
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.base_info.v1.ReportStuLogRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.base_info.v1.ReportStuLogReply'
 components:
     schemas:
         api.base_info.v1.CreateClassReply:
@@ -173,6 +191,31 @@ components:
             properties:
                 student:
                     $ref: '#/components/schemas/api.base_info.v1.StudentItem'
+        api.base_info.v1.ReportStuLogReply:
+            type: object
+            properties:
+                message:
+                    type: string
+        api.base_info.v1.ReportStuLogRequest:
+            type: object
+            properties:
+                studentIds:
+                    type: array
+                    items:
+                        type: string
+                ruleId:
+                    type: string
+                content:
+                    type: string
+                score:
+                    type: integer
+                    format: int32
+                gradeId:
+                    type: string
+                imageIds:
+                    type: array
+                    items:
+                        type: string
         api.base_info.v1.StudentItem:
             type: object
             properties:
@@ -206,4 +249,5 @@ components:
 tags:
     - name: Class
     - name: Grade
+    - name: StuLog
     - name: Student

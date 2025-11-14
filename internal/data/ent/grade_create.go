@@ -8,6 +8,7 @@ import (
 	"eGZ-stu-log/internal/data/ent/dorm"
 	"eGZ-stu-log/internal/data/ent/grade"
 	"eGZ-stu-log/internal/data/ent/student"
+	"eGZ-stu-log/internal/data/ent/stulog"
 	"errors"
 	"fmt"
 
@@ -32,6 +33,21 @@ func (_c *GradeCreate) SetGradeName(v string) *GradeCreate {
 func (_c *GradeCreate) SetID(v int64) *GradeCreate {
 	_c.mutation.SetID(v)
 	return _c
+}
+
+// AddStuLogIDs adds the "stuLogs" edge to the StuLog entity by IDs.
+func (_c *GradeCreate) AddStuLogIDs(ids ...int64) *GradeCreate {
+	_c.mutation.AddStuLogIDs(ids...)
+	return _c
+}
+
+// AddStuLogs adds the "stuLogs" edges to the StuLog entity.
+func (_c *GradeCreate) AddStuLogs(v ...*StuLog) *GradeCreate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddStuLogIDs(ids...)
 }
 
 // AddClasIDs adds the "class" edge to the Class entity by IDs.
@@ -151,6 +167,22 @@ func (_c *GradeCreate) createSpec() (*Grade, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.GradeName(); ok {
 		_spec.SetField(grade.FieldGradeName, field.TypeString, value)
 		_node.GradeName = value
+	}
+	if nodes := _c.mutation.StuLogsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   grade.StuLogsTable,
+			Columns: grade.StuLogsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stulog.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.ClassIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

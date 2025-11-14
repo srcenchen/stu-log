@@ -18,6 +18,8 @@ const (
 	EdgeGrade = "grade"
 	// EdgeStudent holds the string denoting the student edge name in mutations.
 	EdgeStudent = "student"
+	// EdgeStuLogs holds the string denoting the stulogs edge name in mutations.
+	EdgeStuLogs = "stuLogs"
 	// Table holds the table name of the class in the database.
 	Table = "classes"
 	// GradeTable is the table that holds the grade relation/edge.
@@ -34,6 +36,11 @@ const (
 	StudentInverseTable = "students"
 	// StudentColumn is the table column denoting the student relation/edge.
 	StudentColumn = "student_class"
+	// StuLogsTable is the table that holds the stuLogs relation/edge. The primary key declared below.
+	StuLogsTable = "stu_log_class"
+	// StuLogsInverseTable is the table name for the StuLog entity.
+	// It exists in this package in order to avoid circular dependency with the "stulog" package.
+	StuLogsInverseTable = "stu_logs"
 )
 
 // Columns holds all SQL columns for class fields.
@@ -46,8 +53,13 @@ var Columns = []string{
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"class_grade",
-	"stu_log_class",
 }
+
+var (
+	// StuLogsPrimaryKey and StuLogsColumn2 are the table columns denoting the
+	// primary key for the stuLogs relation (M2M).
+	StuLogsPrimaryKey = []string{"stu_log_id", "class_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -97,6 +109,20 @@ func ByStudent(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newStudentStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByStuLogsCount orders the results by stuLogs count.
+func ByStuLogsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newStuLogsStep(), opts...)
+	}
+}
+
+// ByStuLogs orders the results by stuLogs terms.
+func ByStuLogs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newStuLogsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newGradeStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -109,5 +135,12 @@ func newStudentStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(StudentInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, StudentTable, StudentColumn),
+	)
+}
+func newStuLogsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(StuLogsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, StuLogsTable, StuLogsPrimaryKey...),
 	)
 }

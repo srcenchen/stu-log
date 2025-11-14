@@ -124,6 +124,29 @@ func GradeNameContainsFold(v string) predicate.Grade {
 	return predicate.Grade(sql.FieldContainsFold(FieldGradeName, v))
 }
 
+// HasStuLogs applies the HasEdge predicate on the "stuLogs" edge.
+func HasStuLogs() predicate.Grade {
+	return predicate.Grade(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, StuLogsTable, StuLogsPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasStuLogsWith applies the HasEdge predicate on the "stuLogs" edge with a given conditions (other predicates).
+func HasStuLogsWith(preds ...predicate.StuLog) predicate.Grade {
+	return predicate.Grade(func(s *sql.Selector) {
+		step := newStuLogsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasClass applies the HasEdge predicate on the "class" edge.
 func HasClass() predicate.Grade {
 	return predicate.Grade(func(s *sql.Selector) {

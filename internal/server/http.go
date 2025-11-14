@@ -15,6 +15,7 @@ func NewHTTPServer(c *conf.Server,
 	class *service.ClassService,
 	grade *service.GradeService,
 	upload *service.UploadService,
+	stuLog *service.StuLogService,
 	logger log.Logger) *http.Server {
 	var opts = []http.ServerOption{
 		http.Middleware(
@@ -34,6 +35,7 @@ func NewHTTPServer(c *conf.Server,
 	v1.RegisterStudentHTTPServer(srv, student)
 	v1.RegisterClassHTTPServer(srv, class)
 	v1.RegisterGradeHTTPServer(srv, grade)
+	v1.RegisterStuLogHTTPServer(srv, stuLog)
 	route := srv.Route("/v1")
 	route.POST("/upload", upload.UploadHandler)
 	return srv

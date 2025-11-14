@@ -7,6 +7,7 @@ import (
 	"eGZ-stu-log/internal/data/ent/class"
 	"eGZ-stu-log/internal/data/ent/grade"
 	"eGZ-stu-log/internal/data/ent/student"
+	"eGZ-stu-log/internal/data/ent/stulog"
 	"errors"
 	"fmt"
 
@@ -57,6 +58,21 @@ func (_c *ClassCreate) AddStudent(v ...*Student) *ClassCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddStudentIDs(ids...)
+}
+
+// AddStuLogIDs adds the "stuLogs" edge to the StuLog entity by IDs.
+func (_c *ClassCreate) AddStuLogIDs(ids ...int64) *ClassCreate {
+	_c.mutation.AddStuLogIDs(ids...)
+	return _c
+}
+
+// AddStuLogs adds the "stuLogs" edges to the StuLog entity.
+func (_c *ClassCreate) AddStuLogs(v ...*StuLog) *ClassCreate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddStuLogIDs(ids...)
 }
 
 // Mutation returns the ClassMutation object of the builder.
@@ -161,6 +177,22 @@ func (_c *ClassCreate) createSpec() (*Class, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.StuLogsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   class.StuLogsTable,
+			Columns: class.StuLogsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stulog.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {

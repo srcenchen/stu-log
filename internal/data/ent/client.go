@@ -402,6 +402,22 @@ func (c *ClassClient) QueryStudent(_m *Class) *StudentQuery {
 	return query
 }
 
+// QueryStuLogs queries the stuLogs edge of a Class.
+func (c *ClassClient) QueryStuLogs(_m *Class) *StuLogQuery {
+	query := (&StuLogClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(class.Table, class.FieldID, id),
+			sqlgraph.To(stulog.Table, stulog.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, class.StuLogsTable, class.StuLogsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *ClassClient) Hooks() []Hook {
 	return c.hooks.Class
@@ -700,6 +716,22 @@ func (c *GradeClient) GetX(ctx context.Context, id int64) *Grade {
 	return obj
 }
 
+// QueryStuLogs queries the stuLogs edge of a Grade.
+func (c *GradeClient) QueryStuLogs(_m *Grade) *StuLogQuery {
+	query := (&StuLogClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(grade.Table, grade.FieldID, id),
+			sqlgraph.To(stulog.Table, stulog.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, grade.StuLogsTable, grade.StuLogsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryClass queries the class edge of a Grade.
 func (c *GradeClient) QueryClass(_m *Grade) *ClassQuery {
 	query := (&ClassClient{config: c.config}).Query()
@@ -881,6 +913,22 @@ func (c *ImageClient) GetX(ctx context.Context, id int64) *Image {
 	return obj
 }
 
+// QueryStuLogs queries the stuLogs edge of a Image.
+func (c *ImageClient) QueryStuLogs(_m *Image) *StuLogQuery {
+	query := (&StuLogClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(image.Table, image.FieldID, id),
+			sqlgraph.To(stulog.Table, stulog.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, image.StuLogsTable, image.StuLogsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *ImageClient) Hooks() []Hook {
 	return c.hooks.Image
@@ -1012,6 +1060,22 @@ func (c *RuleClient) GetX(ctx context.Context, id int64) *Rule {
 		panic(err)
 	}
 	return obj
+}
+
+// QueryStuLogs queries the stuLogs edge of a Rule.
+func (c *RuleClient) QueryStuLogs(_m *Rule) *StuLogQuery {
+	query := (&StuLogClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(rule.Table, rule.FieldID, id),
+			sqlgraph.To(stulog.Table, stulog.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, rule.StuLogsTable, rule.StuLogsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // Hooks returns the client hooks.
@@ -1155,7 +1219,7 @@ func (c *StuLogClient) QueryClass(_m *StuLog) *ClassQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(stulog.Table, stulog.FieldID, id),
 			sqlgraph.To(class.Table, class.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, stulog.ClassTable, stulog.ClassColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, stulog.ClassTable, stulog.ClassPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -1171,7 +1235,7 @@ func (c *StuLogClient) QueryGrade(_m *StuLog) *GradeQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(stulog.Table, stulog.FieldID, id),
 			sqlgraph.To(grade.Table, grade.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, stulog.GradeTable, stulog.GradeColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, stulog.GradeTable, stulog.GradePrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -1187,7 +1251,7 @@ func (c *StuLogClient) QueryRule(_m *StuLog) *RuleQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(stulog.Table, stulog.FieldID, id),
 			sqlgraph.To(rule.Table, rule.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, stulog.RuleTable, stulog.RuleColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, stulog.RuleTable, stulog.RulePrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -1203,7 +1267,7 @@ func (c *StuLogClient) QueryStudents(_m *StuLog) *StudentQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(stulog.Table, stulog.FieldID, id),
 			sqlgraph.To(student.Table, student.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, stulog.StudentsTable, stulog.StudentsColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, stulog.StudentsTable, stulog.StudentsPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -1219,7 +1283,7 @@ func (c *StuLogClient) QueryImages(_m *StuLog) *ImageQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(stulog.Table, stulog.FieldID, id),
 			sqlgraph.To(image.Table, image.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, stulog.ImagesTable, stulog.ImagesColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, stulog.ImagesTable, stulog.ImagesPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -1416,7 +1480,7 @@ func (c *StudentClient) QueryStuLogs(_m *Student) *StuLogQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(student.Table, student.FieldID, id),
 			sqlgraph.To(stulog.Table, stulog.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, student.StuLogsTable, student.StuLogsColumn),
+			sqlgraph.Edge(sqlgraph.M2M, true, student.StuLogsTable, student.StuLogsPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil

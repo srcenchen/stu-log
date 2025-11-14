@@ -21,10 +21,9 @@ type Class struct {
 	ClassName string `json:"className,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ClassQuery when eager-loading is set.
-	Edges         ClassEdges `json:"edges"`
-	class_grade   *int64
-	stu_log_class *int64
-	selectValues  sql.SelectValues
+	Edges        ClassEdges `json:"edges"`
+	class_grade  *int64
+	selectValues sql.SelectValues
 }
 
 // ClassEdges holds the relations/edges for other nodes in the graph.
@@ -33,9 +32,11 @@ type ClassEdges struct {
 	Grade *Grade `json:"grade,omitempty"`
 	// Student holds the value of the student edge.
 	Student []*Student `json:"student,omitempty"`
+	// StuLogs holds the value of the stuLogs edge.
+	StuLogs []*StuLog `json:"stuLogs,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // GradeOrErr returns the Grade value or an error if the edge
@@ -58,6 +59,15 @@ func (e ClassEdges) StudentOrErr() ([]*Student, error) {
 	return nil, &NotLoadedError{edge: "student"}
 }
 
+// StuLogsOrErr returns the StuLogs value or an error if the edge
+// was not loaded in eager-loading.
+func (e ClassEdges) StuLogsOrErr() ([]*StuLog, error) {
+	if e.loadedTypes[2] {
+		return e.StuLogs, nil
+	}
+	return nil, &NotLoadedError{edge: "stuLogs"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Class) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -68,8 +78,6 @@ func (*Class) scanValues(columns []string) ([]any, error) {
 		case class.FieldClassName:
 			values[i] = new(sql.NullString)
 		case class.ForeignKeys[0]: // class_grade
-			values[i] = new(sql.NullInt64)
-		case class.ForeignKeys[1]: // stu_log_class
 			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -105,13 +113,6 @@ func (_m *Class) assignValues(columns []string, values []any) error {
 				_m.class_grade = new(int64)
 				*_m.class_grade = int64(value.Int64)
 			}
-		case class.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field stu_log_class", value)
-			} else if value.Valid {
-				_m.stu_log_class = new(int64)
-				*_m.stu_log_class = int64(value.Int64)
-			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -133,6 +134,11 @@ func (_m *Class) QueryGrade() *GradeQuery {
 // QueryStudent queries the "student" edge of the Class entity.
 func (_m *Class) QueryStudent() *StudentQuery {
 	return NewClassClient(_m.config).QueryStudent(_m)
+}
+
+// QueryStuLogs queries the "stuLogs" edge of the Class entity.
+func (_m *Class) QueryStuLogs() *StuLogQuery {
+	return NewClassClient(_m.config).QueryStuLogs(_m)
 }
 
 // Update returns a builder for updating this Class.

@@ -17,9 +17,29 @@ type Image struct {
 	// ID of the ent.
 	ID int64 `json:"id,omitempty"`
 	// ImageUrl holds the value of the "imageUrl" field.
-	ImageUrl       string `json:"imageUrl,omitempty"`
-	stu_log_images *int64
-	selectValues   sql.SelectValues
+	ImageUrl string `json:"imageUrl,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the ImageQuery when eager-loading is set.
+	Edges        ImageEdges `json:"edges"`
+	selectValues sql.SelectValues
+}
+
+// ImageEdges holds the relations/edges for other nodes in the graph.
+type ImageEdges struct {
+	// StuLogs holds the value of the stuLogs edge.
+	StuLogs []*StuLog `json:"stuLogs,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// StuLogsOrErr returns the StuLogs value or an error if the edge
+// was not loaded in eager-loading.
+func (e ImageEdges) StuLogsOrErr() ([]*StuLog, error) {
+	if e.loadedTypes[0] {
+		return e.StuLogs, nil
+	}
+	return nil, &NotLoadedError{edge: "stuLogs"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -31,8 +51,6 @@ func (*Image) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case image.FieldImageUrl:
 			values[i] = new(sql.NullString)
-		case image.ForeignKeys[0]: // stu_log_images
-			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -60,13 +78,6 @@ func (_m *Image) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.ImageUrl = value.String
 			}
-		case image.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field stu_log_images", value)
-			} else if value.Valid {
-				_m.stu_log_images = new(int64)
-				*_m.stu_log_images = int64(value.Int64)
-			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -78,6 +89,11 @@ func (_m *Image) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (_m *Image) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
+}
+
+// QueryStuLogs queries the "stuLogs" edge of the Image entity.
+func (_m *Image) QueryStuLogs() *StuLogQuery {
+	return NewImageClient(_m.config).QueryStuLogs(_m)
 }
 
 // Update returns a builder for updating this Image.
