@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package api.base_info.v1;
+
+import "google/api/annotations.proto";
+option go_package = "eGZ-stu-log/api/base_info/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.base_info.v1";
+
+service Grade {
+	rpc CreateGrade (CreateGradeRequest) returns (CreateGradeReply) {
+		option (google.api.http) = {
+			post: "/api/base_info/grade/create",
+			body: "*"
+		};
+	}
+}
+
+message CreateGradeRequest {
+	string gradeName = 1;
+}
+message CreateGradeReply {
+	string message = 1;
+}

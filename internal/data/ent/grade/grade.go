@@ -16,6 +16,10 @@ const (
 	FieldGradeName = "grade_name"
 	// EdgeClass holds the string denoting the class edge name in mutations.
 	EdgeClass = "class"
+	// EdgeStudent holds the string denoting the student edge name in mutations.
+	EdgeStudent = "student"
+	// EdgeDorm holds the string denoting the dorm edge name in mutations.
+	EdgeDorm = "dorm"
 	// Table holds the table name of the grade in the database.
 	Table = "grades"
 	// ClassTable is the table that holds the class relation/edge.
@@ -25,6 +29,18 @@ const (
 	ClassInverseTable = "classes"
 	// ClassColumn is the table column denoting the class relation/edge.
 	ClassColumn = "class_grade"
+	// StudentTable is the table that holds the student relation/edge.
+	StudentTable = "students"
+	// StudentInverseTable is the table name for the Student entity.
+	// It exists in this package in order to avoid circular dependency with the "student" package.
+	StudentInverseTable = "students"
+	// StudentColumn is the table column denoting the student relation/edge.
+	StudentColumn = "student_grade"
+	// DormTable is the table that holds the dorm relation/edge. The primary key declared below.
+	DormTable = "dorm_grade"
+	// DormInverseTable is the table name for the Dorm entity.
+	// It exists in this package in order to avoid circular dependency with the "dorm" package.
+	DormInverseTable = "dorms"
 )
 
 // Columns holds all SQL columns for grade fields.
@@ -32,6 +48,12 @@ var Columns = []string{
 	FieldID,
 	FieldGradeName,
 }
+
+var (
+	// DormPrimaryKey and DormColumn2 are the table columns denoting the
+	// primary key for the dorm relation (M2M).
+	DormPrimaryKey = []string{"dorm_id", "grade_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -69,10 +91,52 @@ func ByClass(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newClassStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByStudentCount orders the results by student count.
+func ByStudentCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newStudentStep(), opts...)
+	}
+}
+
+// ByStudent orders the results by student terms.
+func ByStudent(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newStudentStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByDormCount orders the results by dorm count.
+func ByDormCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newDormStep(), opts...)
+	}
+}
+
+// ByDorm orders the results by dorm terms.
+func ByDorm(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newDormStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newClassStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ClassInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, ClassTable, ClassColumn),
+	)
+}
+func newStudentStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(StudentInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, StudentTable, StudentColumn),
+	)
+}
+func newDormStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(DormInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, DormTable, DormPrimaryKey...),
 	)
 }

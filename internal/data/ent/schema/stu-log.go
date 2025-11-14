@@ -1,0 +1,33 @@
+package schema
+
+import (
+	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
+	"entgo.io/ent/schema/field"
+)
+
+// StuLog holds the schema definition for the Logs entity.
+type StuLog struct {
+	ent.Schema
+}
+
+// Fields of the Logs.
+func (StuLog) Fields() []ent.Field {
+	return []ent.Field{
+		field.Int64("id"),
+		field.String("content").Comment("违纪备注"),
+		field.Bool("invoked").Default(false).Comment("是否被撤销"),
+		field.Time("time").Comment("违纪时间"),
+	}
+}
+
+// Edges of the Logs.
+func (StuLog) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.To("class", Class.Type),
+		edge.To("grade", Grade.Type).Unique(),
+		edge.To("rule", Rule.Type).Unique().Required(),
+		edge.To("students", Student.Type),
+		edge.To("images", Image.Type),
+	}
+}

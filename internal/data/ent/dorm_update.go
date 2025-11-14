@@ -5,7 +5,9 @@ package ent
 import (
 	"context"
 	"eGZ-stu-log/internal/data/ent/dorm"
+	"eGZ-stu-log/internal/data/ent/grade"
 	"eGZ-stu-log/internal/data/ent/predicate"
+	"eGZ-stu-log/internal/data/ent/student"
 	"errors"
 	"fmt"
 
@@ -27,9 +29,123 @@ func (_u *DormUpdate) Where(ps ...predicate.Dorm) *DormUpdate {
 	return _u
 }
 
+// SetBuilding sets the "building" field.
+func (_u *DormUpdate) SetBuilding(v string) *DormUpdate {
+	_u.mutation.SetBuilding(v)
+	return _u
+}
+
+// SetNillableBuilding sets the "building" field if the given value is not nil.
+func (_u *DormUpdate) SetNillableBuilding(v *string) *DormUpdate {
+	if v != nil {
+		_u.SetBuilding(*v)
+	}
+	return _u
+}
+
+// SetDormNum sets the "dormNum" field.
+func (_u *DormUpdate) SetDormNum(v string) *DormUpdate {
+	_u.mutation.SetDormNum(v)
+	return _u
+}
+
+// SetNillableDormNum sets the "dormNum" field if the given value is not nil.
+func (_u *DormUpdate) SetNillableDormNum(v *string) *DormUpdate {
+	if v != nil {
+		_u.SetDormNum(*v)
+	}
+	return _u
+}
+
+// SetSex sets the "sex" field.
+func (_u *DormUpdate) SetSex(v string) *DormUpdate {
+	_u.mutation.SetSex(v)
+	return _u
+}
+
+// SetNillableSex sets the "sex" field if the given value is not nil.
+func (_u *DormUpdate) SetNillableSex(v *string) *DormUpdate {
+	if v != nil {
+		_u.SetSex(*v)
+	}
+	return _u
+}
+
+// AddStudentIDs adds the "student" edge to the Student entity by IDs.
+func (_u *DormUpdate) AddStudentIDs(ids ...int64) *DormUpdate {
+	_u.mutation.AddStudentIDs(ids...)
+	return _u
+}
+
+// AddStudent adds the "student" edges to the Student entity.
+func (_u *DormUpdate) AddStudent(v ...*Student) *DormUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddStudentIDs(ids...)
+}
+
+// AddGradeIDs adds the "grade" edge to the Grade entity by IDs.
+func (_u *DormUpdate) AddGradeIDs(ids ...int64) *DormUpdate {
+	_u.mutation.AddGradeIDs(ids...)
+	return _u
+}
+
+// AddGrade adds the "grade" edges to the Grade entity.
+func (_u *DormUpdate) AddGrade(v ...*Grade) *DormUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddGradeIDs(ids...)
+}
+
 // Mutation returns the DormMutation object of the builder.
 func (_u *DormUpdate) Mutation() *DormMutation {
 	return _u.mutation
+}
+
+// ClearStudent clears all "student" edges to the Student entity.
+func (_u *DormUpdate) ClearStudent() *DormUpdate {
+	_u.mutation.ClearStudent()
+	return _u
+}
+
+// RemoveStudentIDs removes the "student" edge to Student entities by IDs.
+func (_u *DormUpdate) RemoveStudentIDs(ids ...int64) *DormUpdate {
+	_u.mutation.RemoveStudentIDs(ids...)
+	return _u
+}
+
+// RemoveStudent removes "student" edges to Student entities.
+func (_u *DormUpdate) RemoveStudent(v ...*Student) *DormUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveStudentIDs(ids...)
+}
+
+// ClearGrade clears all "grade" edges to the Grade entity.
+func (_u *DormUpdate) ClearGrade() *DormUpdate {
+	_u.mutation.ClearGrade()
+	return _u
+}
+
+// RemoveGradeIDs removes the "grade" edge to Grade entities by IDs.
+func (_u *DormUpdate) RemoveGradeIDs(ids ...int64) *DormUpdate {
+	_u.mutation.RemoveGradeIDs(ids...)
+	return _u
+}
+
+// RemoveGrade removes "grade" edges to Grade entities.
+func (_u *DormUpdate) RemoveGrade(v ...*Grade) *DormUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveGradeIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -60,13 +176,112 @@ func (_u *DormUpdate) ExecX(ctx context.Context) {
 }
 
 func (_u *DormUpdate) sqlSave(ctx context.Context) (_node int, err error) {
-	_spec := sqlgraph.NewUpdateSpec(dorm.Table, dorm.Columns, sqlgraph.NewFieldSpec(dorm.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewUpdateSpec(dorm.Table, dorm.Columns, sqlgraph.NewFieldSpec(dorm.FieldID, field.TypeInt64))
 	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := _u.mutation.Building(); ok {
+		_spec.SetField(dorm.FieldBuilding, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.DormNum(); ok {
+		_spec.SetField(dorm.FieldDormNum, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Sex(); ok {
+		_spec.SetField(dorm.FieldSex, field.TypeString, value)
+	}
+	if _u.mutation.StudentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   dorm.StudentTable,
+			Columns: []string{dorm.StudentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedStudentIDs(); len(nodes) > 0 && !_u.mutation.StudentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   dorm.StudentTable,
+			Columns: []string{dorm.StudentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.StudentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   dorm.StudentTable,
+			Columns: []string{dorm.StudentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.GradeCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   dorm.GradeTable,
+			Columns: dorm.GradePrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(grade.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedGradeIDs(); len(nodes) > 0 && !_u.mutation.GradeCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   dorm.GradeTable,
+			Columns: dorm.GradePrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(grade.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.GradeIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   dorm.GradeTable,
+			Columns: dorm.GradePrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(grade.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -88,9 +303,123 @@ type DormUpdateOne struct {
 	mutation *DormMutation
 }
 
+// SetBuilding sets the "building" field.
+func (_u *DormUpdateOne) SetBuilding(v string) *DormUpdateOne {
+	_u.mutation.SetBuilding(v)
+	return _u
+}
+
+// SetNillableBuilding sets the "building" field if the given value is not nil.
+func (_u *DormUpdateOne) SetNillableBuilding(v *string) *DormUpdateOne {
+	if v != nil {
+		_u.SetBuilding(*v)
+	}
+	return _u
+}
+
+// SetDormNum sets the "dormNum" field.
+func (_u *DormUpdateOne) SetDormNum(v string) *DormUpdateOne {
+	_u.mutation.SetDormNum(v)
+	return _u
+}
+
+// SetNillableDormNum sets the "dormNum" field if the given value is not nil.
+func (_u *DormUpdateOne) SetNillableDormNum(v *string) *DormUpdateOne {
+	if v != nil {
+		_u.SetDormNum(*v)
+	}
+	return _u
+}
+
+// SetSex sets the "sex" field.
+func (_u *DormUpdateOne) SetSex(v string) *DormUpdateOne {
+	_u.mutation.SetSex(v)
+	return _u
+}
+
+// SetNillableSex sets the "sex" field if the given value is not nil.
+func (_u *DormUpdateOne) SetNillableSex(v *string) *DormUpdateOne {
+	if v != nil {
+		_u.SetSex(*v)
+	}
+	return _u
+}
+
+// AddStudentIDs adds the "student" edge to the Student entity by IDs.
+func (_u *DormUpdateOne) AddStudentIDs(ids ...int64) *DormUpdateOne {
+	_u.mutation.AddStudentIDs(ids...)
+	return _u
+}
+
+// AddStudent adds the "student" edges to the Student entity.
+func (_u *DormUpdateOne) AddStudent(v ...*Student) *DormUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddStudentIDs(ids...)
+}
+
+// AddGradeIDs adds the "grade" edge to the Grade entity by IDs.
+func (_u *DormUpdateOne) AddGradeIDs(ids ...int64) *DormUpdateOne {
+	_u.mutation.AddGradeIDs(ids...)
+	return _u
+}
+
+// AddGrade adds the "grade" edges to the Grade entity.
+func (_u *DormUpdateOne) AddGrade(v ...*Grade) *DormUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddGradeIDs(ids...)
+}
+
 // Mutation returns the DormMutation object of the builder.
 func (_u *DormUpdateOne) Mutation() *DormMutation {
 	return _u.mutation
+}
+
+// ClearStudent clears all "student" edges to the Student entity.
+func (_u *DormUpdateOne) ClearStudent() *DormUpdateOne {
+	_u.mutation.ClearStudent()
+	return _u
+}
+
+// RemoveStudentIDs removes the "student" edge to Student entities by IDs.
+func (_u *DormUpdateOne) RemoveStudentIDs(ids ...int64) *DormUpdateOne {
+	_u.mutation.RemoveStudentIDs(ids...)
+	return _u
+}
+
+// RemoveStudent removes "student" edges to Student entities.
+func (_u *DormUpdateOne) RemoveStudent(v ...*Student) *DormUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveStudentIDs(ids...)
+}
+
+// ClearGrade clears all "grade" edges to the Grade entity.
+func (_u *DormUpdateOne) ClearGrade() *DormUpdateOne {
+	_u.mutation.ClearGrade()
+	return _u
+}
+
+// RemoveGradeIDs removes the "grade" edge to Grade entities by IDs.
+func (_u *DormUpdateOne) RemoveGradeIDs(ids ...int64) *DormUpdateOne {
+	_u.mutation.RemoveGradeIDs(ids...)
+	return _u
+}
+
+// RemoveGrade removes "grade" edges to Grade entities.
+func (_u *DormUpdateOne) RemoveGrade(v ...*Grade) *DormUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveGradeIDs(ids...)
 }
 
 // Where appends a list predicates to the DormUpdate builder.
@@ -134,7 +463,7 @@ func (_u *DormUpdateOne) ExecX(ctx context.Context) {
 }
 
 func (_u *DormUpdateOne) sqlSave(ctx context.Context) (_node *Dorm, err error) {
-	_spec := sqlgraph.NewUpdateSpec(dorm.Table, dorm.Columns, sqlgraph.NewFieldSpec(dorm.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewUpdateSpec(dorm.Table, dorm.Columns, sqlgraph.NewFieldSpec(dorm.FieldID, field.TypeInt64))
 	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Dorm.id" for update`)}
@@ -158,6 +487,105 @@ func (_u *DormUpdateOne) sqlSave(ctx context.Context) (_node *Dorm, err error) {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := _u.mutation.Building(); ok {
+		_spec.SetField(dorm.FieldBuilding, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.DormNum(); ok {
+		_spec.SetField(dorm.FieldDormNum, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Sex(); ok {
+		_spec.SetField(dorm.FieldSex, field.TypeString, value)
+	}
+	if _u.mutation.StudentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   dorm.StudentTable,
+			Columns: []string{dorm.StudentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedStudentIDs(); len(nodes) > 0 && !_u.mutation.StudentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   dorm.StudentTable,
+			Columns: []string{dorm.StudentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.StudentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   dorm.StudentTable,
+			Columns: []string{dorm.StudentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.GradeCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   dorm.GradeTable,
+			Columns: dorm.GradePrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(grade.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedGradeIDs(); len(nodes) > 0 && !_u.mutation.GradeCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   dorm.GradeTable,
+			Columns: dorm.GradePrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(grade.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.GradeIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   dorm.GradeTable,
+			Columns: dorm.GradePrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(grade.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &Dorm{config: _u.config}
 	_spec.Assign = _node.assignValues

@@ -3,10 +3,68 @@
 
 openapi: 3.0.3
 info:
-    title: Student API
+    title: ""
     version: 0.0.1
 paths:
-    v1/student/create:
+    /api/base_info/class/create:
+        post:
+            tags:
+                - Class
+            operationId: Class_CreateClass
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.base_info.v1.CreateClassRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.base_info.v1.CreateClassReply'
+    /api/base_info/grade/create:
+        post:
+            tags:
+                - Grade
+            operationId: Grade_CreateGrade
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.base_info.v1.CreateGradeRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.base_info.v1.CreateGradeReply'
+    v1/base_info/student:
+        get:
+            tags:
+                - Student
+            description: 学生列表查询
+            operationId: Student_QueryStudentList
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                    type: string
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.base_info.v1.QueryStudentListReply'
+    v1/base_info/student/create:
         post:
             tags:
                 - Student
@@ -25,8 +83,49 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.base_info.v1.CreateStudentReply'
+    v1/base_info/student/{id}:
+        get:
+            tags:
+                - Student
+            description: 学生查询
+            operationId: Student_QueryStudent
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.base_info.v1.CreateStudentReply'
 components:
     schemas:
+        api.base_info.v1.CreateClassReply:
+            type: object
+            properties:
+                message:
+                    type: string
+        api.base_info.v1.CreateClassRequest:
+            type: object
+            properties:
+                className:
+                    type: string
+                gradeId:
+                    type: string
+        api.base_info.v1.CreateGradeReply:
+            type: object
+            properties:
+                message:
+                    type: string
+        api.base_info.v1.CreateGradeRequest:
+            type: object
+            properties:
+                gradeName:
+                    type: string
         api.base_info.v1.CreateStudentReply:
             type: object
             properties:
@@ -40,13 +139,46 @@ components:
                 sex:
                     type: string
                 classId:
-                    type: integer
-                    format: int32
+                    type: string
                 dormId:
-                    type: integer
-                    format: int32
+                    type: string
                 gradeId:
-                    type: integer
-                    format: int32
+                    type: string
+                dormPos:
+                    type: string
+        api.base_info.v1.QueryStudentListReply:
+            type: object
+            properties:
+                students:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.base_info.v1.StudentItem'
+        api.base_info.v1.StudentItem:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                sex:
+                    type: string
+                classId:
+                    type: string
+                className:
+                    type: string
+                dormId:
+                    type: string
+                dormName:
+                    type: string
+                dormBuilding:
+                    type: string
+                gradeId:
+                    type: string
+                gradeName:
+                    type: string
+                dormPos:
+                    type: string
 tags:
+    - name: Class
+    - name: Grade
     - name: Student

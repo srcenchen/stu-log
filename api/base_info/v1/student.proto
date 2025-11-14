@@ -7,12 +7,46 @@ option go_package = "eGZ-stu-log/api/base_info/v1;v1";
 option java_multiple_files = true;
 option java_package = "api.base_info.v1";
 
+message StuLogItem {
+  int64 id = 1;
+  string content = 2;
+  string time = 3;
+  string rule = 4;
+  bool invoked = 5;
+}
+
+message StudentItem {
+  int64 id = 1;
+  string name = 2;
+  string sex = 3;
+  int64 classId = 4;
+  string className = 10;
+  int64 dormId = 5;
+  string dormName = 9;
+  string dormBuilding = 11;
+  int64 gradeId = 6;
+  string gradeName = 8;
+  string dormPos = 7;
+}
+
 service Student {
   // 学生创建
-	rpc CreateStudent (CreateStudentRequest) returns (CreateStudentReply) {
+  rpc CreateStudent (CreateStudentRequest) returns (CreateStudentReply) {
     option (google.api.http) = {
-      post: "v1/student/create",
+      post: "v1/base_info/student/create",
       body: "*"
+    };
+  };
+  // 学生查询
+  rpc QueryStudent (QueryStudentRequest) returns (CreateStudentReply) {
+    option (google.api.http) = {
+      get: "v1/base_info/student/{id}",
+    };
+  };
+  // 学生列表查询
+  rpc QueryStudentList (QueryStudentListRequest) returns (QueryStudentListReply) {
+    option (google.api.http) = {
+      get: "v1/base_info/student",
     };
   };
 }
@@ -20,10 +54,24 @@ service Student {
 message CreateStudentRequest {
   string name = 1;
   string sex = 2;
-  int32 classId = 3;
-  int32 dormId = 4;
-  int32 gradeId = 5;
+  int64 classId = 3;
+  int64 dormId = 4;
+  int64 gradeId = 5;
+  string dormPos = 6;
 }
 message CreateStudentReply {
   string message = 1;
+}
+message QueryStudentRequest {
+  int64 id = 1;
+}
+message QueryStudentReply {
+  StudentItem student = 1;
+}
+message QueryStudentListRequest {
+  int64 page = 1;
+  int64 pageSize = 2;
+}
+message QueryStudentListReply {
+  repeated StudentItem students = 1;
 }

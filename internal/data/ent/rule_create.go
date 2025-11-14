@@ -4,7 +4,7 @@ package ent
 
 import (
 	"context"
-	"eGZ-stu-log/internal/data/ent/score"
+	"eGZ-stu-log/internal/data/ent/rule"
 	"errors"
 	"fmt"
 
@@ -12,31 +12,49 @@ import (
 	"entgo.io/ent/schema/field"
 )
 
-// ScoreCreate is the builder for creating a Score entity.
-type ScoreCreate struct {
+// RuleCreate is the builder for creating a Rule entity.
+type RuleCreate struct {
 	config
-	mutation *ScoreMutation
+	mutation *RuleMutation
 	hooks    []Hook
 }
 
+// SetContent sets the "content" field.
+func (_c *RuleCreate) SetContent(v string) *RuleCreate {
+	_c.mutation.SetContent(v)
+	return _c
+}
+
 // SetScore sets the "score" field.
-func (_c *ScoreCreate) SetScore(v int) *ScoreCreate {
+func (_c *RuleCreate) SetScore(v string) *RuleCreate {
 	_c.mutation.SetScore(v)
 	return _c
 }
 
-// Mutation returns the ScoreMutation object of the builder.
-func (_c *ScoreCreate) Mutation() *ScoreMutation {
+// SetGroup sets the "group" field.
+func (_c *RuleCreate) SetGroup(v string) *RuleCreate {
+	_c.mutation.SetGroup(v)
+	return _c
+}
+
+// SetID sets the "id" field.
+func (_c *RuleCreate) SetID(v int64) *RuleCreate {
+	_c.mutation.SetID(v)
+	return _c
+}
+
+// Mutation returns the RuleMutation object of the builder.
+func (_c *RuleCreate) Mutation() *RuleMutation {
 	return _c.mutation
 }
 
-// Save creates the Score in the database.
-func (_c *ScoreCreate) Save(ctx context.Context) (*Score, error) {
+// Save creates the Rule in the database.
+func (_c *RuleCreate) Save(ctx context.Context) (*Rule, error) {
 	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (_c *ScoreCreate) SaveX(ctx context.Context) *Score {
+func (_c *RuleCreate) SaveX(ctx context.Context) *Rule {
 	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -45,27 +63,33 @@ func (_c *ScoreCreate) SaveX(ctx context.Context) *Score {
 }
 
 // Exec executes the query.
-func (_c *ScoreCreate) Exec(ctx context.Context) error {
+func (_c *RuleCreate) Exec(ctx context.Context) error {
 	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_c *ScoreCreate) ExecX(ctx context.Context) {
+func (_c *RuleCreate) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (_c *ScoreCreate) check() error {
+func (_c *RuleCreate) check() error {
+	if _, ok := _c.mutation.Content(); !ok {
+		return &ValidationError{Name: "content", err: errors.New(`ent: missing required field "Rule.content"`)}
+	}
 	if _, ok := _c.mutation.Score(); !ok {
-		return &ValidationError{Name: "score", err: errors.New(`ent: missing required field "Score.score"`)}
+		return &ValidationError{Name: "score", err: errors.New(`ent: missing required field "Rule.score"`)}
+	}
+	if _, ok := _c.mutation.Group(); !ok {
+		return &ValidationError{Name: "group", err: errors.New(`ent: missing required field "Rule.group"`)}
 	}
 	return nil
 }
 
-func (_c *ScoreCreate) sqlSave(ctx context.Context) (*Score, error) {
+func (_c *RuleCreate) sqlSave(ctx context.Context) (*Rule, error) {
 	if err := _c.check(); err != nil {
 		return nil, err
 	}
@@ -76,45 +100,59 @@ func (_c *ScoreCreate) sqlSave(ctx context.Context) (*Score, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != _node.ID {
+		id := _spec.ID.Value.(int64)
+		_node.ID = int64(id)
+	}
 	_c.mutation.id = &_node.ID
 	_c.mutation.done = true
 	return _node, nil
 }
 
-func (_c *ScoreCreate) createSpec() (*Score, *sqlgraph.CreateSpec) {
+func (_c *RuleCreate) createSpec() (*Rule, *sqlgraph.CreateSpec) {
 	var (
-		_node = &Score{config: _c.config}
-		_spec = sqlgraph.NewCreateSpec(score.Table, sqlgraph.NewFieldSpec(score.FieldID, field.TypeInt))
+		_node = &Rule{config: _c.config}
+		_spec = sqlgraph.NewCreateSpec(rule.Table, sqlgraph.NewFieldSpec(rule.FieldID, field.TypeInt64))
 	)
+	if id, ok := _c.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
+	}
+	if value, ok := _c.mutation.Content(); ok {
+		_spec.SetField(rule.FieldContent, field.TypeString, value)
+		_node.Content = value
+	}
 	if value, ok := _c.mutation.Score(); ok {
-		_spec.SetField(score.FieldScore, field.TypeInt, value)
+		_spec.SetField(rule.FieldScore, field.TypeString, value)
 		_node.Score = value
+	}
+	if value, ok := _c.mutation.Group(); ok {
+		_spec.SetField(rule.FieldGroup, field.TypeString, value)
+		_node.Group = value
 	}
 	return _node, _spec
 }
 
-// ScoreCreateBulk is the builder for creating many Score entities in bulk.
-type ScoreCreateBulk struct {
+// RuleCreateBulk is the builder for creating many Rule entities in bulk.
+type RuleCreateBulk struct {
 	config
 	err      error
-	builders []*ScoreCreate
+	builders []*RuleCreate
 }
 
-// Save creates the Score entities in the database.
-func (_c *ScoreCreateBulk) Save(ctx context.Context) ([]*Score, error) {
+// Save creates the Rule entities in the database.
+func (_c *RuleCreateBulk) Save(ctx context.Context) ([]*Rule, error) {
 	if _c.err != nil {
 		return nil, _c.err
 	}
 	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
-	nodes := make([]*Score, len(_c.builders))
+	nodes := make([]*Rule, len(_c.builders))
 	mutators := make([]Mutator, len(_c.builders))
 	for i := range _c.builders {
 		func(i int, root context.Context) {
 			builder := _c.builders[i]
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-				mutation, ok := m.(*ScoreMutation)
+				mutation, ok := m.(*RuleMutation)
 				if !ok {
 					return nil, fmt.Errorf("unexpected mutation type %T", m)
 				}
@@ -139,9 +177,9 @@ func (_c *ScoreCreateBulk) Save(ctx context.Context) ([]*Score, error) {
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
-				if specs[i].ID.Value != nil {
+				if specs[i].ID.Value != nil && nodes[i].ID == 0 {
 					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = int(id)
+					nodes[i].ID = int64(id)
 				}
 				mutation.done = true
 				return nodes[i], nil
@@ -161,7 +199,7 @@ func (_c *ScoreCreateBulk) Save(ctx context.Context) ([]*Score, error) {
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (_c *ScoreCreateBulk) SaveX(ctx context.Context) []*Score {
+func (_c *RuleCreateBulk) SaveX(ctx context.Context) []*Rule {
 	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -170,13 +208,13 @@ func (_c *ScoreCreateBulk) SaveX(ctx context.Context) []*Score {
 }
 
 // Exec executes the query.
-func (_c *ScoreCreateBulk) Exec(ctx context.Context) error {
+func (_c *RuleCreateBulk) Exec(ctx context.Context) error {
 	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_c *ScoreCreateBulk) ExecX(ctx context.Context) {
+func (_c *RuleCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}

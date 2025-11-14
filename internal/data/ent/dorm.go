@@ -13,10 +13,48 @@ import (
 
 // Dorm is the model entity for the Dorm schema.
 type Dorm struct {
-	config
+	config `json:"-"`
 	// ID of the ent.
-	ID           int `json:"id,omitempty"`
+	ID int64 `json:"id,omitempty"`
+	// Building holds the value of the "building" field.
+	Building string `json:"building,omitempty"`
+	// DormNum holds the value of the "dormNum" field.
+	DormNum string `json:"dormNum,omitempty"`
+	// Sex holds the value of the "sex" field.
+	Sex string `json:"sex,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the DormQuery when eager-loading is set.
+	Edges        DormEdges `json:"edges"`
 	selectValues sql.SelectValues
+}
+
+// DormEdges holds the relations/edges for other nodes in the graph.
+type DormEdges struct {
+	// Student holds the value of the student edge.
+	Student []*Student `json:"student,omitempty"`
+	// Grade holds the value of the grade edge.
+	Grade []*Grade `json:"grade,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [2]bool
+}
+
+// StudentOrErr returns the Student value or an error if the edge
+// was not loaded in eager-loading.
+func (e DormEdges) StudentOrErr() ([]*Student, error) {
+	if e.loadedTypes[0] {
+		return e.Student, nil
+	}
+	return nil, &NotLoadedError{edge: "student"}
+}
+
+// GradeOrErr returns the Grade value or an error if the edge
+// was not loaded in eager-loading.
+func (e DormEdges) GradeOrErr() ([]*Grade, error) {
+	if e.loadedTypes[1] {
+		return e.Grade, nil
+	}
+	return nil, &NotLoadedError{edge: "grade"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -26,6 +64,8 @@ func (*Dorm) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case dorm.FieldID:
 			values[i] = new(sql.NullInt64)
+		case dorm.FieldBuilding, dorm.FieldDormNum, dorm.FieldSex:
+			values[i] = new(sql.NullString)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -46,7 +86,25 @@ func (_m *Dorm) assignValues(columns []string, values []any) error {
 			if !ok {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
-			_m.ID = int(value.Int64)
+			_m.ID = int64(value.Int64)
+		case dorm.FieldBuilding:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field building", values[i])
+			} else if value.Valid {
+				_m.Building = value.String
+			}
+		case dorm.FieldDormNum:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field dormNum", values[i])
+			} else if value.Valid {
+				_m.DormNum = value.String
+			}
+		case dorm.FieldSex:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field sex", values[i])
+			} else if value.Valid {
+				_m.Sex = value.String
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -58,6 +116,16 @@ func (_m *Dorm) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (_m *Dorm) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
+}
+
+// QueryStudent queries the "student" edge of the Dorm entity.
+func (_m *Dorm) QueryStudent() *StudentQuery {
+	return NewDormClient(_m.config).QueryStudent(_m)
+}
+
+// QueryGrade queries the "grade" edge of the Dorm entity.
+func (_m *Dorm) QueryGrade() *GradeQuery {
+	return NewDormClient(_m.config).QueryGrade(_m)
 }
 
 // Update returns a builder for updating this Dorm.
@@ -82,7 +150,15 @@ func (_m *Dorm) Unwrap() *Dorm {
 func (_m *Dorm) String() string {
 	var builder strings.Builder
 	builder.WriteString("Dorm(")
-	builder.WriteString(fmt.Sprintf("id=%v", _m.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
+	builder.WriteString("building=")
+	builder.WriteString(_m.Building)
+	builder.WriteString(", ")
+	builder.WriteString("dormNum=")
+	builder.WriteString(_m.DormNum)
+	builder.WriteString(", ")
+	builder.WriteString("sex=")
+	builder.WriteString(_m.Sex)
 	builder.WriteByte(')')
 	return builder.String()
 }

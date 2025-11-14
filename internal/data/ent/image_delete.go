@@ -4,7 +4,7 @@ package ent
 
 import (
 	"context"
-	"eGZ-stu-log/internal/data/ent/logs"
+	"eGZ-stu-log/internal/data/ent/image"
 	"eGZ-stu-log/internal/data/ent/predicate"
 
 	"entgo.io/ent/dialect/sql"
@@ -12,26 +12,26 @@ import (
 	"entgo.io/ent/schema/field"
 )
 
-// LogsDelete is the builder for deleting a Logs entity.
-type LogsDelete struct {
+// ImageDelete is the builder for deleting a Image entity.
+type ImageDelete struct {
 	config
 	hooks    []Hook
-	mutation *LogsMutation
+	mutation *ImageMutation
 }
 
-// Where appends a list predicates to the LogsDelete builder.
-func (_d *LogsDelete) Where(ps ...predicate.Logs) *LogsDelete {
+// Where appends a list predicates to the ImageDelete builder.
+func (_d *ImageDelete) Where(ps ...predicate.Image) *ImageDelete {
 	_d.mutation.Where(ps...)
 	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (_d *LogsDelete) Exec(ctx context.Context) (int, error) {
+func (_d *ImageDelete) Exec(ctx context.Context) (int, error) {
 	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_d *LogsDelete) ExecX(ctx context.Context) int {
+func (_d *ImageDelete) ExecX(ctx context.Context) int {
 	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
@@ -39,8 +39,8 @@ func (_d *LogsDelete) ExecX(ctx context.Context) int {
 	return n
 }
 
-func (_d *LogsDelete) sqlExec(ctx context.Context) (int, error) {
-	_spec := sqlgraph.NewDeleteSpec(logs.Table, sqlgraph.NewFieldSpec(logs.FieldID, field.TypeInt))
+func (_d *ImageDelete) sqlExec(ctx context.Context) (int, error) {
+	_spec := sqlgraph.NewDeleteSpec(image.Table, sqlgraph.NewFieldSpec(image.FieldID, field.TypeInt64))
 	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -56,32 +56,32 @@ func (_d *LogsDelete) sqlExec(ctx context.Context) (int, error) {
 	return affected, err
 }
 
-// LogsDeleteOne is the builder for deleting a single Logs entity.
-type LogsDeleteOne struct {
-	_d *LogsDelete
+// ImageDeleteOne is the builder for deleting a single Image entity.
+type ImageDeleteOne struct {
+	_d *ImageDelete
 }
 
-// Where appends a list predicates to the LogsDelete builder.
-func (_d *LogsDeleteOne) Where(ps ...predicate.Logs) *LogsDeleteOne {
+// Where appends a list predicates to the ImageDelete builder.
+func (_d *ImageDeleteOne) Where(ps ...predicate.Image) *ImageDeleteOne {
 	_d._d.mutation.Where(ps...)
 	return _d
 }
 
 // Exec executes the deletion query.
-func (_d *LogsDeleteOne) Exec(ctx context.Context) error {
+func (_d *ImageDeleteOne) Exec(ctx context.Context) error {
 	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
 	case n == 0:
-		return &NotFoundError{logs.Label}
+		return &NotFoundError{image.Label}
 	default:
 		return nil
 	}
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_d *LogsDeleteOne) ExecX(ctx context.Context) {
+func (_d *ImageDeleteOne) ExecX(ctx context.Context) {
 	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}

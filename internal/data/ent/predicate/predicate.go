@@ -15,11 +15,14 @@ type Dorm func(*sql.Selector)
 // Grade is the predicate function for grade builders.
 type Grade func(*sql.Selector)
 
-// Logs is the predicate function for logs builders.
-type Logs func(*sql.Selector)
+// Image is the predicate function for image builders.
+type Image func(*sql.Selector)
 
-// Score is the predicate function for score builders.
-type Score func(*sql.Selector)
+// Rule is the predicate function for rule builders.
+type Rule func(*sql.Selector)
+
+// StuLog is the predicate function for stulog builders.
+type StuLog func(*sql.Selector)
 
 // Student is the predicate function for student builders.
 type Student func(*sql.Selector)

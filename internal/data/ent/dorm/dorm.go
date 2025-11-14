@@ -4,6 +4,7 @@ package dorm
 
 import (
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 const (
@@ -11,14 +12,45 @@ const (
 	Label = "dorm"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldBuilding holds the string denoting the building field in the database.
+	FieldBuilding = "building"
+	// FieldDormNum holds the string denoting the dormnum field in the database.
+	FieldDormNum = "dorm_num"
+	// FieldSex holds the string denoting the sex field in the database.
+	FieldSex = "sex"
+	// EdgeStudent holds the string denoting the student edge name in mutations.
+	EdgeStudent = "student"
+	// EdgeGrade holds the string denoting the grade edge name in mutations.
+	EdgeGrade = "grade"
 	// Table holds the table name of the dorm in the database.
 	Table = "dorms"
+	// StudentTable is the table that holds the student relation/edge.
+	StudentTable = "students"
+	// StudentInverseTable is the table name for the Student entity.
+	// It exists in this package in order to avoid circular dependency with the "student" package.
+	StudentInverseTable = "students"
+	// StudentColumn is the table column denoting the student relation/edge.
+	StudentColumn = "student_dorm"
+	// GradeTable is the table that holds the grade relation/edge. The primary key declared below.
+	GradeTable = "dorm_grade"
+	// GradeInverseTable is the table name for the Grade entity.
+	// It exists in this package in order to avoid circular dependency with the "grade" package.
+	GradeInverseTable = "grades"
 )
 
 // Columns holds all SQL columns for dorm fields.
 var Columns = []string{
 	FieldID,
+	FieldBuilding,
+	FieldDormNum,
+	FieldSex,
 }
+
+var (
+	// GradePrimaryKey and GradeColumn2 are the table columns denoting the
+	// primary key for the grade relation (M2M).
+	GradePrimaryKey = []string{"dorm_id", "grade_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -36,4 +68,61 @@ type OrderOption func(*sql.Selector)
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByBuilding orders the results by the building field.
+func ByBuilding(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldBuilding, opts...).ToFunc()
+}
+
+// ByDormNum orders the results by the dormNum field.
+func ByDormNum(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDormNum, opts...).ToFunc()
+}
+
+// BySex orders the results by the sex field.
+func BySex(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSex, opts...).ToFunc()
+}
+
+// ByStudentCount orders the results by student count.
+func ByStudentCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newStudentStep(), opts...)
+	}
+}
+
+// ByStudent orders the results by student terms.
+func ByStudent(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newStudentStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByGradeCount orders the results by grade count.
+func ByGradeCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newGradeStep(), opts...)
+	}
+}
+
+// ByGrade orders the results by grade terms.
+func ByGrade(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newGradeStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+func newStudentStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(StudentInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, StudentTable, StudentColumn),
+	)
+}
+func newGradeStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(GradeInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, false, GradeTable, GradePrimaryKey...),
+	)
 }

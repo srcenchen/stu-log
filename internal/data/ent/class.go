@@ -16,23 +16,26 @@ import (
 type Class struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
-	// Name holds the value of the "name" field.
-	Name string `json:"name,omitempty"`
+	ID int64 `json:"id,omitempty"`
+	// ClassName holds the value of the "className" field.
+	ClassName string `json:"className,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ClassQuery when eager-loading is set.
-	Edges        ClassEdges `json:"edges"`
-	class_grade  *int
-	selectValues sql.SelectValues
+	Edges         ClassEdges `json:"edges"`
+	class_grade   *int64
+	stu_log_class *int64
+	selectValues  sql.SelectValues
 }
 
 // ClassEdges holds the relations/edges for other nodes in the graph.
 type ClassEdges struct {
 	// Grade holds the value of the grade edge.
 	Grade *Grade `json:"grade,omitempty"`
+	// Student holds the value of the student edge.
+	Student []*Student `json:"student,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // GradeOrErr returns the Grade value or an error if the edge
@@ -46,6 +49,15 @@ func (e ClassEdges) GradeOrErr() (*Grade, error) {
 	return nil, &NotLoadedError{edge: "grade"}
 }
 
+// StudentOrErr returns the Student value or an error if the edge
+// was not loaded in eager-loading.
+func (e ClassEdges) StudentOrErr() ([]*Student, error) {
+	if e.loadedTypes[1] {
+		return e.Student, nil
+	}
+	return nil, &NotLoadedError{edge: "student"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Class) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -53,9 +65,11 @@ func (*Class) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case class.FieldID:
 			values[i] = new(sql.NullInt64)
-		case class.FieldName:
+		case class.FieldClassName:
 			values[i] = new(sql.NullString)
 		case class.ForeignKeys[0]: // class_grade
+			values[i] = new(sql.NullInt64)
+		case class.ForeignKeys[1]: // stu_log_class
 			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -77,19 +91,26 @@ func (_m *Class) assignValues(columns []string, values []any) error {
 			if !ok {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
-			_m.ID = int(value.Int64)
-		case class.FieldName:
+			_m.ID = int64(value.Int64)
+		case class.FieldClassName:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field name", values[i])
+				return fmt.Errorf("unexpected type %T for field className", values[i])
 			} else if value.Valid {
-				_m.Name = value.String
+				_m.ClassName = value.String
 			}
 		case class.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field class_grade", value)
 			} else if value.Valid {
-				_m.class_grade = new(int)
-				*_m.class_grade = int(value.Int64)
+				_m.class_grade = new(int64)
+				*_m.class_grade = int64(value.Int64)
+			}
+		case class.ForeignKeys[1]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field stu_log_class", value)
+			} else if value.Valid {
+				_m.stu_log_class = new(int64)
+				*_m.stu_log_class = int64(value.Int64)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -107,6 +128,11 @@ func (_m *Class) Value(name string) (ent.Value, error) {
 // QueryGrade queries the "grade" edge of the Class entity.
 func (_m *Class) QueryGrade() *GradeQuery {
 	return NewClassClient(_m.config).QueryGrade(_m)
+}
+
+// QueryStudent queries the "student" edge of the Class entity.
+func (_m *Class) QueryStudent() *StudentQuery {
+	return NewClassClient(_m.config).QueryStudent(_m)
 }
 
 // Update returns a builder for updating this Class.
@@ -132,8 +158,8 @@ func (_m *Class) String() string {
 	var builder strings.Builder
 	builder.WriteString("Class(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
-	builder.WriteString("name=")
-	builder.WriteString(_m.Name)
+	builder.WriteString("className=")
+	builder.WriteString(_m.ClassName)
 	builder.WriteByte(')')
 	return builder.String()
 }

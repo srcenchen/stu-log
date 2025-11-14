@@ -7,6 +7,7 @@ import (
 	"eGZ-stu-log/internal/data/ent/class"
 	"eGZ-stu-log/internal/data/ent/grade"
 	"eGZ-stu-log/internal/data/ent/predicate"
+	"eGZ-stu-log/internal/data/ent/student"
 	"errors"
 	"fmt"
 
@@ -28,22 +29,22 @@ func (_u *ClassUpdate) Where(ps ...predicate.Class) *ClassUpdate {
 	return _u
 }
 
-// SetName sets the "name" field.
-func (_u *ClassUpdate) SetName(v string) *ClassUpdate {
-	_u.mutation.SetName(v)
+// SetClassName sets the "className" field.
+func (_u *ClassUpdate) SetClassName(v string) *ClassUpdate {
+	_u.mutation.SetClassName(v)
 	return _u
 }
 
-// SetNillableName sets the "name" field if the given value is not nil.
-func (_u *ClassUpdate) SetNillableName(v *string) *ClassUpdate {
+// SetNillableClassName sets the "className" field if the given value is not nil.
+func (_u *ClassUpdate) SetNillableClassName(v *string) *ClassUpdate {
 	if v != nil {
-		_u.SetName(*v)
+		_u.SetClassName(*v)
 	}
 	return _u
 }
 
 // SetGradeID sets the "grade" edge to the Grade entity by ID.
-func (_u *ClassUpdate) SetGradeID(id int) *ClassUpdate {
+func (_u *ClassUpdate) SetGradeID(id int64) *ClassUpdate {
 	_u.mutation.SetGradeID(id)
 	return _u
 }
@@ -51,6 +52,21 @@ func (_u *ClassUpdate) SetGradeID(id int) *ClassUpdate {
 // SetGrade sets the "grade" edge to the Grade entity.
 func (_u *ClassUpdate) SetGrade(v *Grade) *ClassUpdate {
 	return _u.SetGradeID(v.ID)
+}
+
+// AddStudentIDs adds the "student" edge to the Student entity by IDs.
+func (_u *ClassUpdate) AddStudentIDs(ids ...int64) *ClassUpdate {
+	_u.mutation.AddStudentIDs(ids...)
+	return _u
+}
+
+// AddStudent adds the "student" edges to the Student entity.
+func (_u *ClassUpdate) AddStudent(v ...*Student) *ClassUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddStudentIDs(ids...)
 }
 
 // Mutation returns the ClassMutation object of the builder.
@@ -62,6 +78,27 @@ func (_u *ClassUpdate) Mutation() *ClassMutation {
 func (_u *ClassUpdate) ClearGrade() *ClassUpdate {
 	_u.mutation.ClearGrade()
 	return _u
+}
+
+// ClearStudent clears all "student" edges to the Student entity.
+func (_u *ClassUpdate) ClearStudent() *ClassUpdate {
+	_u.mutation.ClearStudent()
+	return _u
+}
+
+// RemoveStudentIDs removes the "student" edge to Student entities by IDs.
+func (_u *ClassUpdate) RemoveStudentIDs(ids ...int64) *ClassUpdate {
+	_u.mutation.RemoveStudentIDs(ids...)
+	return _u
+}
+
+// RemoveStudent removes "student" edges to Student entities.
+func (_u *ClassUpdate) RemoveStudent(v ...*Student) *ClassUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveStudentIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -103,7 +140,7 @@ func (_u *ClassUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(class.Table, class.Columns, sqlgraph.NewFieldSpec(class.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewUpdateSpec(class.Table, class.Columns, sqlgraph.NewFieldSpec(class.FieldID, field.TypeInt64))
 	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -111,8 +148,8 @@ func (_u *ClassUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			}
 		}
 	}
-	if value, ok := _u.mutation.Name(); ok {
-		_spec.SetField(class.FieldName, field.TypeString, value)
+	if value, ok := _u.mutation.ClassName(); ok {
+		_spec.SetField(class.FieldClassName, field.TypeString, value)
 	}
 	if _u.mutation.GradeCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -122,7 +159,7 @@ func (_u *ClassUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Columns: []string{class.GradeColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(grade.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(grade.FieldID, field.TypeInt64),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -135,7 +172,52 @@ func (_u *ClassUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Columns: []string{class.GradeColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(grade.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(grade.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.StudentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   class.StudentTable,
+			Columns: []string{class.StudentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedStudentIDs(); len(nodes) > 0 && !_u.mutation.StudentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   class.StudentTable,
+			Columns: []string{class.StudentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.StudentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   class.StudentTable,
+			Columns: []string{class.StudentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {
@@ -163,22 +245,22 @@ type ClassUpdateOne struct {
 	mutation *ClassMutation
 }
 
-// SetName sets the "name" field.
-func (_u *ClassUpdateOne) SetName(v string) *ClassUpdateOne {
-	_u.mutation.SetName(v)
+// SetClassName sets the "className" field.
+func (_u *ClassUpdateOne) SetClassName(v string) *ClassUpdateOne {
+	_u.mutation.SetClassName(v)
 	return _u
 }
 
-// SetNillableName sets the "name" field if the given value is not nil.
-func (_u *ClassUpdateOne) SetNillableName(v *string) *ClassUpdateOne {
+// SetNillableClassName sets the "className" field if the given value is not nil.
+func (_u *ClassUpdateOne) SetNillableClassName(v *string) *ClassUpdateOne {
 	if v != nil {
-		_u.SetName(*v)
+		_u.SetClassName(*v)
 	}
 	return _u
 }
 
 // SetGradeID sets the "grade" edge to the Grade entity by ID.
-func (_u *ClassUpdateOne) SetGradeID(id int) *ClassUpdateOne {
+func (_u *ClassUpdateOne) SetGradeID(id int64) *ClassUpdateOne {
 	_u.mutation.SetGradeID(id)
 	return _u
 }
@@ -186,6 +268,21 @@ func (_u *ClassUpdateOne) SetGradeID(id int) *ClassUpdateOne {
 // SetGrade sets the "grade" edge to the Grade entity.
 func (_u *ClassUpdateOne) SetGrade(v *Grade) *ClassUpdateOne {
 	return _u.SetGradeID(v.ID)
+}
+
+// AddStudentIDs adds the "student" edge to the Student entity by IDs.
+func (_u *ClassUpdateOne) AddStudentIDs(ids ...int64) *ClassUpdateOne {
+	_u.mutation.AddStudentIDs(ids...)
+	return _u
+}
+
+// AddStudent adds the "student" edges to the Student entity.
+func (_u *ClassUpdateOne) AddStudent(v ...*Student) *ClassUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddStudentIDs(ids...)
 }
 
 // Mutation returns the ClassMutation object of the builder.
@@ -197,6 +294,27 @@ func (_u *ClassUpdateOne) Mutation() *ClassMutation {
 func (_u *ClassUpdateOne) ClearGrade() *ClassUpdateOne {
 	_u.mutation.ClearGrade()
 	return _u
+}
+
+// ClearStudent clears all "student" edges to the Student entity.
+func (_u *ClassUpdateOne) ClearStudent() *ClassUpdateOne {
+	_u.mutation.ClearStudent()
+	return _u
+}
+
+// RemoveStudentIDs removes the "student" edge to Student entities by IDs.
+func (_u *ClassUpdateOne) RemoveStudentIDs(ids ...int64) *ClassUpdateOne {
+	_u.mutation.RemoveStudentIDs(ids...)
+	return _u
+}
+
+// RemoveStudent removes "student" edges to Student entities.
+func (_u *ClassUpdateOne) RemoveStudent(v ...*Student) *ClassUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveStudentIDs(ids...)
 }
 
 // Where appends a list predicates to the ClassUpdate builder.
@@ -251,7 +369,7 @@ func (_u *ClassUpdateOne) sqlSave(ctx context.Context) (_node *Class, err error)
 	if err := _u.check(); err != nil {
 		return _node, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(class.Table, class.Columns, sqlgraph.NewFieldSpec(class.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewUpdateSpec(class.Table, class.Columns, sqlgraph.NewFieldSpec(class.FieldID, field.TypeInt64))
 	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Class.id" for update`)}
@@ -276,8 +394,8 @@ func (_u *ClassUpdateOne) sqlSave(ctx context.Context) (_node *Class, err error)
 			}
 		}
 	}
-	if value, ok := _u.mutation.Name(); ok {
-		_spec.SetField(class.FieldName, field.TypeString, value)
+	if value, ok := _u.mutation.ClassName(); ok {
+		_spec.SetField(class.FieldClassName, field.TypeString, value)
 	}
 	if _u.mutation.GradeCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -287,7 +405,7 @@ func (_u *ClassUpdateOne) sqlSave(ctx context.Context) (_node *Class, err error)
 			Columns: []string{class.GradeColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(grade.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(grade.FieldID, field.TypeInt64),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -300,7 +418,52 @@ func (_u *ClassUpdateOne) sqlSave(ctx context.Context) (_node *Class, err error)
 			Columns: []string{class.GradeColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(grade.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(grade.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.StudentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   class.StudentTable,
+			Columns: []string{class.StudentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedStudentIDs(); len(nodes) > 0 && !_u.mutation.StudentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   class.StudentTable,
+			Columns: []string{class.StudentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.StudentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   class.StudentTable,
+			Columns: []string{class.StudentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {

@@ -5,6 +5,9 @@ package ent
 import (
 	"context"
 	"eGZ-stu-log/internal/data/ent/dorm"
+	"eGZ-stu-log/internal/data/ent/grade"
+	"eGZ-stu-log/internal/data/ent/student"
+	"errors"
 	"fmt"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -16,6 +19,60 @@ type DormCreate struct {
 	config
 	mutation *DormMutation
 	hooks    []Hook
+}
+
+// SetBuilding sets the "building" field.
+func (_c *DormCreate) SetBuilding(v string) *DormCreate {
+	_c.mutation.SetBuilding(v)
+	return _c
+}
+
+// SetDormNum sets the "dormNum" field.
+func (_c *DormCreate) SetDormNum(v string) *DormCreate {
+	_c.mutation.SetDormNum(v)
+	return _c
+}
+
+// SetSex sets the "sex" field.
+func (_c *DormCreate) SetSex(v string) *DormCreate {
+	_c.mutation.SetSex(v)
+	return _c
+}
+
+// SetID sets the "id" field.
+func (_c *DormCreate) SetID(v int64) *DormCreate {
+	_c.mutation.SetID(v)
+	return _c
+}
+
+// AddStudentIDs adds the "student" edge to the Student entity by IDs.
+func (_c *DormCreate) AddStudentIDs(ids ...int64) *DormCreate {
+	_c.mutation.AddStudentIDs(ids...)
+	return _c
+}
+
+// AddStudent adds the "student" edges to the Student entity.
+func (_c *DormCreate) AddStudent(v ...*Student) *DormCreate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddStudentIDs(ids...)
+}
+
+// AddGradeIDs adds the "grade" edge to the Grade entity by IDs.
+func (_c *DormCreate) AddGradeIDs(ids ...int64) *DormCreate {
+	_c.mutation.AddGradeIDs(ids...)
+	return _c
+}
+
+// AddGrade adds the "grade" edges to the Grade entity.
+func (_c *DormCreate) AddGrade(v ...*Grade) *DormCreate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddGradeIDs(ids...)
 }
 
 // Mutation returns the DormMutation object of the builder.
@@ -52,6 +109,18 @@ func (_c *DormCreate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_c *DormCreate) check() error {
+	if _, ok := _c.mutation.Building(); !ok {
+		return &ValidationError{Name: "building", err: errors.New(`ent: missing required field "Dorm.building"`)}
+	}
+	if _, ok := _c.mutation.DormNum(); !ok {
+		return &ValidationError{Name: "dormNum", err: errors.New(`ent: missing required field "Dorm.dormNum"`)}
+	}
+	if _, ok := _c.mutation.Sex(); !ok {
+		return &ValidationError{Name: "sex", err: errors.New(`ent: missing required field "Dorm.sex"`)}
+	}
+	if len(_c.mutation.GradeIDs()) == 0 {
+		return &ValidationError{Name: "grade", err: errors.New(`ent: missing required edge "Dorm.grade"`)}
+	}
 	return nil
 }
 
@@ -66,8 +135,10 @@ func (_c *DormCreate) sqlSave(ctx context.Context) (*Dorm, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != _node.ID {
+		id := _spec.ID.Value.(int64)
+		_node.ID = int64(id)
+	}
 	_c.mutation.id = &_node.ID
 	_c.mutation.done = true
 	return _node, nil
@@ -76,8 +147,56 @@ func (_c *DormCreate) sqlSave(ctx context.Context) (*Dorm, error) {
 func (_c *DormCreate) createSpec() (*Dorm, *sqlgraph.CreateSpec) {
 	var (
 		_node = &Dorm{config: _c.config}
-		_spec = sqlgraph.NewCreateSpec(dorm.Table, sqlgraph.NewFieldSpec(dorm.FieldID, field.TypeInt))
+		_spec = sqlgraph.NewCreateSpec(dorm.Table, sqlgraph.NewFieldSpec(dorm.FieldID, field.TypeInt64))
 	)
+	if id, ok := _c.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
+	}
+	if value, ok := _c.mutation.Building(); ok {
+		_spec.SetField(dorm.FieldBuilding, field.TypeString, value)
+		_node.Building = value
+	}
+	if value, ok := _c.mutation.DormNum(); ok {
+		_spec.SetField(dorm.FieldDormNum, field.TypeString, value)
+		_node.DormNum = value
+	}
+	if value, ok := _c.mutation.Sex(); ok {
+		_spec.SetField(dorm.FieldSex, field.TypeString, value)
+		_node.Sex = value
+	}
+	if nodes := _c.mutation.StudentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   dorm.StudentTable,
+			Columns: []string{dorm.StudentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.GradeIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   dorm.GradeTable,
+			Columns: dorm.GradePrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(grade.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	return _node, _spec
 }
 
@@ -125,9 +244,9 @@ func (_c *DormCreateBulk) Save(ctx context.Context) ([]*Dorm, error) {
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
-				if specs[i].ID.Value != nil {
+				if specs[i].ID.Value != nil && nodes[i].ID == 0 {
 					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = int(id)
+					nodes[i].ID = int64(id)
 				}
 				mutation.done = true
 				return nodes[i], nil

@@ -44,28 +44,40 @@ func (f GradeFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.GradeMutation", m)
 }
 
-// The LogsFunc type is an adapter to allow the use of ordinary
-// function as Logs mutator.
-type LogsFunc func(context.Context, *ent.LogsMutation) (ent.Value, error)
+// The ImageFunc type is an adapter to allow the use of ordinary
+// function as Image mutator.
+type ImageFunc func(context.Context, *ent.ImageMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f LogsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.LogsMutation); ok {
+func (f ImageFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ImageMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.LogsMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ImageMutation", m)
 }
 
-// The ScoreFunc type is an adapter to allow the use of ordinary
-// function as Score mutator.
-type ScoreFunc func(context.Context, *ent.ScoreMutation) (ent.Value, error)
+// The RuleFunc type is an adapter to allow the use of ordinary
+// function as Rule mutator.
+type RuleFunc func(context.Context, *ent.RuleMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f ScoreFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.ScoreMutation); ok {
+func (f RuleFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.RuleMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ScoreMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.RuleMutation", m)
+}
+
+// The StuLogFunc type is an adapter to allow the use of ordinary
+// function as StuLog mutator.
+type StuLogFunc func(context.Context, *ent.StuLogMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f StuLogFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.StuLogMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.StuLogMutation", m)
 }
 
 // The StudentFunc type is an adapter to allow the use of ordinary

@@ -6,8 +6,10 @@ import (
 	"context"
 	"database/sql/driver"
 	"eGZ-stu-log/internal/data/ent/class"
+	"eGZ-stu-log/internal/data/ent/dorm"
 	"eGZ-stu-log/internal/data/ent/grade"
 	"eGZ-stu-log/internal/data/ent/predicate"
+	"eGZ-stu-log/internal/data/ent/student"
 	"fmt"
 	"math"
 
@@ -20,11 +22,13 @@ import (
 // GradeQuery is the builder for querying Grade entities.
 type GradeQuery struct {
 	config
-	ctx        *QueryContext
-	order      []grade.OrderOption
-	inters     []Interceptor
-	predicates []predicate.Grade
-	withClass  *ClassQuery
+	ctx         *QueryContext
+	order       []grade.OrderOption
+	inters      []Interceptor
+	predicates  []predicate.Grade
+	withClass   *ClassQuery
+	withStudent *StudentQuery
+	withDorm    *DormQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -83,6 +87,50 @@ func (_q *GradeQuery) QueryClass() *ClassQuery {
 	return query
 }
 
+// QueryStudent chains the current query on the "student" edge.
+func (_q *GradeQuery) QueryStudent() *StudentQuery {
+	query := (&StudentClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(grade.Table, grade.FieldID, selector),
+			sqlgraph.To(student.Table, student.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, grade.StudentTable, grade.StudentColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryDorm chains the current query on the "dorm" edge.
+func (_q *GradeQuery) QueryDorm() *DormQuery {
+	query := (&DormClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(grade.Table, grade.FieldID, selector),
+			sqlgraph.To(dorm.Table, dorm.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, grade.DormTable, grade.DormPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first Grade entity from the query.
 // Returns a *NotFoundError when no Grade was found.
 func (_q *GradeQuery) First(ctx context.Context) (*Grade, error) {
@@ -107,8 +155,8 @@ func (_q *GradeQuery) FirstX(ctx context.Context) *Grade {
 
 // FirstID returns the first Grade ID from the query.
 // Returns a *NotFoundError when no Grade ID was found.
-func (_q *GradeQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (_q *GradeQuery) FirstID(ctx context.Context) (id int64, err error) {
+	var ids []int64
 	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
@@ -120,7 +168,7 @@ func (_q *GradeQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (_q *GradeQuery) FirstIDX(ctx context.Context) int {
+func (_q *GradeQuery) FirstIDX(ctx context.Context) int64 {
 	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -158,8 +206,8 @@ func (_q *GradeQuery) OnlyX(ctx context.Context) *Grade {
 // OnlyID is like Only, but returns the only Grade ID in the query.
 // Returns a *NotSingularError when more than one Grade ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (_q *GradeQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (_q *GradeQuery) OnlyID(ctx context.Context) (id int64, err error) {
+	var ids []int64
 	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
@@ -175,7 +223,7 @@ func (_q *GradeQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (_q *GradeQuery) OnlyIDX(ctx context.Context) int {
+func (_q *GradeQuery) OnlyIDX(ctx context.Context) int64 {
 	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -203,7 +251,7 @@ func (_q *GradeQuery) AllX(ctx context.Context) []*Grade {
 }
 
 // IDs executes the query and returns a list of Grade IDs.
-func (_q *GradeQuery) IDs(ctx context.Context) (ids []int, err error) {
+func (_q *GradeQuery) IDs(ctx context.Context) (ids []int64, err error) {
 	if _q.ctx.Unique == nil && _q.path != nil {
 		_q.Unique(true)
 	}
@@ -215,7 +263,7 @@ func (_q *GradeQuery) IDs(ctx context.Context) (ids []int, err error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (_q *GradeQuery) IDsX(ctx context.Context) []int {
+func (_q *GradeQuery) IDsX(ctx context.Context) []int64 {
 	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -270,12 +318,14 @@ func (_q *GradeQuery) Clone() *GradeQuery {
 		return nil
 	}
 	return &GradeQuery{
-		config:     _q.config,
-		ctx:        _q.ctx.Clone(),
-		order:      append([]grade.OrderOption{}, _q.order...),
-		inters:     append([]Interceptor{}, _q.inters...),
-		predicates: append([]predicate.Grade{}, _q.predicates...),
-		withClass:  _q.withClass.Clone(),
+		config:      _q.config,
+		ctx:         _q.ctx.Clone(),
+		order:       append([]grade.OrderOption{}, _q.order...),
+		inters:      append([]Interceptor{}, _q.inters...),
+		predicates:  append([]predicate.Grade{}, _q.predicates...),
+		withClass:   _q.withClass.Clone(),
+		withStudent: _q.withStudent.Clone(),
+		withDorm:    _q.withDorm.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -290,6 +340,28 @@ func (_q *GradeQuery) WithClass(opts ...func(*ClassQuery)) *GradeQuery {
 		opt(query)
 	}
 	_q.withClass = query
+	return _q
+}
+
+// WithStudent tells the query-builder to eager-load the nodes that are connected to
+// the "student" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GradeQuery) WithStudent(opts ...func(*StudentQuery)) *GradeQuery {
+	query := (&StudentClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withStudent = query
+	return _q
+}
+
+// WithDorm tells the query-builder to eager-load the nodes that are connected to
+// the "dorm" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GradeQuery) WithDorm(opts ...func(*DormQuery)) *GradeQuery {
+	query := (&DormClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withDorm = query
 	return _q
 }
 
@@ -371,8 +443,10 @@ func (_q *GradeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Grade,
 	var (
 		nodes       = []*Grade{}
 		_spec       = _q.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [3]bool{
 			_q.withClass != nil,
+			_q.withStudent != nil,
+			_q.withDorm != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -400,12 +474,26 @@ func (_q *GradeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Grade,
 			return nil, err
 		}
 	}
+	if query := _q.withStudent; query != nil {
+		if err := _q.loadStudent(ctx, query, nodes,
+			func(n *Grade) { n.Edges.Student = []*Student{} },
+			func(n *Grade, e *Student) { n.Edges.Student = append(n.Edges.Student, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withDorm; query != nil {
+		if err := _q.loadDorm(ctx, query, nodes,
+			func(n *Grade) { n.Edges.Dorm = []*Dorm{} },
+			func(n *Grade, e *Dorm) { n.Edges.Dorm = append(n.Edges.Dorm, e) }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
 }
 
 func (_q *GradeQuery) loadClass(ctx context.Context, query *ClassQuery, nodes []*Grade, init func(*Grade), assign func(*Grade, *Class)) error {
 	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[int]*Grade)
+	nodeids := make(map[int64]*Grade)
 	for i := range nodes {
 		fks = append(fks, nodes[i].ID)
 		nodeids[nodes[i].ID] = nodes[i]
@@ -434,6 +522,98 @@ func (_q *GradeQuery) loadClass(ctx context.Context, query *ClassQuery, nodes []
 	}
 	return nil
 }
+func (_q *GradeQuery) loadStudent(ctx context.Context, query *StudentQuery, nodes []*Grade, init func(*Grade), assign func(*Grade, *Student)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int64]*Grade)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Student(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(grade.StudentColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.student_grade
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "student_grade" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "student_grade" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GradeQuery) loadDorm(ctx context.Context, query *DormQuery, nodes []*Grade, init func(*Grade), assign func(*Grade, *Dorm)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int64]*Grade)
+	nids := make(map[int64]map[*Grade]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(grade.DormTable)
+		s.Join(joinT).On(s.C(dorm.FieldID), joinT.C(grade.DormPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(grade.DormPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(grade.DormPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := values[0].(*sql.NullInt64).Int64
+				inValue := values[1].(*sql.NullInt64).Int64
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Grade]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Dorm](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "dorm" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
 
 func (_q *GradeQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
@@ -445,7 +625,7 @@ func (_q *GradeQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (_q *GradeQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(grade.Table, grade.Columns, sqlgraph.NewFieldSpec(grade.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewQuerySpec(grade.Table, grade.Columns, sqlgraph.NewFieldSpec(grade.FieldID, field.TypeInt64))
 	_spec.From = _q.sql
 	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique

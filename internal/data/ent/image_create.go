@@ -4,32 +4,45 @@ package ent
 
 import (
 	"context"
-	"eGZ-stu-log/internal/data/ent/logs"
+	"eGZ-stu-log/internal/data/ent/image"
+	"errors"
 	"fmt"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 )
 
-// LogsCreate is the builder for creating a Logs entity.
-type LogsCreate struct {
+// ImageCreate is the builder for creating a Image entity.
+type ImageCreate struct {
 	config
-	mutation *LogsMutation
+	mutation *ImageMutation
 	hooks    []Hook
 }
 
-// Mutation returns the LogsMutation object of the builder.
-func (_c *LogsCreate) Mutation() *LogsMutation {
+// SetImageUrl sets the "imageUrl" field.
+func (_c *ImageCreate) SetImageUrl(v string) *ImageCreate {
+	_c.mutation.SetImageUrl(v)
+	return _c
+}
+
+// SetID sets the "id" field.
+func (_c *ImageCreate) SetID(v int64) *ImageCreate {
+	_c.mutation.SetID(v)
+	return _c
+}
+
+// Mutation returns the ImageMutation object of the builder.
+func (_c *ImageCreate) Mutation() *ImageMutation {
 	return _c.mutation
 }
 
-// Save creates the Logs in the database.
-func (_c *LogsCreate) Save(ctx context.Context) (*Logs, error) {
+// Save creates the Image in the database.
+func (_c *ImageCreate) Save(ctx context.Context) (*Image, error) {
 	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (_c *LogsCreate) SaveX(ctx context.Context) *Logs {
+func (_c *ImageCreate) SaveX(ctx context.Context) *Image {
 	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -38,24 +51,27 @@ func (_c *LogsCreate) SaveX(ctx context.Context) *Logs {
 }
 
 // Exec executes the query.
-func (_c *LogsCreate) Exec(ctx context.Context) error {
+func (_c *ImageCreate) Exec(ctx context.Context) error {
 	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_c *LogsCreate) ExecX(ctx context.Context) {
+func (_c *ImageCreate) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (_c *LogsCreate) check() error {
+func (_c *ImageCreate) check() error {
+	if _, ok := _c.mutation.ImageUrl(); !ok {
+		return &ValidationError{Name: "imageUrl", err: errors.New(`ent: missing required field "Image.imageUrl"`)}
+	}
 	return nil
 }
 
-func (_c *LogsCreate) sqlSave(ctx context.Context) (*Logs, error) {
+func (_c *ImageCreate) sqlSave(ctx context.Context) (*Image, error) {
 	if err := _c.check(); err != nil {
 		return nil, err
 	}
@@ -66,41 +82,51 @@ func (_c *LogsCreate) sqlSave(ctx context.Context) (*Logs, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != _node.ID {
+		id := _spec.ID.Value.(int64)
+		_node.ID = int64(id)
+	}
 	_c.mutation.id = &_node.ID
 	_c.mutation.done = true
 	return _node, nil
 }
 
-func (_c *LogsCreate) createSpec() (*Logs, *sqlgraph.CreateSpec) {
+func (_c *ImageCreate) createSpec() (*Image, *sqlgraph.CreateSpec) {
 	var (
-		_node = &Logs{config: _c.config}
-		_spec = sqlgraph.NewCreateSpec(logs.Table, sqlgraph.NewFieldSpec(logs.FieldID, field.TypeInt))
+		_node = &Image{config: _c.config}
+		_spec = sqlgraph.NewCreateSpec(image.Table, sqlgraph.NewFieldSpec(image.FieldID, field.TypeInt64))
 	)
+	if id, ok := _c.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
+	}
+	if value, ok := _c.mutation.ImageUrl(); ok {
+		_spec.SetField(image.FieldImageUrl, field.TypeString, value)
+		_node.ImageUrl = value
+	}
 	return _node, _spec
 }
 
-// LogsCreateBulk is the builder for creating many Logs entities in bulk.
-type LogsCreateBulk struct {
+// ImageCreateBulk is the builder for creating many Image entities in bulk.
+type ImageCreateBulk struct {
 	config
 	err      error
-	builders []*LogsCreate
+	builders []*ImageCreate
 }
 
-// Save creates the Logs entities in the database.
-func (_c *LogsCreateBulk) Save(ctx context.Context) ([]*Logs, error) {
+// Save creates the Image entities in the database.
+func (_c *ImageCreateBulk) Save(ctx context.Context) ([]*Image, error) {
 	if _c.err != nil {
 		return nil, _c.err
 	}
 	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
-	nodes := make([]*Logs, len(_c.builders))
+	nodes := make([]*Image, len(_c.builders))
 	mutators := make([]Mutator, len(_c.builders))
 	for i := range _c.builders {
 		func(i int, root context.Context) {
 			builder := _c.builders[i]
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-				mutation, ok := m.(*LogsMutation)
+				mutation, ok := m.(*ImageMutation)
 				if !ok {
 					return nil, fmt.Errorf("unexpected mutation type %T", m)
 				}
@@ -125,9 +151,9 @@ func (_c *LogsCreateBulk) Save(ctx context.Context) ([]*Logs, error) {
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
-				if specs[i].ID.Value != nil {
+				if specs[i].ID.Value != nil && nodes[i].ID == 0 {
 					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = int(id)
+					nodes[i].ID = int64(id)
 				}
 				mutation.done = true
 				return nodes[i], nil
@@ -147,7 +173,7 @@ func (_c *LogsCreateBulk) Save(ctx context.Context) ([]*Logs, error) {
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (_c *LogsCreateBulk) SaveX(ctx context.Context) []*Logs {
+func (_c *ImageCreateBulk) SaveX(ctx context.Context) []*Image {
 	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -156,13 +182,13 @@ func (_c *LogsCreateBulk) SaveX(ctx context.Context) []*Logs {
 }
 
 // Exec executes the query.
-func (_c *LogsCreateBulk) Exec(ctx context.Context) error {
+func (_c *ImageCreateBulk) Exec(ctx context.Context) error {
 	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_c *LogsCreateBulk) ExecX(ctx context.Context) {
+func (_c *ImageCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}

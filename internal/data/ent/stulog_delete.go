@@ -5,33 +5,33 @@ package ent
 import (
 	"context"
 	"eGZ-stu-log/internal/data/ent/predicate"
-	"eGZ-stu-log/internal/data/ent/score"
+	"eGZ-stu-log/internal/data/ent/stulog"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 )
 
-// ScoreDelete is the builder for deleting a Score entity.
-type ScoreDelete struct {
+// StuLogDelete is the builder for deleting a StuLog entity.
+type StuLogDelete struct {
 	config
 	hooks    []Hook
-	mutation *ScoreMutation
+	mutation *StuLogMutation
 }
 
-// Where appends a list predicates to the ScoreDelete builder.
-func (_d *ScoreDelete) Where(ps ...predicate.Score) *ScoreDelete {
+// Where appends a list predicates to the StuLogDelete builder.
+func (_d *StuLogDelete) Where(ps ...predicate.StuLog) *StuLogDelete {
 	_d.mutation.Where(ps...)
 	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (_d *ScoreDelete) Exec(ctx context.Context) (int, error) {
+func (_d *StuLogDelete) Exec(ctx context.Context) (int, error) {
 	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_d *ScoreDelete) ExecX(ctx context.Context) int {
+func (_d *StuLogDelete) ExecX(ctx context.Context) int {
 	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
@@ -39,8 +39,8 @@ func (_d *ScoreDelete) ExecX(ctx context.Context) int {
 	return n
 }
 
-func (_d *ScoreDelete) sqlExec(ctx context.Context) (int, error) {
-	_spec := sqlgraph.NewDeleteSpec(score.Table, sqlgraph.NewFieldSpec(score.FieldID, field.TypeInt))
+func (_d *StuLogDelete) sqlExec(ctx context.Context) (int, error) {
+	_spec := sqlgraph.NewDeleteSpec(stulog.Table, sqlgraph.NewFieldSpec(stulog.FieldID, field.TypeInt64))
 	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -56,32 +56,32 @@ func (_d *ScoreDelete) sqlExec(ctx context.Context) (int, error) {
 	return affected, err
 }
 
-// ScoreDeleteOne is the builder for deleting a single Score entity.
-type ScoreDeleteOne struct {
-	_d *ScoreDelete
+// StuLogDeleteOne is the builder for deleting a single StuLog entity.
+type StuLogDeleteOne struct {
+	_d *StuLogDelete
 }
 
-// Where appends a list predicates to the ScoreDelete builder.
-func (_d *ScoreDeleteOne) Where(ps ...predicate.Score) *ScoreDeleteOne {
+// Where appends a list predicates to the StuLogDelete builder.
+func (_d *StuLogDeleteOne) Where(ps ...predicate.StuLog) *StuLogDeleteOne {
 	_d._d.mutation.Where(ps...)
 	return _d
 }
 
 // Exec executes the deletion query.
-func (_d *ScoreDeleteOne) Exec(ctx context.Context) error {
+func (_d *StuLogDeleteOne) Exec(ctx context.Context) error {
 	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
 	case n == 0:
-		return &NotFoundError{score.Label}
+		return &NotFoundError{stulog.Label}
 	default:
 		return nil
 	}
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_d *ScoreDeleteOne) ExecX(ctx context.Context) {
+func (_d *StuLogDeleteOne) ExecX(ctx context.Context) {
 	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}

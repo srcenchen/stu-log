@@ -14,14 +14,15 @@ type Class struct {
 // Fields of the Class.
 func (Class) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("name"),
-		// 不需要手动定义 grade_id！Ent 自动生成
+		field.Int64("id"),
+		field.String("className"),
 	}
 }
 
 func (Class) Edges() []ent.Edge {
 	return []ent.Edge{
 		// 每个 Class 属于一个 Grade
-		edge.To("grade", Grade.Type).Unique().Required(), // 必须关联年级
+		edge.To("grade", Grade.Type).Unique().Required(),
+		edge.From("student", Student.Type).Ref("class"),
 	}
 }

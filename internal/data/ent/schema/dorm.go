@@ -1,6 +1,10 @@
 package schema
 
-import "entgo.io/ent"
+import (
+	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
+	"entgo.io/ent/schema/field"
+)
 
 // Dorm holds the schema definition for the Dorm entity.
 type Dorm struct {
@@ -9,10 +13,18 @@ type Dorm struct {
 
 // Fields of the Dorm.
 func (Dorm) Fields() []ent.Field {
-	return nil
+	return []ent.Field{
+		field.Int64("id"),
+		field.String("building"),
+		field.String("dormNum"),
+		field.String("sex"),
+	}
 }
 
 // Edges of the Dorm.
 func (Dorm) Edges() []ent.Edge {
-	return nil
+	return []ent.Edge{
+		edge.From("student", Student.Type).Ref("dorm"),
+		edge.To("grade", Grade.Type).Required(),
+	}
 }

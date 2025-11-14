@@ -4,7 +4,7 @@ package ent
 
 import (
 	"context"
-	"eGZ-stu-log/internal/data/ent/logs"
+	"eGZ-stu-log/internal/data/ent/image"
 	"eGZ-stu-log/internal/data/ent/predicate"
 	"fmt"
 	"math"
@@ -15,64 +15,65 @@ import (
 	"entgo.io/ent/schema/field"
 )
 
-// LogsQuery is the builder for querying Logs entities.
-type LogsQuery struct {
+// ImageQuery is the builder for querying Image entities.
+type ImageQuery struct {
 	config
 	ctx        *QueryContext
-	order      []logs.OrderOption
+	order      []image.OrderOption
 	inters     []Interceptor
-	predicates []predicate.Logs
+	predicates []predicate.Image
+	withFKs    bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
 }
 
-// Where adds a new predicate for the LogsQuery builder.
-func (_q *LogsQuery) Where(ps ...predicate.Logs) *LogsQuery {
+// Where adds a new predicate for the ImageQuery builder.
+func (_q *ImageQuery) Where(ps ...predicate.Image) *ImageQuery {
 	_q.predicates = append(_q.predicates, ps...)
 	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (_q *LogsQuery) Limit(limit int) *LogsQuery {
+func (_q *ImageQuery) Limit(limit int) *ImageQuery {
 	_q.ctx.Limit = &limit
 	return _q
 }
 
 // Offset to start from.
-func (_q *LogsQuery) Offset(offset int) *LogsQuery {
+func (_q *ImageQuery) Offset(offset int) *ImageQuery {
 	_q.ctx.Offset = &offset
 	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (_q *LogsQuery) Unique(unique bool) *LogsQuery {
+func (_q *ImageQuery) Unique(unique bool) *ImageQuery {
 	_q.ctx.Unique = &unique
 	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (_q *LogsQuery) Order(o ...logs.OrderOption) *LogsQuery {
+func (_q *ImageQuery) Order(o ...image.OrderOption) *ImageQuery {
 	_q.order = append(_q.order, o...)
 	return _q
 }
 
-// First returns the first Logs entity from the query.
-// Returns a *NotFoundError when no Logs was found.
-func (_q *LogsQuery) First(ctx context.Context) (*Logs, error) {
+// First returns the first Image entity from the query.
+// Returns a *NotFoundError when no Image was found.
+func (_q *ImageQuery) First(ctx context.Context) (*Image, error) {
 	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
-		return nil, &NotFoundError{logs.Label}
+		return nil, &NotFoundError{image.Label}
 	}
 	return nodes[0], nil
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (_q *LogsQuery) FirstX(ctx context.Context) *Logs {
+func (_q *ImageQuery) FirstX(ctx context.Context) *Image {
 	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -80,22 +81,22 @@ func (_q *LogsQuery) FirstX(ctx context.Context) *Logs {
 	return node
 }
 
-// FirstID returns the first Logs ID from the query.
-// Returns a *NotFoundError when no Logs ID was found.
-func (_q *LogsQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+// FirstID returns the first Image ID from the query.
+// Returns a *NotFoundError when no Image ID was found.
+func (_q *ImageQuery) FirstID(ctx context.Context) (id int64, err error) {
+	var ids []int64
 	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
-		err = &NotFoundError{logs.Label}
+		err = &NotFoundError{image.Label}
 		return
 	}
 	return ids[0], nil
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (_q *LogsQuery) FirstIDX(ctx context.Context) int {
+func (_q *ImageQuery) FirstIDX(ctx context.Context) int64 {
 	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -103,10 +104,10 @@ func (_q *LogsQuery) FirstIDX(ctx context.Context) int {
 	return id
 }
 
-// Only returns a single Logs entity found by the query, ensuring it only returns one.
-// Returns a *NotSingularError when more than one Logs entity is found.
-// Returns a *NotFoundError when no Logs entities are found.
-func (_q *LogsQuery) Only(ctx context.Context) (*Logs, error) {
+// Only returns a single Image entity found by the query, ensuring it only returns one.
+// Returns a *NotSingularError when more than one Image entity is found.
+// Returns a *NotFoundError when no Image entities are found.
+func (_q *ImageQuery) Only(ctx context.Context) (*Image, error) {
 	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
@@ -115,14 +116,14 @@ func (_q *LogsQuery) Only(ctx context.Context) (*Logs, error) {
 	case 1:
 		return nodes[0], nil
 	case 0:
-		return nil, &NotFoundError{logs.Label}
+		return nil, &NotFoundError{image.Label}
 	default:
-		return nil, &NotSingularError{logs.Label}
+		return nil, &NotSingularError{image.Label}
 	}
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (_q *LogsQuery) OnlyX(ctx context.Context) *Logs {
+func (_q *ImageQuery) OnlyX(ctx context.Context) *Image {
 	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
@@ -130,11 +131,11 @@ func (_q *LogsQuery) OnlyX(ctx context.Context) *Logs {
 	return node
 }
 
-// OnlyID is like Only, but returns the only Logs ID in the query.
-// Returns a *NotSingularError when more than one Logs ID is found.
+// OnlyID is like Only, but returns the only Image ID in the query.
+// Returns a *NotSingularError when more than one Image ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (_q *LogsQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (_q *ImageQuery) OnlyID(ctx context.Context) (id int64, err error) {
+	var ids []int64
 	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
@@ -142,15 +143,15 @@ func (_q *LogsQuery) OnlyID(ctx context.Context) (id int, err error) {
 	case 1:
 		id = ids[0]
 	case 0:
-		err = &NotFoundError{logs.Label}
+		err = &NotFoundError{image.Label}
 	default:
-		err = &NotSingularError{logs.Label}
+		err = &NotSingularError{image.Label}
 	}
 	return
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (_q *LogsQuery) OnlyIDX(ctx context.Context) int {
+func (_q *ImageQuery) OnlyIDX(ctx context.Context) int64 {
 	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -158,18 +159,18 @@ func (_q *LogsQuery) OnlyIDX(ctx context.Context) int {
 	return id
 }
 
-// All executes the query and returns a list of LogsSlice.
-func (_q *LogsQuery) All(ctx context.Context) ([]*Logs, error) {
+// All executes the query and returns a list of Images.
+func (_q *ImageQuery) All(ctx context.Context) ([]*Image, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
 	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
-	qr := querierAll[[]*Logs, *LogsQuery]()
-	return withInterceptors[[]*Logs](ctx, _q, qr, _q.inters)
+	qr := querierAll[[]*Image, *ImageQuery]()
+	return withInterceptors[[]*Image](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (_q *LogsQuery) AllX(ctx context.Context) []*Logs {
+func (_q *ImageQuery) AllX(ctx context.Context) []*Image {
 	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
@@ -177,20 +178,20 @@ func (_q *LogsQuery) AllX(ctx context.Context) []*Logs {
 	return nodes
 }
 
-// IDs executes the query and returns a list of Logs IDs.
-func (_q *LogsQuery) IDs(ctx context.Context) (ids []int, err error) {
+// IDs executes the query and returns a list of Image IDs.
+func (_q *ImageQuery) IDs(ctx context.Context) (ids []int64, err error) {
 	if _q.ctx.Unique == nil && _q.path != nil {
 		_q.Unique(true)
 	}
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
-	if err = _q.Select(logs.FieldID).Scan(ctx, &ids); err != nil {
+	if err = _q.Select(image.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (_q *LogsQuery) IDsX(ctx context.Context) []int {
+func (_q *ImageQuery) IDsX(ctx context.Context) []int64 {
 	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -199,16 +200,16 @@ func (_q *LogsQuery) IDsX(ctx context.Context) []int {
 }
 
 // Count returns the count of the given query.
-func (_q *LogsQuery) Count(ctx context.Context) (int, error) {
+func (_q *ImageQuery) Count(ctx context.Context) (int, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
 	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, _q, querierCount[*LogsQuery](), _q.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*ImageQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (_q *LogsQuery) CountX(ctx context.Context) int {
+func (_q *ImageQuery) CountX(ctx context.Context) int {
 	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
@@ -217,7 +218,7 @@ func (_q *LogsQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (_q *LogsQuery) Exist(ctx context.Context) (bool, error) {
+func (_q *ImageQuery) Exist(ctx context.Context) (bool, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
 	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
@@ -230,7 +231,7 @@ func (_q *LogsQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (_q *LogsQuery) ExistX(ctx context.Context) bool {
+func (_q *ImageQuery) ExistX(ctx context.Context) bool {
 	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
@@ -238,18 +239,18 @@ func (_q *LogsQuery) ExistX(ctx context.Context) bool {
 	return exist
 }
 
-// Clone returns a duplicate of the LogsQuery builder, including all associated steps. It can be
+// Clone returns a duplicate of the ImageQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (_q *LogsQuery) Clone() *LogsQuery {
+func (_q *ImageQuery) Clone() *ImageQuery {
 	if _q == nil {
 		return nil
 	}
-	return &LogsQuery{
+	return &ImageQuery{
 		config:     _q.config,
 		ctx:        _q.ctx.Clone(),
-		order:      append([]logs.OrderOption{}, _q.order...),
+		order:      append([]image.OrderOption{}, _q.order...),
 		inters:     append([]Interceptor{}, _q.inters...),
-		predicates: append([]predicate.Logs{}, _q.predicates...),
+		predicates: append([]predicate.Image{}, _q.predicates...),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -258,31 +259,53 @@ func (_q *LogsQuery) Clone() *LogsQuery {
 
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
-func (_q *LogsQuery) GroupBy(field string, fields ...string) *LogsGroupBy {
+//
+// Example:
+//
+//	var v []struct {
+//		ImageUrl string `json:"imageUrl,omitempty"`
+//		Count int `json:"count,omitempty"`
+//	}
+//
+//	client.Image.Query().
+//		GroupBy(image.FieldImageUrl).
+//		Aggregate(ent.Count()).
+//		Scan(ctx, &v)
+func (_q *ImageQuery) GroupBy(field string, fields ...string) *ImageGroupBy {
 	_q.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &LogsGroupBy{build: _q}
+	grbuild := &ImageGroupBy{build: _q}
 	grbuild.flds = &_q.ctx.Fields
-	grbuild.label = logs.Label
+	grbuild.label = image.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
 }
 
 // Select allows the selection one or more fields/columns for the given query,
 // instead of selecting all fields in the entity.
-func (_q *LogsQuery) Select(fields ...string) *LogsSelect {
+//
+// Example:
+//
+//	var v []struct {
+//		ImageUrl string `json:"imageUrl,omitempty"`
+//	}
+//
+//	client.Image.Query().
+//		Select(image.FieldImageUrl).
+//		Scan(ctx, &v)
+func (_q *ImageQuery) Select(fields ...string) *ImageSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
-	sbuild := &LogsSelect{LogsQuery: _q}
-	sbuild.label = logs.Label
+	sbuild := &ImageSelect{ImageQuery: _q}
+	sbuild.label = image.Label
 	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
-// Aggregate returns a LogsSelect configured with the given aggregations.
-func (_q *LogsQuery) Aggregate(fns ...AggregateFunc) *LogsSelect {
+// Aggregate returns a ImageSelect configured with the given aggregations.
+func (_q *ImageQuery) Aggregate(fns ...AggregateFunc) *ImageSelect {
 	return _q.Select().Aggregate(fns...)
 }
 
-func (_q *LogsQuery) prepareQuery(ctx context.Context) error {
+func (_q *ImageQuery) prepareQuery(ctx context.Context) error {
 	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
@@ -294,7 +317,7 @@ func (_q *LogsQuery) prepareQuery(ctx context.Context) error {
 		}
 	}
 	for _, f := range _q.ctx.Fields {
-		if !logs.ValidColumn(f) {
+		if !image.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
@@ -308,16 +331,20 @@ func (_q *LogsQuery) prepareQuery(ctx context.Context) error {
 	return nil
 }
 
-func (_q *LogsQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Logs, error) {
+func (_q *ImageQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Image, error) {
 	var (
-		nodes = []*Logs{}
-		_spec = _q.querySpec()
+		nodes   = []*Image{}
+		withFKs = _q.withFKs
+		_spec   = _q.querySpec()
 	)
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, image.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
-		return (*Logs).scanValues(nil, columns)
+		return (*Image).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &Logs{config: _q.config}
+		node := &Image{config: _q.config}
 		nodes = append(nodes, node)
 		return node.assignValues(columns, values)
 	}
@@ -333,7 +360,7 @@ func (_q *LogsQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Logs, e
 	return nodes, nil
 }
 
-func (_q *LogsQuery) sqlCount(ctx context.Context) (int, error) {
+func (_q *ImageQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
 	_spec.Node.Columns = _q.ctx.Fields
 	if len(_q.ctx.Fields) > 0 {
@@ -342,8 +369,8 @@ func (_q *LogsQuery) sqlCount(ctx context.Context) (int, error) {
 	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (_q *LogsQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(logs.Table, logs.Columns, sqlgraph.NewFieldSpec(logs.FieldID, field.TypeInt))
+func (_q *ImageQuery) querySpec() *sqlgraph.QuerySpec {
+	_spec := sqlgraph.NewQuerySpec(image.Table, image.Columns, sqlgraph.NewFieldSpec(image.FieldID, field.TypeInt64))
 	_spec.From = _q.sql
 	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
@@ -352,9 +379,9 @@ func (_q *LogsQuery) querySpec() *sqlgraph.QuerySpec {
 	}
 	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
-		_spec.Node.Columns = append(_spec.Node.Columns, logs.FieldID)
+		_spec.Node.Columns = append(_spec.Node.Columns, image.FieldID)
 		for i := range fields {
-			if fields[i] != logs.FieldID {
+			if fields[i] != image.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
@@ -382,12 +409,12 @@ func (_q *LogsQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (_q *LogsQuery) sqlQuery(ctx context.Context) *sql.Selector {
+func (_q *ImageQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(_q.driver.Dialect())
-	t1 := builder.Table(logs.Table)
+	t1 := builder.Table(image.Table)
 	columns := _q.ctx.Fields
 	if len(columns) == 0 {
-		columns = logs.Columns
+		columns = image.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if _q.sql != nil {
@@ -414,28 +441,28 @@ func (_q *LogsQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	return selector
 }
 
-// LogsGroupBy is the group-by builder for Logs entities.
-type LogsGroupBy struct {
+// ImageGroupBy is the group-by builder for Image entities.
+type ImageGroupBy struct {
 	selector
-	build *LogsQuery
+	build *ImageQuery
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (_g *LogsGroupBy) Aggregate(fns ...AggregateFunc) *LogsGroupBy {
+func (_g *ImageGroupBy) Aggregate(fns ...AggregateFunc) *ImageGroupBy {
 	_g.fns = append(_g.fns, fns...)
 	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (_g *LogsGroupBy) Scan(ctx context.Context, v any) error {
+func (_g *ImageGroupBy) Scan(ctx context.Context, v any) error {
 	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
 	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*LogsQuery, *LogsGroupBy](ctx, _g.build, _g, _g.build.inters, v)
+	return scanWithInterceptors[*ImageQuery, *ImageGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (_g *LogsGroupBy) sqlScan(ctx context.Context, root *LogsQuery, v any) error {
+func (_g *ImageGroupBy) sqlScan(ctx context.Context, root *ImageQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
 	aggregation := make([]string, 0, len(_g.fns))
 	for _, fn := range _g.fns {
@@ -462,28 +489,28 @@ func (_g *LogsGroupBy) sqlScan(ctx context.Context, root *LogsQuery, v any) erro
 	return sql.ScanSlice(rows, v)
 }
 
-// LogsSelect is the builder for selecting fields of Logs entities.
-type LogsSelect struct {
-	*LogsQuery
+// ImageSelect is the builder for selecting fields of Image entities.
+type ImageSelect struct {
+	*ImageQuery
 	selector
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (_s *LogsSelect) Aggregate(fns ...AggregateFunc) *LogsSelect {
+func (_s *ImageSelect) Aggregate(fns ...AggregateFunc) *ImageSelect {
 	_s.fns = append(_s.fns, fns...)
 	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (_s *LogsSelect) Scan(ctx context.Context, v any) error {
+func (_s *ImageSelect) Scan(ctx context.Context, v any) error {
 	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
 	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*LogsQuery, *LogsSelect](ctx, _s.LogsQuery, _s, _s.inters, v)
+	return scanWithInterceptors[*ImageQuery, *ImageSelect](ctx, _s.ImageQuery, _s, _s.inters, v)
 }
 
-func (_s *LogsSelect) sqlScan(ctx context.Context, root *LogsQuery, v any) error {
+func (_s *ImageSelect) sqlScan(ctx context.Context, root *ImageQuery, v any) error {
 	selector := root.sqlQuery(ctx)
 	aggregation := make([]string, 0, len(_s.fns))
 	for _, fn := range _s.fns {

@@ -18,10 +18,12 @@ type Tx struct {
 	Dorm *DormClient
 	// Grade is the client for interacting with the Grade builders.
 	Grade *GradeClient
-	// Logs is the client for interacting with the Logs builders.
-	Logs *LogsClient
-	// Score is the client for interacting with the Score builders.
-	Score *ScoreClient
+	// Image is the client for interacting with the Image builders.
+	Image *ImageClient
+	// Rule is the client for interacting with the Rule builders.
+	Rule *RuleClient
+	// StuLog is the client for interacting with the StuLog builders.
+	StuLog *StuLogClient
 	// Student is the client for interacting with the Student builders.
 	Student *StudentClient
 	// User is the client for interacting with the User builders.
@@ -160,8 +162,9 @@ func (tx *Tx) init() {
 	tx.Class = NewClassClient(tx.config)
 	tx.Dorm = NewDormClient(tx.config)
 	tx.Grade = NewGradeClient(tx.config)
-	tx.Logs = NewLogsClient(tx.config)
-	tx.Score = NewScoreClient(tx.config)
+	tx.Image = NewImageClient(tx.config)
+	tx.Rule = NewRuleClient(tx.config)
+	tx.StuLog = NewStuLogClient(tx.config)
 	tx.Student = NewStudentClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }

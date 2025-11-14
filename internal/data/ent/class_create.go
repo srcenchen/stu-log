@@ -6,6 +6,7 @@ import (
 	"context"
 	"eGZ-stu-log/internal/data/ent/class"
 	"eGZ-stu-log/internal/data/ent/grade"
+	"eGZ-stu-log/internal/data/ent/student"
 	"errors"
 	"fmt"
 
@@ -20,14 +21,20 @@ type ClassCreate struct {
 	hooks    []Hook
 }
 
-// SetName sets the "name" field.
-func (_c *ClassCreate) SetName(v string) *ClassCreate {
-	_c.mutation.SetName(v)
+// SetClassName sets the "className" field.
+func (_c *ClassCreate) SetClassName(v string) *ClassCreate {
+	_c.mutation.SetClassName(v)
+	return _c
+}
+
+// SetID sets the "id" field.
+func (_c *ClassCreate) SetID(v int64) *ClassCreate {
+	_c.mutation.SetID(v)
 	return _c
 }
 
 // SetGradeID sets the "grade" edge to the Grade entity by ID.
-func (_c *ClassCreate) SetGradeID(id int) *ClassCreate {
+func (_c *ClassCreate) SetGradeID(id int64) *ClassCreate {
 	_c.mutation.SetGradeID(id)
 	return _c
 }
@@ -35,6 +42,21 @@ func (_c *ClassCreate) SetGradeID(id int) *ClassCreate {
 // SetGrade sets the "grade" edge to the Grade entity.
 func (_c *ClassCreate) SetGrade(v *Grade) *ClassCreate {
 	return _c.SetGradeID(v.ID)
+}
+
+// AddStudentIDs adds the "student" edge to the Student entity by IDs.
+func (_c *ClassCreate) AddStudentIDs(ids ...int64) *ClassCreate {
+	_c.mutation.AddStudentIDs(ids...)
+	return _c
+}
+
+// AddStudent adds the "student" edges to the Student entity.
+func (_c *ClassCreate) AddStudent(v ...*Student) *ClassCreate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddStudentIDs(ids...)
 }
 
 // Mutation returns the ClassMutation object of the builder.
@@ -71,8 +93,8 @@ func (_c *ClassCreate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_c *ClassCreate) check() error {
-	if _, ok := _c.mutation.Name(); !ok {
-		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Class.name"`)}
+	if _, ok := _c.mutation.ClassName(); !ok {
+		return &ValidationError{Name: "className", err: errors.New(`ent: missing required field "Class.className"`)}
 	}
 	if len(_c.mutation.GradeIDs()) == 0 {
 		return &ValidationError{Name: "grade", err: errors.New(`ent: missing required edge "Class.grade"`)}
@@ -91,8 +113,10 @@ func (_c *ClassCreate) sqlSave(ctx context.Context) (*Class, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != _node.ID {
+		id := _spec.ID.Value.(int64)
+		_node.ID = int64(id)
+	}
 	_c.mutation.id = &_node.ID
 	_c.mutation.done = true
 	return _node, nil
@@ -101,11 +125,15 @@ func (_c *ClassCreate) sqlSave(ctx context.Context) (*Class, error) {
 func (_c *ClassCreate) createSpec() (*Class, *sqlgraph.CreateSpec) {
 	var (
 		_node = &Class{config: _c.config}
-		_spec = sqlgraph.NewCreateSpec(class.Table, sqlgraph.NewFieldSpec(class.FieldID, field.TypeInt))
+		_spec = sqlgraph.NewCreateSpec(class.Table, sqlgraph.NewFieldSpec(class.FieldID, field.TypeInt64))
 	)
-	if value, ok := _c.mutation.Name(); ok {
-		_spec.SetField(class.FieldName, field.TypeString, value)
-		_node.Name = value
+	if id, ok := _c.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
+	}
+	if value, ok := _c.mutation.ClassName(); ok {
+		_spec.SetField(class.FieldClassName, field.TypeString, value)
+		_node.ClassName = value
 	}
 	if nodes := _c.mutation.GradeIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -115,13 +143,29 @@ func (_c *ClassCreate) createSpec() (*Class, *sqlgraph.CreateSpec) {
 			Columns: []string{class.GradeColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(grade.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(grade.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.class_grade = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.StudentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   class.StudentTable,
+			Columns: []string{class.StudentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -171,9 +215,9 @@ func (_c *ClassCreateBulk) Save(ctx context.Context) ([]*Class, error) {
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
-				if specs[i].ID.Value != nil {
+				if specs[i].ID.Value != nil && nodes[i].ID == 0 {
 					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = int(id)
+					nodes[i].ID = int64(id)
 				}
 				mutation.done = true
 				return nodes[i], nil

@@ -5,7 +5,9 @@ package ent
 import (
 	"context"
 	"eGZ-stu-log/internal/data/ent/class"
+	"eGZ-stu-log/internal/data/ent/dorm"
 	"eGZ-stu-log/internal/data/ent/grade"
+	"eGZ-stu-log/internal/data/ent/student"
 	"errors"
 	"fmt"
 
@@ -26,19 +28,55 @@ func (_c *GradeCreate) SetGradeName(v string) *GradeCreate {
 	return _c
 }
 
+// SetID sets the "id" field.
+func (_c *GradeCreate) SetID(v int64) *GradeCreate {
+	_c.mutation.SetID(v)
+	return _c
+}
+
 // AddClasIDs adds the "class" edge to the Class entity by IDs.
-func (_c *GradeCreate) AddClasIDs(ids ...int) *GradeCreate {
+func (_c *GradeCreate) AddClasIDs(ids ...int64) *GradeCreate {
 	_c.mutation.AddClasIDs(ids...)
 	return _c
 }
 
 // AddClass adds the "class" edges to the Class entity.
 func (_c *GradeCreate) AddClass(v ...*Class) *GradeCreate {
-	ids := make([]int, len(v))
+	ids := make([]int64, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
 	return _c.AddClasIDs(ids...)
+}
+
+// AddStudentIDs adds the "student" edge to the Student entity by IDs.
+func (_c *GradeCreate) AddStudentIDs(ids ...int64) *GradeCreate {
+	_c.mutation.AddStudentIDs(ids...)
+	return _c
+}
+
+// AddStudent adds the "student" edges to the Student entity.
+func (_c *GradeCreate) AddStudent(v ...*Student) *GradeCreate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddStudentIDs(ids...)
+}
+
+// AddDormIDs adds the "dorm" edge to the Dorm entity by IDs.
+func (_c *GradeCreate) AddDormIDs(ids ...int64) *GradeCreate {
+	_c.mutation.AddDormIDs(ids...)
+	return _c
+}
+
+// AddDorm adds the "dorm" edges to the Dorm entity.
+func (_c *GradeCreate) AddDorm(v ...*Dorm) *GradeCreate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddDormIDs(ids...)
 }
 
 // Mutation returns the GradeMutation object of the builder.
@@ -92,8 +130,10 @@ func (_c *GradeCreate) sqlSave(ctx context.Context) (*Grade, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != _node.ID {
+		id := _spec.ID.Value.(int64)
+		_node.ID = int64(id)
+	}
 	_c.mutation.id = &_node.ID
 	_c.mutation.done = true
 	return _node, nil
@@ -102,8 +142,12 @@ func (_c *GradeCreate) sqlSave(ctx context.Context) (*Grade, error) {
 func (_c *GradeCreate) createSpec() (*Grade, *sqlgraph.CreateSpec) {
 	var (
 		_node = &Grade{config: _c.config}
-		_spec = sqlgraph.NewCreateSpec(grade.Table, sqlgraph.NewFieldSpec(grade.FieldID, field.TypeInt))
+		_spec = sqlgraph.NewCreateSpec(grade.Table, sqlgraph.NewFieldSpec(grade.FieldID, field.TypeInt64))
 	)
+	if id, ok := _c.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
+	}
 	if value, ok := _c.mutation.GradeName(); ok {
 		_spec.SetField(grade.FieldGradeName, field.TypeString, value)
 		_node.GradeName = value
@@ -116,7 +160,39 @@ func (_c *GradeCreate) createSpec() (*Grade, *sqlgraph.CreateSpec) {
 			Columns: []string{grade.ClassColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(class.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(class.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.StudentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   grade.StudentTable,
+			Columns: []string{grade.StudentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.DormIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   grade.DormTable,
+			Columns: grade.DormPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dorm.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {
@@ -171,9 +247,9 @@ func (_c *GradeCreateBulk) Save(ctx context.Context) ([]*Grade, error) {
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
-				if specs[i].ID.Value != nil {
+				if specs[i].ID.Value != nil && nodes[i].ID == 0 {
 					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = int(id)
+					nodes[i].ID = int64(id)
 				}
 				mutation.done = true
 				return nodes[i], nil

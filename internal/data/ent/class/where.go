@@ -10,118 +10,118 @@ import (
 )
 
 // ID filters vertices based on their ID field.
-func ID(id int) predicate.Class {
+func ID(id int64) predicate.Class {
 	return predicate.Class(sql.FieldEQ(FieldID, id))
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id int) predicate.Class {
+func IDEQ(id int64) predicate.Class {
 	return predicate.Class(sql.FieldEQ(FieldID, id))
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id int) predicate.Class {
+func IDNEQ(id int64) predicate.Class {
 	return predicate.Class(sql.FieldNEQ(FieldID, id))
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...int) predicate.Class {
+func IDIn(ids ...int64) predicate.Class {
 	return predicate.Class(sql.FieldIn(FieldID, ids...))
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...int) predicate.Class {
+func IDNotIn(ids ...int64) predicate.Class {
 	return predicate.Class(sql.FieldNotIn(FieldID, ids...))
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id int) predicate.Class {
+func IDGT(id int64) predicate.Class {
 	return predicate.Class(sql.FieldGT(FieldID, id))
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id int) predicate.Class {
+func IDGTE(id int64) predicate.Class {
 	return predicate.Class(sql.FieldGTE(FieldID, id))
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id int) predicate.Class {
+func IDLT(id int64) predicate.Class {
 	return predicate.Class(sql.FieldLT(FieldID, id))
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id int) predicate.Class {
+func IDLTE(id int64) predicate.Class {
 	return predicate.Class(sql.FieldLTE(FieldID, id))
 }
 
-// Name applies equality check predicate on the "name" field. It's identical to NameEQ.
-func Name(v string) predicate.Class {
-	return predicate.Class(sql.FieldEQ(FieldName, v))
+// ClassName applies equality check predicate on the "className" field. It's identical to ClassNameEQ.
+func ClassName(v string) predicate.Class {
+	return predicate.Class(sql.FieldEQ(FieldClassName, v))
 }
 
-// NameEQ applies the EQ predicate on the "name" field.
-func NameEQ(v string) predicate.Class {
-	return predicate.Class(sql.FieldEQ(FieldName, v))
+// ClassNameEQ applies the EQ predicate on the "className" field.
+func ClassNameEQ(v string) predicate.Class {
+	return predicate.Class(sql.FieldEQ(FieldClassName, v))
 }
 
-// NameNEQ applies the NEQ predicate on the "name" field.
-func NameNEQ(v string) predicate.Class {
-	return predicate.Class(sql.FieldNEQ(FieldName, v))
+// ClassNameNEQ applies the NEQ predicate on the "className" field.
+func ClassNameNEQ(v string) predicate.Class {
+	return predicate.Class(sql.FieldNEQ(FieldClassName, v))
 }
 
-// NameIn applies the In predicate on the "name" field.
-func NameIn(vs ...string) predicate.Class {
-	return predicate.Class(sql.FieldIn(FieldName, vs...))
+// ClassNameIn applies the In predicate on the "className" field.
+func ClassNameIn(vs ...string) predicate.Class {
+	return predicate.Class(sql.FieldIn(FieldClassName, vs...))
 }
 
-// NameNotIn applies the NotIn predicate on the "name" field.
-func NameNotIn(vs ...string) predicate.Class {
-	return predicate.Class(sql.FieldNotIn(FieldName, vs...))
+// ClassNameNotIn applies the NotIn predicate on the "className" field.
+func ClassNameNotIn(vs ...string) predicate.Class {
+	return predicate.Class(sql.FieldNotIn(FieldClassName, vs...))
 }
 
-// NameGT applies the GT predicate on the "name" field.
-func NameGT(v string) predicate.Class {
-	return predicate.Class(sql.FieldGT(FieldName, v))
+// ClassNameGT applies the GT predicate on the "className" field.
+func ClassNameGT(v string) predicate.Class {
+	return predicate.Class(sql.FieldGT(FieldClassName, v))
 }
 
-// NameGTE applies the GTE predicate on the "name" field.
-func NameGTE(v string) predicate.Class {
-	return predicate.Class(sql.FieldGTE(FieldName, v))
+// ClassNameGTE applies the GTE predicate on the "className" field.
+func ClassNameGTE(v string) predicate.Class {
+	return predicate.Class(sql.FieldGTE(FieldClassName, v))
 }
 
-// NameLT applies the LT predicate on the "name" field.
-func NameLT(v string) predicate.Class {
-	return predicate.Class(sql.FieldLT(FieldName, v))
+// ClassNameLT applies the LT predicate on the "className" field.
+func ClassNameLT(v string) predicate.Class {
+	return predicate.Class(sql.FieldLT(FieldClassName, v))
 }
 
-// NameLTE applies the LTE predicate on the "name" field.
-func NameLTE(v string) predicate.Class {
-	return predicate.Class(sql.FieldLTE(FieldName, v))
+// ClassNameLTE applies the LTE predicate on the "className" field.
+func ClassNameLTE(v string) predicate.Class {
+	return predicate.Class(sql.FieldLTE(FieldClassName, v))
 }
 
-// NameContains applies the Contains predicate on the "name" field.
-func NameContains(v string) predicate.Class {
-	return predicate.Class(sql.FieldContains(FieldName, v))
+// ClassNameContains applies the Contains predicate on the "className" field.
+func ClassNameContains(v string) predicate.Class {
+	return predicate.Class(sql.FieldContains(FieldClassName, v))
 }
 
-// NameHasPrefix applies the HasPrefix predicate on the "name" field.
-func NameHasPrefix(v string) predicate.Class {
-	return predicate.Class(sql.FieldHasPrefix(FieldName, v))
+// ClassNameHasPrefix applies the HasPrefix predicate on the "className" field.
+func ClassNameHasPrefix(v string) predicate.Class {
+	return predicate.Class(sql.FieldHasPrefix(FieldClassName, v))
 }
 
-// NameHasSuffix applies the HasSuffix predicate on the "name" field.
-func NameHasSuffix(v string) predicate.Class {
-	return predicate.Class(sql.FieldHasSuffix(FieldName, v))
+// ClassNameHasSuffix applies the HasSuffix predicate on the "className" field.
+func ClassNameHasSuffix(v string) predicate.Class {
+	return predicate.Class(sql.FieldHasSuffix(FieldClassName, v))
 }
 
-// NameEqualFold applies the EqualFold predicate on the "name" field.
-func NameEqualFold(v string) predicate.Class {
-	return predicate.Class(sql.FieldEqualFold(FieldName, v))
+// ClassNameEqualFold applies the EqualFold predicate on the "className" field.
+func ClassNameEqualFold(v string) predicate.Class {
+	return predicate.Class(sql.FieldEqualFold(FieldClassName, v))
 }
 
-// NameContainsFold applies the ContainsFold predicate on the "name" field.
-func NameContainsFold(v string) predicate.Class {
-	return predicate.Class(sql.FieldContainsFold(FieldName, v))
+// ClassNameContainsFold applies the ContainsFold predicate on the "className" field.
+func ClassNameContainsFold(v string) predicate.Class {
+	return predicate.Class(sql.FieldContainsFold(FieldClassName, v))
 }
 
 // HasGrade applies the HasEdge predicate on the "grade" edge.
@@ -139,6 +139,29 @@ func HasGrade() predicate.Class {
 func HasGradeWith(preds ...predicate.Grade) predicate.Class {
 	return predicate.Class(func(s *sql.Selector) {
 		step := newGradeStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasStudent applies the HasEdge predicate on the "student" edge.
+func HasStudent() predicate.Class {
+	return predicate.Class(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, StudentTable, StudentColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasStudentWith applies the HasEdge predicate on the "student" edge with a given conditions (other predicates).
+func HasStudentWith(preds ...predicate.Student) predicate.Class {
+	return predicate.Class(func(s *sql.Selector) {
+		step := newStudentStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

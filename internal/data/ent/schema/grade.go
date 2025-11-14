@@ -14,6 +14,7 @@ type Grade struct {
 // Fields of the Grade.
 func (Grade) Fields() []ent.Field {
 	return []ent.Field{
+		field.Int64("id"),
 		field.String("gradeName"),
 	}
 }
@@ -22,5 +23,7 @@ func (Grade) Fields() []ent.Field {
 func (Grade) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("class", Class.Type).Ref("grade"),
+		edge.From("student", Student.Type).Ref("grade"),
+		edge.From("dorm", Dorm.Type).Ref("grade"),
 	}
 }

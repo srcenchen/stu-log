@@ -15,7 +15,7 @@ import (
 type Grade struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID int64 `json:"id,omitempty"`
 	// GradeName holds the value of the "gradeName" field.
 	GradeName string `json:"gradeName,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -28,9 +28,13 @@ type Grade struct {
 type GradeEdges struct {
 	// Class holds the value of the class edge.
 	Class []*Class `json:"class,omitempty"`
+	// Student holds the value of the student edge.
+	Student []*Student `json:"student,omitempty"`
+	// Dorm holds the value of the dorm edge.
+	Dorm []*Dorm `json:"dorm,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [3]bool
 }
 
 // ClassOrErr returns the Class value or an error if the edge
@@ -40,6 +44,24 @@ func (e GradeEdges) ClassOrErr() ([]*Class, error) {
 		return e.Class, nil
 	}
 	return nil, &NotLoadedError{edge: "class"}
+}
+
+// StudentOrErr returns the Student value or an error if the edge
+// was not loaded in eager-loading.
+func (e GradeEdges) StudentOrErr() ([]*Student, error) {
+	if e.loadedTypes[1] {
+		return e.Student, nil
+	}
+	return nil, &NotLoadedError{edge: "student"}
+}
+
+// DormOrErr returns the Dorm value or an error if the edge
+// was not loaded in eager-loading.
+func (e GradeEdges) DormOrErr() ([]*Dorm, error) {
+	if e.loadedTypes[2] {
+		return e.Dorm, nil
+	}
+	return nil, &NotLoadedError{edge: "dorm"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -71,7 +93,7 @@ func (_m *Grade) assignValues(columns []string, values []any) error {
 			if !ok {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
-			_m.ID = int(value.Int64)
+			_m.ID = int64(value.Int64)
 		case grade.FieldGradeName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field gradeName", values[i])
@@ -94,6 +116,16 @@ func (_m *Grade) Value(name string) (ent.Value, error) {
 // QueryClass queries the "class" edge of the Grade entity.
 func (_m *Grade) QueryClass() *ClassQuery {
 	return NewGradeClient(_m.config).QueryClass(_m)
+}
+
+// QueryStudent queries the "student" edge of the Grade entity.
+func (_m *Grade) QueryStudent() *StudentQuery {
+	return NewGradeClient(_m.config).QueryStudent(_m)
+}
+
+// QueryDorm queries the "dorm" edge of the Grade entity.
+func (_m *Grade) QueryDorm() *DormQuery {
+	return NewGradeClient(_m.config).QueryDorm(_m)
 }
 
 // Update returns a builder for updating this Grade.

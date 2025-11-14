@@ -14,16 +14,22 @@ const (
 	FieldID = "id"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
+	// FieldStuNum holds the string denoting the stunum field in the database.
+	FieldStuNum = "stu_num"
 	// FieldSex holds the string denoting the sex field in the database.
 	FieldSex = "sex"
 	// FieldScore holds the string denoting the score field in the database.
-	FieldScore = "student_score"
+	FieldScore = "score"
+	// FieldDormPos holds the string denoting the dormpos field in the database.
+	FieldDormPos = "dorm_pos"
 	// EdgeGrade holds the string denoting the grade edge name in mutations.
 	EdgeGrade = "grade"
 	// EdgeClass holds the string denoting the class edge name in mutations.
 	EdgeClass = "class"
 	// EdgeDorm holds the string denoting the dorm edge name in mutations.
 	EdgeDorm = "dorm"
+	// EdgeStuLogs holds the string denoting the stulogs edge name in mutations.
+	EdgeStuLogs = "stuLogs"
 	// Table holds the table name of the student in the database.
 	Table = "students"
 	// GradeTable is the table that holds the grade relation/edge.
@@ -47,19 +53,29 @@ const (
 	DormInverseTable = "dorms"
 	// DormColumn is the table column denoting the dorm relation/edge.
 	DormColumn = "student_dorm"
+	// StuLogsTable is the table that holds the stuLogs relation/edge.
+	StuLogsTable = "stu_logs"
+	// StuLogsInverseTable is the table name for the StuLog entity.
+	// It exists in this package in order to avoid circular dependency with the "stulog" package.
+	StuLogsInverseTable = "stu_logs"
+	// StuLogsColumn is the table column denoting the stuLogs relation/edge.
+	StuLogsColumn = "student_stu_logs"
 )
 
 // Columns holds all SQL columns for student fields.
 var Columns = []string{
 	FieldID,
 	FieldName,
+	FieldStuNum,
 	FieldSex,
 	FieldScore,
+	FieldDormPos,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "students"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
+	"stu_log_students",
 	"student_grade",
 	"student_class",
 	"student_dorm",
@@ -83,10 +99,12 @@ func ValidColumn(column string) bool {
 var (
 	// NameValidator is a validator for the "name" field. It is called by the builders before save.
 	NameValidator func(string) error
+	// StuNumValidator is a validator for the "stuNum" field. It is called by the builders before save.
+	StuNumValidator func(string) error
 	// SexValidator is a validator for the "sex" field. It is called by the builders before save.
 	SexValidator func(string) error
 	// DefaultScore holds the default value on creation for the "score" field.
-	DefaultScore int
+	DefaultScore int32
 )
 
 // OrderOption defines the ordering options for the Student queries.
@@ -102,6 +120,11 @@ func ByName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldName, opts...).ToFunc()
 }
 
+// ByStuNum orders the results by the stuNum field.
+func ByStuNum(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldStuNum, opts...).ToFunc()
+}
+
 // BySex orders the results by the sex field.
 func BySex(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSex, opts...).ToFunc()
@@ -110,6 +133,11 @@ func BySex(opts ...sql.OrderTermOption) OrderOption {
 // ByScore orders the results by the score field.
 func ByScore(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldScore, opts...).ToFunc()
+}
+
+// ByDormPos orders the results by the dormPos field.
+func ByDormPos(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDormPos, opts...).ToFunc()
 }
 
 // ByGradeField orders the results by grade field.
@@ -132,6 +160,20 @@ func ByDormField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newDormStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByStuLogsCount orders the results by stuLogs count.
+func ByStuLogsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newStuLogsStep(), opts...)
+	}
+}
+
+// ByStuLogs orders the results by stuLogs terms.
+func ByStuLogs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newStuLogsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newGradeStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -151,5 +193,12 @@ func newDormStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(DormInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, DormTable, DormColumn),
+	)
+}
+func newStuLogsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(StuLogsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, StuLogsTable, StuLogsColumn),
 	)
 }

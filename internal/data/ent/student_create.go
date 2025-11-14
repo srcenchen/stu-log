@@ -8,6 +8,7 @@ import (
 	"eGZ-stu-log/internal/data/ent/dorm"
 	"eGZ-stu-log/internal/data/ent/grade"
 	"eGZ-stu-log/internal/data/ent/student"
+	"eGZ-stu-log/internal/data/ent/stulog"
 	"errors"
 	"fmt"
 
@@ -28,6 +29,12 @@ func (_c *StudentCreate) SetName(v string) *StudentCreate {
 	return _c
 }
 
+// SetStuNum sets the "stuNum" field.
+func (_c *StudentCreate) SetStuNum(v string) *StudentCreate {
+	_c.mutation.SetStuNum(v)
+	return _c
+}
+
 // SetSex sets the "sex" field.
 func (_c *StudentCreate) SetSex(v string) *StudentCreate {
 	_c.mutation.SetSex(v)
@@ -35,21 +42,33 @@ func (_c *StudentCreate) SetSex(v string) *StudentCreate {
 }
 
 // SetScore sets the "score" field.
-func (_c *StudentCreate) SetScore(v int) *StudentCreate {
+func (_c *StudentCreate) SetScore(v int32) *StudentCreate {
 	_c.mutation.SetScore(v)
 	return _c
 }
 
 // SetNillableScore sets the "score" field if the given value is not nil.
-func (_c *StudentCreate) SetNillableScore(v *int) *StudentCreate {
+func (_c *StudentCreate) SetNillableScore(v *int32) *StudentCreate {
 	if v != nil {
 		_c.SetScore(*v)
 	}
 	return _c
 }
 
+// SetDormPos sets the "dormPos" field.
+func (_c *StudentCreate) SetDormPos(v string) *StudentCreate {
+	_c.mutation.SetDormPos(v)
+	return _c
+}
+
+// SetID sets the "id" field.
+func (_c *StudentCreate) SetID(v int64) *StudentCreate {
+	_c.mutation.SetID(v)
+	return _c
+}
+
 // SetGradeID sets the "grade" edge to the Grade entity by ID.
-func (_c *StudentCreate) SetGradeID(id int) *StudentCreate {
+func (_c *StudentCreate) SetGradeID(id int64) *StudentCreate {
 	_c.mutation.SetGradeID(id)
 	return _c
 }
@@ -60,7 +79,7 @@ func (_c *StudentCreate) SetGrade(v *Grade) *StudentCreate {
 }
 
 // SetClassID sets the "class" edge to the Class entity by ID.
-func (_c *StudentCreate) SetClassID(id int) *StudentCreate {
+func (_c *StudentCreate) SetClassID(id int64) *StudentCreate {
 	_c.mutation.SetClassID(id)
 	return _c
 }
@@ -71,13 +90,13 @@ func (_c *StudentCreate) SetClass(v *Class) *StudentCreate {
 }
 
 // SetDormID sets the "dorm" edge to the Dorm entity by ID.
-func (_c *StudentCreate) SetDormID(id int) *StudentCreate {
+func (_c *StudentCreate) SetDormID(id int64) *StudentCreate {
 	_c.mutation.SetDormID(id)
 	return _c
 }
 
 // SetNillableDormID sets the "dorm" edge to the Dorm entity by ID if the given value is not nil.
-func (_c *StudentCreate) SetNillableDormID(id *int) *StudentCreate {
+func (_c *StudentCreate) SetNillableDormID(id *int64) *StudentCreate {
 	if id != nil {
 		_c = _c.SetDormID(*id)
 	}
@@ -87,6 +106,21 @@ func (_c *StudentCreate) SetNillableDormID(id *int) *StudentCreate {
 // SetDorm sets the "dorm" edge to the Dorm entity.
 func (_c *StudentCreate) SetDorm(v *Dorm) *StudentCreate {
 	return _c.SetDormID(v.ID)
+}
+
+// AddStuLogIDs adds the "stuLogs" edge to the StuLog entity by IDs.
+func (_c *StudentCreate) AddStuLogIDs(ids ...int64) *StudentCreate {
+	_c.mutation.AddStuLogIDs(ids...)
+	return _c
+}
+
+// AddStuLogs adds the "stuLogs" edges to the StuLog entity.
+func (_c *StudentCreate) AddStuLogs(v ...*StuLog) *StudentCreate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddStuLogIDs(ids...)
 }
 
 // Mutation returns the StudentMutation object of the builder.
@@ -140,6 +174,14 @@ func (_c *StudentCreate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Student.name": %w`, err)}
 		}
 	}
+	if _, ok := _c.mutation.StuNum(); !ok {
+		return &ValidationError{Name: "stuNum", err: errors.New(`ent: missing required field "Student.stuNum"`)}
+	}
+	if v, ok := _c.mutation.StuNum(); ok {
+		if err := student.StuNumValidator(v); err != nil {
+			return &ValidationError{Name: "stuNum", err: fmt.Errorf(`ent: validator failed for field "Student.stuNum": %w`, err)}
+		}
+	}
 	if _, ok := _c.mutation.Sex(); !ok {
 		return &ValidationError{Name: "sex", err: errors.New(`ent: missing required field "Student.sex"`)}
 	}
@@ -150,6 +192,9 @@ func (_c *StudentCreate) check() error {
 	}
 	if _, ok := _c.mutation.Score(); !ok {
 		return &ValidationError{Name: "score", err: errors.New(`ent: missing required field "Student.score"`)}
+	}
+	if _, ok := _c.mutation.DormPos(); !ok {
+		return &ValidationError{Name: "dormPos", err: errors.New(`ent: missing required field "Student.dormPos"`)}
 	}
 	if len(_c.mutation.GradeIDs()) == 0 {
 		return &ValidationError{Name: "grade", err: errors.New(`ent: missing required edge "Student.grade"`)}
@@ -171,8 +216,10 @@ func (_c *StudentCreate) sqlSave(ctx context.Context) (*Student, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != _node.ID {
+		id := _spec.ID.Value.(int64)
+		_node.ID = int64(id)
+	}
 	_c.mutation.id = &_node.ID
 	_c.mutation.done = true
 	return _node, nil
@@ -181,19 +228,31 @@ func (_c *StudentCreate) sqlSave(ctx context.Context) (*Student, error) {
 func (_c *StudentCreate) createSpec() (*Student, *sqlgraph.CreateSpec) {
 	var (
 		_node = &Student{config: _c.config}
-		_spec = sqlgraph.NewCreateSpec(student.Table, sqlgraph.NewFieldSpec(student.FieldID, field.TypeInt))
+		_spec = sqlgraph.NewCreateSpec(student.Table, sqlgraph.NewFieldSpec(student.FieldID, field.TypeInt64))
 	)
+	if id, ok := _c.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
+	}
 	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(student.FieldName, field.TypeString, value)
 		_node.Name = value
+	}
+	if value, ok := _c.mutation.StuNum(); ok {
+		_spec.SetField(student.FieldStuNum, field.TypeString, value)
+		_node.StuNum = value
 	}
 	if value, ok := _c.mutation.Sex(); ok {
 		_spec.SetField(student.FieldSex, field.TypeString, value)
 		_node.Sex = value
 	}
 	if value, ok := _c.mutation.Score(); ok {
-		_spec.SetField(student.FieldScore, field.TypeInt, value)
+		_spec.SetField(student.FieldScore, field.TypeInt32, value)
 		_node.Score = value
+	}
+	if value, ok := _c.mutation.DormPos(); ok {
+		_spec.SetField(student.FieldDormPos, field.TypeString, value)
+		_node.DormPos = value
 	}
 	if nodes := _c.mutation.GradeIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -203,7 +262,7 @@ func (_c *StudentCreate) createSpec() (*Student, *sqlgraph.CreateSpec) {
 			Columns: []string{student.GradeColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(grade.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(grade.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {
@@ -220,7 +279,7 @@ func (_c *StudentCreate) createSpec() (*Student, *sqlgraph.CreateSpec) {
 			Columns: []string{student.ClassColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(class.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(class.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {
@@ -237,13 +296,29 @@ func (_c *StudentCreate) createSpec() (*Student, *sqlgraph.CreateSpec) {
 			Columns: []string{student.DormColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(dorm.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(dorm.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.student_dorm = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.StuLogsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   student.StuLogsTable,
+			Columns: []string{student.StuLogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stulog.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -294,9 +369,9 @@ func (_c *StudentCreateBulk) Save(ctx context.Context) ([]*Student, error) {
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
-				if specs[i].ID.Value != nil {
+				if specs[i].ID.Value != nil && nodes[i].ID == 0 {
 					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = int(id)
+					nodes[i].ID = int64(id)
 				}
 				mutation.done = true
 				return nodes[i], nil

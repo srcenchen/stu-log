@@ -10,9 +10,10 @@ import (
 var (
 	// ClassesColumns holds the columns for the "classes" table.
 	ClassesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "name", Type: field.TypeString},
-		{Name: "class_grade", Type: field.TypeInt},
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "class_name", Type: field.TypeString},
+		{Name: "class_grade", Type: field.TypeInt64},
+		{Name: "stu_log_class", Type: field.TypeInt64, Nullable: true},
 	}
 	// ClassesTable holds the schema information for the "classes" table.
 	ClassesTable = &schema.Table{
@@ -26,11 +27,20 @@ var (
 				RefColumns: []*schema.Column{GradesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
+			{
+				Symbol:     "classes_stu_logs_class",
+				Columns:    []*schema.Column{ClassesColumns[3]},
+				RefColumns: []*schema.Column{StuLogsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
 		},
 	}
 	// DormsColumns holds the columns for the "dorms" table.
 	DormsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "building", Type: field.TypeString},
+		{Name: "dorm_num", Type: field.TypeString},
+		{Name: "sex", Type: field.TypeString},
 	}
 	// DormsTable holds the schema information for the "dorms" table.
 	DormsTable = &schema.Table{
@@ -40,7 +50,7 @@ var (
 	}
 	// GradesColumns holds the columns for the "grades" table.
 	GradesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeInt64, Increment: true},
 		{Name: "grade_name", Type: field.TypeString},
 	}
 	// GradesTable holds the schema information for the "grades" table.
@@ -49,36 +59,87 @@ var (
 		Columns:    GradesColumns,
 		PrimaryKey: []*schema.Column{GradesColumns[0]},
 	}
-	// LogsColumns holds the columns for the "logs" table.
-	LogsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+	// ImagesColumns holds the columns for the "images" table.
+	ImagesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "image_url", Type: field.TypeString},
+		{Name: "stu_log_images", Type: field.TypeInt64, Nullable: true},
 	}
-	// LogsTable holds the schema information for the "logs" table.
-	LogsTable = &schema.Table{
-		Name:       "logs",
-		Columns:    LogsColumns,
-		PrimaryKey: []*schema.Column{LogsColumns[0]},
+	// ImagesTable holds the schema information for the "images" table.
+	ImagesTable = &schema.Table{
+		Name:       "images",
+		Columns:    ImagesColumns,
+		PrimaryKey: []*schema.Column{ImagesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "images_stu_logs_images",
+				Columns:    []*schema.Column{ImagesColumns[2]},
+				RefColumns: []*schema.Column{StuLogsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
-	// ScoresColumns holds the columns for the "scores" table.
-	ScoresColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "score", Type: field.TypeInt},
+	// RulesColumns holds the columns for the "rules" table.
+	RulesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "content", Type: field.TypeString},
+		{Name: "score", Type: field.TypeString},
+		{Name: "group", Type: field.TypeString},
 	}
-	// ScoresTable holds the schema information for the "scores" table.
-	ScoresTable = &schema.Table{
-		Name:       "scores",
-		Columns:    ScoresColumns,
-		PrimaryKey: []*schema.Column{ScoresColumns[0]},
+	// RulesTable holds the schema information for the "rules" table.
+	RulesTable = &schema.Table{
+		Name:       "rules",
+		Columns:    RulesColumns,
+		PrimaryKey: []*schema.Column{RulesColumns[0]},
+	}
+	// StuLogsColumns holds the columns for the "stu_logs" table.
+	StuLogsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "content", Type: field.TypeString},
+		{Name: "invoked", Type: field.TypeBool, Default: false},
+		{Name: "time", Type: field.TypeTime},
+		{Name: "stu_log_grade", Type: field.TypeInt64, Nullable: true},
+		{Name: "stu_log_rule", Type: field.TypeInt64},
+		{Name: "student_stu_logs", Type: field.TypeInt64, Nullable: true},
+	}
+	// StuLogsTable holds the schema information for the "stu_logs" table.
+	StuLogsTable = &schema.Table{
+		Name:       "stu_logs",
+		Columns:    StuLogsColumns,
+		PrimaryKey: []*schema.Column{StuLogsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "stu_logs_grades_grade",
+				Columns:    []*schema.Column{StuLogsColumns[4]},
+				RefColumns: []*schema.Column{GradesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "stu_logs_rules_rule",
+				Columns:    []*schema.Column{StuLogsColumns[5]},
+				RefColumns: []*schema.Column{RulesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "stu_logs_students_stuLogs",
+				Columns:    []*schema.Column{StuLogsColumns[6]},
+				RefColumns: []*schema.Column{StudentsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// StudentsColumns holds the columns for the "students" table.
 	StudentsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeInt64, Increment: true},
 		{Name: "name", Type: field.TypeString},
+		{Name: "stu_num", Type: field.TypeString, Unique: true},
 		{Name: "sex", Type: field.TypeString},
-		{Name: "student_score", Type: field.TypeInt, Default: 100},
-		{Name: "student_grade", Type: field.TypeInt},
-		{Name: "student_class", Type: field.TypeInt},
-		{Name: "student_dorm", Type: field.TypeInt, Nullable: true},
+		{Name: "score", Type: field.TypeInt32, Default: 100},
+		{Name: "dorm_pos", Type: field.TypeString},
+		{Name: "stu_log_students", Type: field.TypeInt64, Nullable: true},
+		{Name: "student_grade", Type: field.TypeInt64},
+		{Name: "student_class", Type: field.TypeInt64},
+		{Name: "student_dorm", Type: field.TypeInt64, Nullable: true},
 	}
 	// StudentsTable holds the schema information for the "students" table.
 	StudentsTable = &schema.Table{
@@ -87,20 +148,26 @@ var (
 		PrimaryKey: []*schema.Column{StudentsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
+				Symbol:     "students_stu_logs_students",
+				Columns:    []*schema.Column{StudentsColumns[6]},
+				RefColumns: []*schema.Column{StuLogsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
 				Symbol:     "students_grades_grade",
-				Columns:    []*schema.Column{StudentsColumns[4]},
+				Columns:    []*schema.Column{StudentsColumns[7]},
 				RefColumns: []*schema.Column{GradesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "students_classes_class",
-				Columns:    []*schema.Column{StudentsColumns[5]},
+				Columns:    []*schema.Column{StudentsColumns[8]},
 				RefColumns: []*schema.Column{ClassesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "students_dorms_dorm",
-				Columns:    []*schema.Column{StudentsColumns[6]},
+				Columns:    []*schema.Column{StudentsColumns[9]},
 				RefColumns: []*schema.Column{DormsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -116,21 +183,56 @@ var (
 		Columns:    UsersColumns,
 		PrimaryKey: []*schema.Column{UsersColumns[0]},
 	}
+	// DormGradeColumns holds the columns for the "dorm_grade" table.
+	DormGradeColumns = []*schema.Column{
+		{Name: "dorm_id", Type: field.TypeInt64},
+		{Name: "grade_id", Type: field.TypeInt64},
+	}
+	// DormGradeTable holds the schema information for the "dorm_grade" table.
+	DormGradeTable = &schema.Table{
+		Name:       "dorm_grade",
+		Columns:    DormGradeColumns,
+		PrimaryKey: []*schema.Column{DormGradeColumns[0], DormGradeColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "dorm_grade_dorm_id",
+				Columns:    []*schema.Column{DormGradeColumns[0]},
+				RefColumns: []*schema.Column{DormsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "dorm_grade_grade_id",
+				Columns:    []*schema.Column{DormGradeColumns[1]},
+				RefColumns: []*schema.Column{GradesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		ClassesTable,
 		DormsTable,
 		GradesTable,
-		LogsTable,
-		ScoresTable,
+		ImagesTable,
+		RulesTable,
+		StuLogsTable,
 		StudentsTable,
 		UsersTable,
+		DormGradeTable,
 	}
 )
 
 func init() {
 	ClassesTable.ForeignKeys[0].RefTable = GradesTable
-	StudentsTable.ForeignKeys[0].RefTable = GradesTable
-	StudentsTable.ForeignKeys[1].RefTable = ClassesTable
-	StudentsTable.ForeignKeys[2].RefTable = DormsTable
+	ClassesTable.ForeignKeys[1].RefTable = StuLogsTable
+	ImagesTable.ForeignKeys[0].RefTable = StuLogsTable
+	StuLogsTable.ForeignKeys[0].RefTable = GradesTable
+	StuLogsTable.ForeignKeys[1].RefTable = RulesTable
+	StuLogsTable.ForeignKeys[2].RefTable = StudentsTable
+	StudentsTable.ForeignKeys[0].RefTable = StuLogsTable
+	StudentsTable.ForeignKeys[1].RefTable = GradesTable
+	StudentsTable.ForeignKeys[2].RefTable = ClassesTable
+	StudentsTable.ForeignKeys[3].RefTable = DormsTable
+	DormGradeTable.ForeignKeys[0].RefTable = DormsTable
+	DormGradeTable.ForeignKeys[1].RefTable = GradesTable
 }

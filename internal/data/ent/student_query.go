@@ -4,11 +4,13 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"eGZ-stu-log/internal/data/ent/class"
 	"eGZ-stu-log/internal/data/ent/dorm"
 	"eGZ-stu-log/internal/data/ent/grade"
 	"eGZ-stu-log/internal/data/ent/predicate"
 	"eGZ-stu-log/internal/data/ent/student"
+	"eGZ-stu-log/internal/data/ent/stulog"
 	"fmt"
 	"math"
 
@@ -21,14 +23,15 @@ import (
 // StudentQuery is the builder for querying Student entities.
 type StudentQuery struct {
 	config
-	ctx        *QueryContext
-	order      []student.OrderOption
-	inters     []Interceptor
-	predicates []predicate.Student
-	withGrade  *GradeQuery
-	withClass  *ClassQuery
-	withDorm   *DormQuery
-	withFKs    bool
+	ctx         *QueryContext
+	order       []student.OrderOption
+	inters      []Interceptor
+	predicates  []predicate.Student
+	withGrade   *GradeQuery
+	withClass   *ClassQuery
+	withDorm    *DormQuery
+	withStuLogs *StuLogQuery
+	withFKs     bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -131,6 +134,28 @@ func (_q *StudentQuery) QueryDorm() *DormQuery {
 	return query
 }
 
+// QueryStuLogs chains the current query on the "stuLogs" edge.
+func (_q *StudentQuery) QueryStuLogs() *StuLogQuery {
+	query := (&StuLogClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(student.Table, student.FieldID, selector),
+			sqlgraph.To(stulog.Table, stulog.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, student.StuLogsTable, student.StuLogsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first Student entity from the query.
 // Returns a *NotFoundError when no Student was found.
 func (_q *StudentQuery) First(ctx context.Context) (*Student, error) {
@@ -155,8 +180,8 @@ func (_q *StudentQuery) FirstX(ctx context.Context) *Student {
 
 // FirstID returns the first Student ID from the query.
 // Returns a *NotFoundError when no Student ID was found.
-func (_q *StudentQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (_q *StudentQuery) FirstID(ctx context.Context) (id int64, err error) {
+	var ids []int64
 	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
@@ -168,7 +193,7 @@ func (_q *StudentQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (_q *StudentQuery) FirstIDX(ctx context.Context) int {
+func (_q *StudentQuery) FirstIDX(ctx context.Context) int64 {
 	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -206,8 +231,8 @@ func (_q *StudentQuery) OnlyX(ctx context.Context) *Student {
 // OnlyID is like Only, but returns the only Student ID in the query.
 // Returns a *NotSingularError when more than one Student ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (_q *StudentQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (_q *StudentQuery) OnlyID(ctx context.Context) (id int64, err error) {
+	var ids []int64
 	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
@@ -223,7 +248,7 @@ func (_q *StudentQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (_q *StudentQuery) OnlyIDX(ctx context.Context) int {
+func (_q *StudentQuery) OnlyIDX(ctx context.Context) int64 {
 	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -251,7 +276,7 @@ func (_q *StudentQuery) AllX(ctx context.Context) []*Student {
 }
 
 // IDs executes the query and returns a list of Student IDs.
-func (_q *StudentQuery) IDs(ctx context.Context) (ids []int, err error) {
+func (_q *StudentQuery) IDs(ctx context.Context) (ids []int64, err error) {
 	if _q.ctx.Unique == nil && _q.path != nil {
 		_q.Unique(true)
 	}
@@ -263,7 +288,7 @@ func (_q *StudentQuery) IDs(ctx context.Context) (ids []int, err error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (_q *StudentQuery) IDsX(ctx context.Context) []int {
+func (_q *StudentQuery) IDsX(ctx context.Context) []int64 {
 	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -318,14 +343,15 @@ func (_q *StudentQuery) Clone() *StudentQuery {
 		return nil
 	}
 	return &StudentQuery{
-		config:     _q.config,
-		ctx:        _q.ctx.Clone(),
-		order:      append([]student.OrderOption{}, _q.order...),
-		inters:     append([]Interceptor{}, _q.inters...),
-		predicates: append([]predicate.Student{}, _q.predicates...),
-		withGrade:  _q.withGrade.Clone(),
-		withClass:  _q.withClass.Clone(),
-		withDorm:   _q.withDorm.Clone(),
+		config:      _q.config,
+		ctx:         _q.ctx.Clone(),
+		order:       append([]student.OrderOption{}, _q.order...),
+		inters:      append([]Interceptor{}, _q.inters...),
+		predicates:  append([]predicate.Student{}, _q.predicates...),
+		withGrade:   _q.withGrade.Clone(),
+		withClass:   _q.withClass.Clone(),
+		withDorm:    _q.withDorm.Clone(),
+		withStuLogs: _q.withStuLogs.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -362,6 +388,17 @@ func (_q *StudentQuery) WithDorm(opts ...func(*DormQuery)) *StudentQuery {
 		opt(query)
 	}
 	_q.withDorm = query
+	return _q
+}
+
+// WithStuLogs tells the query-builder to eager-load the nodes that are connected to
+// the "stuLogs" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *StudentQuery) WithStuLogs(opts ...func(*StuLogQuery)) *StudentQuery {
+	query := (&StuLogClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withStuLogs = query
 	return _q
 }
 
@@ -444,10 +481,11 @@ func (_q *StudentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Stud
 		nodes       = []*Student{}
 		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
 			_q.withGrade != nil,
 			_q.withClass != nil,
 			_q.withDorm != nil,
+			_q.withStuLogs != nil,
 		}
 	)
 	if _q.withGrade != nil || _q.withClass != nil || _q.withDorm != nil {
@@ -492,12 +530,19 @@ func (_q *StudentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Stud
 			return nil, err
 		}
 	}
+	if query := _q.withStuLogs; query != nil {
+		if err := _q.loadStuLogs(ctx, query, nodes,
+			func(n *Student) { n.Edges.StuLogs = []*StuLog{} },
+			func(n *Student, e *StuLog) { n.Edges.StuLogs = append(n.Edges.StuLogs, e) }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
 }
 
 func (_q *StudentQuery) loadGrade(ctx context.Context, query *GradeQuery, nodes []*Student, init func(*Student), assign func(*Student, *Grade)) error {
-	ids := make([]int, 0, len(nodes))
-	nodeids := make(map[int][]*Student)
+	ids := make([]int64, 0, len(nodes))
+	nodeids := make(map[int64][]*Student)
 	for i := range nodes {
 		if nodes[i].student_grade == nil {
 			continue
@@ -528,8 +573,8 @@ func (_q *StudentQuery) loadGrade(ctx context.Context, query *GradeQuery, nodes 
 	return nil
 }
 func (_q *StudentQuery) loadClass(ctx context.Context, query *ClassQuery, nodes []*Student, init func(*Student), assign func(*Student, *Class)) error {
-	ids := make([]int, 0, len(nodes))
-	nodeids := make(map[int][]*Student)
+	ids := make([]int64, 0, len(nodes))
+	nodeids := make(map[int64][]*Student)
 	for i := range nodes {
 		if nodes[i].student_class == nil {
 			continue
@@ -560,8 +605,8 @@ func (_q *StudentQuery) loadClass(ctx context.Context, query *ClassQuery, nodes 
 	return nil
 }
 func (_q *StudentQuery) loadDorm(ctx context.Context, query *DormQuery, nodes []*Student, init func(*Student), assign func(*Student, *Dorm)) error {
-	ids := make([]int, 0, len(nodes))
-	nodeids := make(map[int][]*Student)
+	ids := make([]int64, 0, len(nodes))
+	nodeids := make(map[int64][]*Student)
 	for i := range nodes {
 		if nodes[i].student_dorm == nil {
 			continue
@@ -591,6 +636,37 @@ func (_q *StudentQuery) loadDorm(ctx context.Context, query *DormQuery, nodes []
 	}
 	return nil
 }
+func (_q *StudentQuery) loadStuLogs(ctx context.Context, query *StuLogQuery, nodes []*Student, init func(*Student), assign func(*Student, *StuLog)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int64]*Student)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.StuLog(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(student.StuLogsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.student_stu_logs
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "student_stu_logs" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "student_stu_logs" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
 
 func (_q *StudentQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
@@ -602,7 +678,7 @@ func (_q *StudentQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (_q *StudentQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(student.Table, student.Columns, sqlgraph.NewFieldSpec(student.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewQuerySpec(student.Table, student.Columns, sqlgraph.NewFieldSpec(student.FieldID, field.TypeInt64))
 	_spec.From = _q.sql
 	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique

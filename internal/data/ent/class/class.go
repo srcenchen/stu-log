@@ -12,10 +12,12 @@ const (
 	Label = "class"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldName holds the string denoting the name field in the database.
-	FieldName = "name"
+	// FieldClassName holds the string denoting the classname field in the database.
+	FieldClassName = "class_name"
 	// EdgeGrade holds the string denoting the grade edge name in mutations.
 	EdgeGrade = "grade"
+	// EdgeStudent holds the string denoting the student edge name in mutations.
+	EdgeStudent = "student"
 	// Table holds the table name of the class in the database.
 	Table = "classes"
 	// GradeTable is the table that holds the grade relation/edge.
@@ -25,18 +27,26 @@ const (
 	GradeInverseTable = "grades"
 	// GradeColumn is the table column denoting the grade relation/edge.
 	GradeColumn = "class_grade"
+	// StudentTable is the table that holds the student relation/edge.
+	StudentTable = "students"
+	// StudentInverseTable is the table name for the Student entity.
+	// It exists in this package in order to avoid circular dependency with the "student" package.
+	StudentInverseTable = "students"
+	// StudentColumn is the table column denoting the student relation/edge.
+	StudentColumn = "student_class"
 )
 
 // Columns holds all SQL columns for class fields.
 var Columns = []string{
 	FieldID,
-	FieldName,
+	FieldClassName,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "classes"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"class_grade",
+	"stu_log_class",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -62,9 +72,9 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
-// ByName orders the results by the name field.
-func ByName(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldName, opts...).ToFunc()
+// ByClassName orders the results by the className field.
+func ByClassName(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldClassName, opts...).ToFunc()
 }
 
 // ByGradeField orders the results by grade field.
@@ -73,10 +83,31 @@ func ByGradeField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newGradeStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByStudentCount orders the results by student count.
+func ByStudentCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newStudentStep(), opts...)
+	}
+}
+
+// ByStudent orders the results by student terms.
+func ByStudent(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newStudentStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newGradeStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(GradeInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, GradeTable, GradeColumn),
+	)
+}
+func newStudentStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(StudentInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, StudentTable, StudentColumn),
 	)
 }

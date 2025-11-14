@@ -5,8 +5,10 @@ package ent
 import (
 	"context"
 	"eGZ-stu-log/internal/data/ent/class"
+	"eGZ-stu-log/internal/data/ent/dorm"
 	"eGZ-stu-log/internal/data/ent/grade"
 	"eGZ-stu-log/internal/data/ent/predicate"
+	"eGZ-stu-log/internal/data/ent/student"
 	"errors"
 	"fmt"
 
@@ -43,18 +45,48 @@ func (_u *GradeUpdate) SetNillableGradeName(v *string) *GradeUpdate {
 }
 
 // AddClasIDs adds the "class" edge to the Class entity by IDs.
-func (_u *GradeUpdate) AddClasIDs(ids ...int) *GradeUpdate {
+func (_u *GradeUpdate) AddClasIDs(ids ...int64) *GradeUpdate {
 	_u.mutation.AddClasIDs(ids...)
 	return _u
 }
 
 // AddClass adds the "class" edges to the Class entity.
 func (_u *GradeUpdate) AddClass(v ...*Class) *GradeUpdate {
-	ids := make([]int, len(v))
+	ids := make([]int64, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
 	return _u.AddClasIDs(ids...)
+}
+
+// AddStudentIDs adds the "student" edge to the Student entity by IDs.
+func (_u *GradeUpdate) AddStudentIDs(ids ...int64) *GradeUpdate {
+	_u.mutation.AddStudentIDs(ids...)
+	return _u
+}
+
+// AddStudent adds the "student" edges to the Student entity.
+func (_u *GradeUpdate) AddStudent(v ...*Student) *GradeUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddStudentIDs(ids...)
+}
+
+// AddDormIDs adds the "dorm" edge to the Dorm entity by IDs.
+func (_u *GradeUpdate) AddDormIDs(ids ...int64) *GradeUpdate {
+	_u.mutation.AddDormIDs(ids...)
+	return _u
+}
+
+// AddDorm adds the "dorm" edges to the Dorm entity.
+func (_u *GradeUpdate) AddDorm(v ...*Dorm) *GradeUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddDormIDs(ids...)
 }
 
 // Mutation returns the GradeMutation object of the builder.
@@ -69,18 +101,60 @@ func (_u *GradeUpdate) ClearClass() *GradeUpdate {
 }
 
 // RemoveClasIDs removes the "class" edge to Class entities by IDs.
-func (_u *GradeUpdate) RemoveClasIDs(ids ...int) *GradeUpdate {
+func (_u *GradeUpdate) RemoveClasIDs(ids ...int64) *GradeUpdate {
 	_u.mutation.RemoveClasIDs(ids...)
 	return _u
 }
 
 // RemoveClass removes "class" edges to Class entities.
 func (_u *GradeUpdate) RemoveClass(v ...*Class) *GradeUpdate {
-	ids := make([]int, len(v))
+	ids := make([]int64, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveClasIDs(ids...)
+}
+
+// ClearStudent clears all "student" edges to the Student entity.
+func (_u *GradeUpdate) ClearStudent() *GradeUpdate {
+	_u.mutation.ClearStudent()
+	return _u
+}
+
+// RemoveStudentIDs removes the "student" edge to Student entities by IDs.
+func (_u *GradeUpdate) RemoveStudentIDs(ids ...int64) *GradeUpdate {
+	_u.mutation.RemoveStudentIDs(ids...)
+	return _u
+}
+
+// RemoveStudent removes "student" edges to Student entities.
+func (_u *GradeUpdate) RemoveStudent(v ...*Student) *GradeUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveStudentIDs(ids...)
+}
+
+// ClearDorm clears all "dorm" edges to the Dorm entity.
+func (_u *GradeUpdate) ClearDorm() *GradeUpdate {
+	_u.mutation.ClearDorm()
+	return _u
+}
+
+// RemoveDormIDs removes the "dorm" edge to Dorm entities by IDs.
+func (_u *GradeUpdate) RemoveDormIDs(ids ...int64) *GradeUpdate {
+	_u.mutation.RemoveDormIDs(ids...)
+	return _u
+}
+
+// RemoveDorm removes "dorm" edges to Dorm entities.
+func (_u *GradeUpdate) RemoveDorm(v ...*Dorm) *GradeUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveDormIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -111,7 +185,7 @@ func (_u *GradeUpdate) ExecX(ctx context.Context) {
 }
 
 func (_u *GradeUpdate) sqlSave(ctx context.Context) (_node int, err error) {
-	_spec := sqlgraph.NewUpdateSpec(grade.Table, grade.Columns, sqlgraph.NewFieldSpec(grade.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewUpdateSpec(grade.Table, grade.Columns, sqlgraph.NewFieldSpec(grade.FieldID, field.TypeInt64))
 	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -130,7 +204,7 @@ func (_u *GradeUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Columns: []string{grade.ClassColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(class.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(class.FieldID, field.TypeInt64),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -143,7 +217,7 @@ func (_u *GradeUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Columns: []string{grade.ClassColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(class.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(class.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {
@@ -159,7 +233,97 @@ func (_u *GradeUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Columns: []string{grade.ClassColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(class.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(class.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.StudentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   grade.StudentTable,
+			Columns: []string{grade.StudentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedStudentIDs(); len(nodes) > 0 && !_u.mutation.StudentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   grade.StudentTable,
+			Columns: []string{grade.StudentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.StudentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   grade.StudentTable,
+			Columns: []string{grade.StudentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.DormCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   grade.DormTable,
+			Columns: grade.DormPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dorm.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedDormIDs(); len(nodes) > 0 && !_u.mutation.DormCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   grade.DormTable,
+			Columns: grade.DormPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dorm.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.DormIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   grade.DormTable,
+			Columns: grade.DormPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dorm.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {
@@ -202,18 +366,48 @@ func (_u *GradeUpdateOne) SetNillableGradeName(v *string) *GradeUpdateOne {
 }
 
 // AddClasIDs adds the "class" edge to the Class entity by IDs.
-func (_u *GradeUpdateOne) AddClasIDs(ids ...int) *GradeUpdateOne {
+func (_u *GradeUpdateOne) AddClasIDs(ids ...int64) *GradeUpdateOne {
 	_u.mutation.AddClasIDs(ids...)
 	return _u
 }
 
 // AddClass adds the "class" edges to the Class entity.
 func (_u *GradeUpdateOne) AddClass(v ...*Class) *GradeUpdateOne {
-	ids := make([]int, len(v))
+	ids := make([]int64, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
 	return _u.AddClasIDs(ids...)
+}
+
+// AddStudentIDs adds the "student" edge to the Student entity by IDs.
+func (_u *GradeUpdateOne) AddStudentIDs(ids ...int64) *GradeUpdateOne {
+	_u.mutation.AddStudentIDs(ids...)
+	return _u
+}
+
+// AddStudent adds the "student" edges to the Student entity.
+func (_u *GradeUpdateOne) AddStudent(v ...*Student) *GradeUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddStudentIDs(ids...)
+}
+
+// AddDormIDs adds the "dorm" edge to the Dorm entity by IDs.
+func (_u *GradeUpdateOne) AddDormIDs(ids ...int64) *GradeUpdateOne {
+	_u.mutation.AddDormIDs(ids...)
+	return _u
+}
+
+// AddDorm adds the "dorm" edges to the Dorm entity.
+func (_u *GradeUpdateOne) AddDorm(v ...*Dorm) *GradeUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddDormIDs(ids...)
 }
 
 // Mutation returns the GradeMutation object of the builder.
@@ -228,18 +422,60 @@ func (_u *GradeUpdateOne) ClearClass() *GradeUpdateOne {
 }
 
 // RemoveClasIDs removes the "class" edge to Class entities by IDs.
-func (_u *GradeUpdateOne) RemoveClasIDs(ids ...int) *GradeUpdateOne {
+func (_u *GradeUpdateOne) RemoveClasIDs(ids ...int64) *GradeUpdateOne {
 	_u.mutation.RemoveClasIDs(ids...)
 	return _u
 }
 
 // RemoveClass removes "class" edges to Class entities.
 func (_u *GradeUpdateOne) RemoveClass(v ...*Class) *GradeUpdateOne {
-	ids := make([]int, len(v))
+	ids := make([]int64, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveClasIDs(ids...)
+}
+
+// ClearStudent clears all "student" edges to the Student entity.
+func (_u *GradeUpdateOne) ClearStudent() *GradeUpdateOne {
+	_u.mutation.ClearStudent()
+	return _u
+}
+
+// RemoveStudentIDs removes the "student" edge to Student entities by IDs.
+func (_u *GradeUpdateOne) RemoveStudentIDs(ids ...int64) *GradeUpdateOne {
+	_u.mutation.RemoveStudentIDs(ids...)
+	return _u
+}
+
+// RemoveStudent removes "student" edges to Student entities.
+func (_u *GradeUpdateOne) RemoveStudent(v ...*Student) *GradeUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveStudentIDs(ids...)
+}
+
+// ClearDorm clears all "dorm" edges to the Dorm entity.
+func (_u *GradeUpdateOne) ClearDorm() *GradeUpdateOne {
+	_u.mutation.ClearDorm()
+	return _u
+}
+
+// RemoveDormIDs removes the "dorm" edge to Dorm entities by IDs.
+func (_u *GradeUpdateOne) RemoveDormIDs(ids ...int64) *GradeUpdateOne {
+	_u.mutation.RemoveDormIDs(ids...)
+	return _u
+}
+
+// RemoveDorm removes "dorm" edges to Dorm entities.
+func (_u *GradeUpdateOne) RemoveDorm(v ...*Dorm) *GradeUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveDormIDs(ids...)
 }
 
 // Where appends a list predicates to the GradeUpdate builder.
@@ -283,7 +519,7 @@ func (_u *GradeUpdateOne) ExecX(ctx context.Context) {
 }
 
 func (_u *GradeUpdateOne) sqlSave(ctx context.Context) (_node *Grade, err error) {
-	_spec := sqlgraph.NewUpdateSpec(grade.Table, grade.Columns, sqlgraph.NewFieldSpec(grade.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewUpdateSpec(grade.Table, grade.Columns, sqlgraph.NewFieldSpec(grade.FieldID, field.TypeInt64))
 	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Grade.id" for update`)}
@@ -319,7 +555,7 @@ func (_u *GradeUpdateOne) sqlSave(ctx context.Context) (_node *Grade, err error)
 			Columns: []string{grade.ClassColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(class.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(class.FieldID, field.TypeInt64),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -332,7 +568,7 @@ func (_u *GradeUpdateOne) sqlSave(ctx context.Context) (_node *Grade, err error)
 			Columns: []string{grade.ClassColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(class.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(class.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {
@@ -348,7 +584,97 @@ func (_u *GradeUpdateOne) sqlSave(ctx context.Context) (_node *Grade, err error)
 			Columns: []string{grade.ClassColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(class.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(class.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.StudentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   grade.StudentTable,
+			Columns: []string{grade.StudentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedStudentIDs(); len(nodes) > 0 && !_u.mutation.StudentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   grade.StudentTable,
+			Columns: []string{grade.StudentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.StudentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   grade.StudentTable,
+			Columns: []string{grade.StudentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.DormCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   grade.DormTable,
+			Columns: grade.DormPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dorm.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedDormIDs(); len(nodes) > 0 && !_u.mutation.DormCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   grade.DormTable,
+			Columns: grade.DormPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dorm.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.DormIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   grade.DormTable,
+			Columns: grade.DormPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dorm.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {

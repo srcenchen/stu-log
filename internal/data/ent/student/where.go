@@ -10,47 +10,47 @@ import (
 )
 
 // ID filters vertices based on their ID field.
-func ID(id int) predicate.Student {
+func ID(id int64) predicate.Student {
 	return predicate.Student(sql.FieldEQ(FieldID, id))
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id int) predicate.Student {
+func IDEQ(id int64) predicate.Student {
 	return predicate.Student(sql.FieldEQ(FieldID, id))
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id int) predicate.Student {
+func IDNEQ(id int64) predicate.Student {
 	return predicate.Student(sql.FieldNEQ(FieldID, id))
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...int) predicate.Student {
+func IDIn(ids ...int64) predicate.Student {
 	return predicate.Student(sql.FieldIn(FieldID, ids...))
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...int) predicate.Student {
+func IDNotIn(ids ...int64) predicate.Student {
 	return predicate.Student(sql.FieldNotIn(FieldID, ids...))
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id int) predicate.Student {
+func IDGT(id int64) predicate.Student {
 	return predicate.Student(sql.FieldGT(FieldID, id))
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id int) predicate.Student {
+func IDGTE(id int64) predicate.Student {
 	return predicate.Student(sql.FieldGTE(FieldID, id))
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id int) predicate.Student {
+func IDLT(id int64) predicate.Student {
 	return predicate.Student(sql.FieldLT(FieldID, id))
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id int) predicate.Student {
+func IDLTE(id int64) predicate.Student {
 	return predicate.Student(sql.FieldLTE(FieldID, id))
 }
 
@@ -59,14 +59,24 @@ func Name(v string) predicate.Student {
 	return predicate.Student(sql.FieldEQ(FieldName, v))
 }
 
+// StuNum applies equality check predicate on the "stuNum" field. It's identical to StuNumEQ.
+func StuNum(v string) predicate.Student {
+	return predicate.Student(sql.FieldEQ(FieldStuNum, v))
+}
+
 // Sex applies equality check predicate on the "sex" field. It's identical to SexEQ.
 func Sex(v string) predicate.Student {
 	return predicate.Student(sql.FieldEQ(FieldSex, v))
 }
 
 // Score applies equality check predicate on the "score" field. It's identical to ScoreEQ.
-func Score(v int) predicate.Student {
+func Score(v int32) predicate.Student {
 	return predicate.Student(sql.FieldEQ(FieldScore, v))
+}
+
+// DormPos applies equality check predicate on the "dormPos" field. It's identical to DormPosEQ.
+func DormPos(v string) predicate.Student {
+	return predicate.Student(sql.FieldEQ(FieldDormPos, v))
 }
 
 // NameEQ applies the EQ predicate on the "name" field.
@@ -132,6 +142,71 @@ func NameEqualFold(v string) predicate.Student {
 // NameContainsFold applies the ContainsFold predicate on the "name" field.
 func NameContainsFold(v string) predicate.Student {
 	return predicate.Student(sql.FieldContainsFold(FieldName, v))
+}
+
+// StuNumEQ applies the EQ predicate on the "stuNum" field.
+func StuNumEQ(v string) predicate.Student {
+	return predicate.Student(sql.FieldEQ(FieldStuNum, v))
+}
+
+// StuNumNEQ applies the NEQ predicate on the "stuNum" field.
+func StuNumNEQ(v string) predicate.Student {
+	return predicate.Student(sql.FieldNEQ(FieldStuNum, v))
+}
+
+// StuNumIn applies the In predicate on the "stuNum" field.
+func StuNumIn(vs ...string) predicate.Student {
+	return predicate.Student(sql.FieldIn(FieldStuNum, vs...))
+}
+
+// StuNumNotIn applies the NotIn predicate on the "stuNum" field.
+func StuNumNotIn(vs ...string) predicate.Student {
+	return predicate.Student(sql.FieldNotIn(FieldStuNum, vs...))
+}
+
+// StuNumGT applies the GT predicate on the "stuNum" field.
+func StuNumGT(v string) predicate.Student {
+	return predicate.Student(sql.FieldGT(FieldStuNum, v))
+}
+
+// StuNumGTE applies the GTE predicate on the "stuNum" field.
+func StuNumGTE(v string) predicate.Student {
+	return predicate.Student(sql.FieldGTE(FieldStuNum, v))
+}
+
+// StuNumLT applies the LT predicate on the "stuNum" field.
+func StuNumLT(v string) predicate.Student {
+	return predicate.Student(sql.FieldLT(FieldStuNum, v))
+}
+
+// StuNumLTE applies the LTE predicate on the "stuNum" field.
+func StuNumLTE(v string) predicate.Student {
+	return predicate.Student(sql.FieldLTE(FieldStuNum, v))
+}
+
+// StuNumContains applies the Contains predicate on the "stuNum" field.
+func StuNumContains(v string) predicate.Student {
+	return predicate.Student(sql.FieldContains(FieldStuNum, v))
+}
+
+// StuNumHasPrefix applies the HasPrefix predicate on the "stuNum" field.
+func StuNumHasPrefix(v string) predicate.Student {
+	return predicate.Student(sql.FieldHasPrefix(FieldStuNum, v))
+}
+
+// StuNumHasSuffix applies the HasSuffix predicate on the "stuNum" field.
+func StuNumHasSuffix(v string) predicate.Student {
+	return predicate.Student(sql.FieldHasSuffix(FieldStuNum, v))
+}
+
+// StuNumEqualFold applies the EqualFold predicate on the "stuNum" field.
+func StuNumEqualFold(v string) predicate.Student {
+	return predicate.Student(sql.FieldEqualFold(FieldStuNum, v))
+}
+
+// StuNumContainsFold applies the ContainsFold predicate on the "stuNum" field.
+func StuNumContainsFold(v string) predicate.Student {
+	return predicate.Student(sql.FieldContainsFold(FieldStuNum, v))
 }
 
 // SexEQ applies the EQ predicate on the "sex" field.
@@ -200,43 +275,108 @@ func SexContainsFold(v string) predicate.Student {
 }
 
 // ScoreEQ applies the EQ predicate on the "score" field.
-func ScoreEQ(v int) predicate.Student {
+func ScoreEQ(v int32) predicate.Student {
 	return predicate.Student(sql.FieldEQ(FieldScore, v))
 }
 
 // ScoreNEQ applies the NEQ predicate on the "score" field.
-func ScoreNEQ(v int) predicate.Student {
+func ScoreNEQ(v int32) predicate.Student {
 	return predicate.Student(sql.FieldNEQ(FieldScore, v))
 }
 
 // ScoreIn applies the In predicate on the "score" field.
-func ScoreIn(vs ...int) predicate.Student {
+func ScoreIn(vs ...int32) predicate.Student {
 	return predicate.Student(sql.FieldIn(FieldScore, vs...))
 }
 
 // ScoreNotIn applies the NotIn predicate on the "score" field.
-func ScoreNotIn(vs ...int) predicate.Student {
+func ScoreNotIn(vs ...int32) predicate.Student {
 	return predicate.Student(sql.FieldNotIn(FieldScore, vs...))
 }
 
 // ScoreGT applies the GT predicate on the "score" field.
-func ScoreGT(v int) predicate.Student {
+func ScoreGT(v int32) predicate.Student {
 	return predicate.Student(sql.FieldGT(FieldScore, v))
 }
 
 // ScoreGTE applies the GTE predicate on the "score" field.
-func ScoreGTE(v int) predicate.Student {
+func ScoreGTE(v int32) predicate.Student {
 	return predicate.Student(sql.FieldGTE(FieldScore, v))
 }
 
 // ScoreLT applies the LT predicate on the "score" field.
-func ScoreLT(v int) predicate.Student {
+func ScoreLT(v int32) predicate.Student {
 	return predicate.Student(sql.FieldLT(FieldScore, v))
 }
 
 // ScoreLTE applies the LTE predicate on the "score" field.
-func ScoreLTE(v int) predicate.Student {
+func ScoreLTE(v int32) predicate.Student {
 	return predicate.Student(sql.FieldLTE(FieldScore, v))
+}
+
+// DormPosEQ applies the EQ predicate on the "dormPos" field.
+func DormPosEQ(v string) predicate.Student {
+	return predicate.Student(sql.FieldEQ(FieldDormPos, v))
+}
+
+// DormPosNEQ applies the NEQ predicate on the "dormPos" field.
+func DormPosNEQ(v string) predicate.Student {
+	return predicate.Student(sql.FieldNEQ(FieldDormPos, v))
+}
+
+// DormPosIn applies the In predicate on the "dormPos" field.
+func DormPosIn(vs ...string) predicate.Student {
+	return predicate.Student(sql.FieldIn(FieldDormPos, vs...))
+}
+
+// DormPosNotIn applies the NotIn predicate on the "dormPos" field.
+func DormPosNotIn(vs ...string) predicate.Student {
+	return predicate.Student(sql.FieldNotIn(FieldDormPos, vs...))
+}
+
+// DormPosGT applies the GT predicate on the "dormPos" field.
+func DormPosGT(v string) predicate.Student {
+	return predicate.Student(sql.FieldGT(FieldDormPos, v))
+}
+
+// DormPosGTE applies the GTE predicate on the "dormPos" field.
+func DormPosGTE(v string) predicate.Student {
+	return predicate.Student(sql.FieldGTE(FieldDormPos, v))
+}
+
+// DormPosLT applies the LT predicate on the "dormPos" field.
+func DormPosLT(v string) predicate.Student {
+	return predicate.Student(sql.FieldLT(FieldDormPos, v))
+}
+
+// DormPosLTE applies the LTE predicate on the "dormPos" field.
+func DormPosLTE(v string) predicate.Student {
+	return predicate.Student(sql.FieldLTE(FieldDormPos, v))
+}
+
+// DormPosContains applies the Contains predicate on the "dormPos" field.
+func DormPosContains(v string) predicate.Student {
+	return predicate.Student(sql.FieldContains(FieldDormPos, v))
+}
+
+// DormPosHasPrefix applies the HasPrefix predicate on the "dormPos" field.
+func DormPosHasPrefix(v string) predicate.Student {
+	return predicate.Student(sql.FieldHasPrefix(FieldDormPos, v))
+}
+
+// DormPosHasSuffix applies the HasSuffix predicate on the "dormPos" field.
+func DormPosHasSuffix(v string) predicate.Student {
+	return predicate.Student(sql.FieldHasSuffix(FieldDormPos, v))
+}
+
+// DormPosEqualFold applies the EqualFold predicate on the "dormPos" field.
+func DormPosEqualFold(v string) predicate.Student {
+	return predicate.Student(sql.FieldEqualFold(FieldDormPos, v))
+}
+
+// DormPosContainsFold applies the ContainsFold predicate on the "dormPos" field.
+func DormPosContainsFold(v string) predicate.Student {
+	return predicate.Student(sql.FieldContainsFold(FieldDormPos, v))
 }
 
 // HasGrade applies the HasEdge predicate on the "grade" edge.
@@ -300,6 +440,29 @@ func HasDorm() predicate.Student {
 func HasDormWith(preds ...predicate.Dorm) predicate.Student {
 	return predicate.Student(func(s *sql.Selector) {
 		step := newDormStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasStuLogs applies the HasEdge predicate on the "stuLogs" edge.
+func HasStuLogs() predicate.Student {
+	return predicate.Student(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, StuLogsTable, StuLogsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasStuLogsWith applies the HasEdge predicate on the "stuLogs" edge with a given conditions (other predicates).
+func HasStuLogsWith(preds ...predicate.StuLog) predicate.Student {
+	return predicate.Student(func(s *sql.Selector) {
+		step := newStuLogsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

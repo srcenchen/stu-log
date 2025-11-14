@@ -6,51 +6,308 @@ import (
 	"eGZ-stu-log/internal/data/ent/predicate"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 // ID filters vertices based on their ID field.
-func ID(id int) predicate.Dorm {
+func ID(id int64) predicate.Dorm {
 	return predicate.Dorm(sql.FieldEQ(FieldID, id))
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id int) predicate.Dorm {
+func IDEQ(id int64) predicate.Dorm {
 	return predicate.Dorm(sql.FieldEQ(FieldID, id))
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id int) predicate.Dorm {
+func IDNEQ(id int64) predicate.Dorm {
 	return predicate.Dorm(sql.FieldNEQ(FieldID, id))
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...int) predicate.Dorm {
+func IDIn(ids ...int64) predicate.Dorm {
 	return predicate.Dorm(sql.FieldIn(FieldID, ids...))
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...int) predicate.Dorm {
+func IDNotIn(ids ...int64) predicate.Dorm {
 	return predicate.Dorm(sql.FieldNotIn(FieldID, ids...))
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id int) predicate.Dorm {
+func IDGT(id int64) predicate.Dorm {
 	return predicate.Dorm(sql.FieldGT(FieldID, id))
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id int) predicate.Dorm {
+func IDGTE(id int64) predicate.Dorm {
 	return predicate.Dorm(sql.FieldGTE(FieldID, id))
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id int) predicate.Dorm {
+func IDLT(id int64) predicate.Dorm {
 	return predicate.Dorm(sql.FieldLT(FieldID, id))
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id int) predicate.Dorm {
+func IDLTE(id int64) predicate.Dorm {
 	return predicate.Dorm(sql.FieldLTE(FieldID, id))
+}
+
+// Building applies equality check predicate on the "building" field. It's identical to BuildingEQ.
+func Building(v string) predicate.Dorm {
+	return predicate.Dorm(sql.FieldEQ(FieldBuilding, v))
+}
+
+// DormNum applies equality check predicate on the "dormNum" field. It's identical to DormNumEQ.
+func DormNum(v string) predicate.Dorm {
+	return predicate.Dorm(sql.FieldEQ(FieldDormNum, v))
+}
+
+// Sex applies equality check predicate on the "sex" field. It's identical to SexEQ.
+func Sex(v string) predicate.Dorm {
+	return predicate.Dorm(sql.FieldEQ(FieldSex, v))
+}
+
+// BuildingEQ applies the EQ predicate on the "building" field.
+func BuildingEQ(v string) predicate.Dorm {
+	return predicate.Dorm(sql.FieldEQ(FieldBuilding, v))
+}
+
+// BuildingNEQ applies the NEQ predicate on the "building" field.
+func BuildingNEQ(v string) predicate.Dorm {
+	return predicate.Dorm(sql.FieldNEQ(FieldBuilding, v))
+}
+
+// BuildingIn applies the In predicate on the "building" field.
+func BuildingIn(vs ...string) predicate.Dorm {
+	return predicate.Dorm(sql.FieldIn(FieldBuilding, vs...))
+}
+
+// BuildingNotIn applies the NotIn predicate on the "building" field.
+func BuildingNotIn(vs ...string) predicate.Dorm {
+	return predicate.Dorm(sql.FieldNotIn(FieldBuilding, vs...))
+}
+
+// BuildingGT applies the GT predicate on the "building" field.
+func BuildingGT(v string) predicate.Dorm {
+	return predicate.Dorm(sql.FieldGT(FieldBuilding, v))
+}
+
+// BuildingGTE applies the GTE predicate on the "building" field.
+func BuildingGTE(v string) predicate.Dorm {
+	return predicate.Dorm(sql.FieldGTE(FieldBuilding, v))
+}
+
+// BuildingLT applies the LT predicate on the "building" field.
+func BuildingLT(v string) predicate.Dorm {
+	return predicate.Dorm(sql.FieldLT(FieldBuilding, v))
+}
+
+// BuildingLTE applies the LTE predicate on the "building" field.
+func BuildingLTE(v string) predicate.Dorm {
+	return predicate.Dorm(sql.FieldLTE(FieldBuilding, v))
+}
+
+// BuildingContains applies the Contains predicate on the "building" field.
+func BuildingContains(v string) predicate.Dorm {
+	return predicate.Dorm(sql.FieldContains(FieldBuilding, v))
+}
+
+// BuildingHasPrefix applies the HasPrefix predicate on the "building" field.
+func BuildingHasPrefix(v string) predicate.Dorm {
+	return predicate.Dorm(sql.FieldHasPrefix(FieldBuilding, v))
+}
+
+// BuildingHasSuffix applies the HasSuffix predicate on the "building" field.
+func BuildingHasSuffix(v string) predicate.Dorm {
+	return predicate.Dorm(sql.FieldHasSuffix(FieldBuilding, v))
+}
+
+// BuildingEqualFold applies the EqualFold predicate on the "building" field.
+func BuildingEqualFold(v string) predicate.Dorm {
+	return predicate.Dorm(sql.FieldEqualFold(FieldBuilding, v))
+}
+
+// BuildingContainsFold applies the ContainsFold predicate on the "building" field.
+func BuildingContainsFold(v string) predicate.Dorm {
+	return predicate.Dorm(sql.FieldContainsFold(FieldBuilding, v))
+}
+
+// DormNumEQ applies the EQ predicate on the "dormNum" field.
+func DormNumEQ(v string) predicate.Dorm {
+	return predicate.Dorm(sql.FieldEQ(FieldDormNum, v))
+}
+
+// DormNumNEQ applies the NEQ predicate on the "dormNum" field.
+func DormNumNEQ(v string) predicate.Dorm {
+	return predicate.Dorm(sql.FieldNEQ(FieldDormNum, v))
+}
+
+// DormNumIn applies the In predicate on the "dormNum" field.
+func DormNumIn(vs ...string) predicate.Dorm {
+	return predicate.Dorm(sql.FieldIn(FieldDormNum, vs...))
+}
+
+// DormNumNotIn applies the NotIn predicate on the "dormNum" field.
+func DormNumNotIn(vs ...string) predicate.Dorm {
+	return predicate.Dorm(sql.FieldNotIn(FieldDormNum, vs...))
+}
+
+// DormNumGT applies the GT predicate on the "dormNum" field.
+func DormNumGT(v string) predicate.Dorm {
+	return predicate.Dorm(sql.FieldGT(FieldDormNum, v))
+}
+
+// DormNumGTE applies the GTE predicate on the "dormNum" field.
+func DormNumGTE(v string) predicate.Dorm {
+	return predicate.Dorm(sql.FieldGTE(FieldDormNum, v))
+}
+
+// DormNumLT applies the LT predicate on the "dormNum" field.
+func DormNumLT(v string) predicate.Dorm {
+	return predicate.Dorm(sql.FieldLT(FieldDormNum, v))
+}
+
+// DormNumLTE applies the LTE predicate on the "dormNum" field.
+func DormNumLTE(v string) predicate.Dorm {
+	return predicate.Dorm(sql.FieldLTE(FieldDormNum, v))
+}
+
+// DormNumContains applies the Contains predicate on the "dormNum" field.
+func DormNumContains(v string) predicate.Dorm {
+	return predicate.Dorm(sql.FieldContains(FieldDormNum, v))
+}
+
+// DormNumHasPrefix applies the HasPrefix predicate on the "dormNum" field.
+func DormNumHasPrefix(v string) predicate.Dorm {
+	return predicate.Dorm(sql.FieldHasPrefix(FieldDormNum, v))
+}
+
+// DormNumHasSuffix applies the HasSuffix predicate on the "dormNum" field.
+func DormNumHasSuffix(v string) predicate.Dorm {
+	return predicate.Dorm(sql.FieldHasSuffix(FieldDormNum, v))
+}
+
+// DormNumEqualFold applies the EqualFold predicate on the "dormNum" field.
+func DormNumEqualFold(v string) predicate.Dorm {
+	return predicate.Dorm(sql.FieldEqualFold(FieldDormNum, v))
+}
+
+// DormNumContainsFold applies the ContainsFold predicate on the "dormNum" field.
+func DormNumContainsFold(v string) predicate.Dorm {
+	return predicate.Dorm(sql.FieldContainsFold(FieldDormNum, v))
+}
+
+// SexEQ applies the EQ predicate on the "sex" field.
+func SexEQ(v string) predicate.Dorm {
+	return predicate.Dorm(sql.FieldEQ(FieldSex, v))
+}
+
+// SexNEQ applies the NEQ predicate on the "sex" field.
+func SexNEQ(v string) predicate.Dorm {
+	return predicate.Dorm(sql.FieldNEQ(FieldSex, v))
+}
+
+// SexIn applies the In predicate on the "sex" field.
+func SexIn(vs ...string) predicate.Dorm {
+	return predicate.Dorm(sql.FieldIn(FieldSex, vs...))
+}
+
+// SexNotIn applies the NotIn predicate on the "sex" field.
+func SexNotIn(vs ...string) predicate.Dorm {
+	return predicate.Dorm(sql.FieldNotIn(FieldSex, vs...))
+}
+
+// SexGT applies the GT predicate on the "sex" field.
+func SexGT(v string) predicate.Dorm {
+	return predicate.Dorm(sql.FieldGT(FieldSex, v))
+}
+
+// SexGTE applies the GTE predicate on the "sex" field.
+func SexGTE(v string) predicate.Dorm {
+	return predicate.Dorm(sql.FieldGTE(FieldSex, v))
+}
+
+// SexLT applies the LT predicate on the "sex" field.
+func SexLT(v string) predicate.Dorm {
+	return predicate.Dorm(sql.FieldLT(FieldSex, v))
+}
+
+// SexLTE applies the LTE predicate on the "sex" field.
+func SexLTE(v string) predicate.Dorm {
+	return predicate.Dorm(sql.FieldLTE(FieldSex, v))
+}
+
+// SexContains applies the Contains predicate on the "sex" field.
+func SexContains(v string) predicate.Dorm {
+	return predicate.Dorm(sql.FieldContains(FieldSex, v))
+}
+
+// SexHasPrefix applies the HasPrefix predicate on the "sex" field.
+func SexHasPrefix(v string) predicate.Dorm {
+	return predicate.Dorm(sql.FieldHasPrefix(FieldSex, v))
+}
+
+// SexHasSuffix applies the HasSuffix predicate on the "sex" field.
+func SexHasSuffix(v string) predicate.Dorm {
+	return predicate.Dorm(sql.FieldHasSuffix(FieldSex, v))
+}
+
+// SexEqualFold applies the EqualFold predicate on the "sex" field.
+func SexEqualFold(v string) predicate.Dorm {
+	return predicate.Dorm(sql.FieldEqualFold(FieldSex, v))
+}
+
+// SexContainsFold applies the ContainsFold predicate on the "sex" field.
+func SexContainsFold(v string) predicate.Dorm {
+	return predicate.Dorm(sql.FieldContainsFold(FieldSex, v))
+}
+
+// HasStudent applies the HasEdge predicate on the "student" edge.
+func HasStudent() predicate.Dorm {
+	return predicate.Dorm(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, StudentTable, StudentColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasStudentWith applies the HasEdge predicate on the "student" edge with a given conditions (other predicates).
+func HasStudentWith(preds ...predicate.Student) predicate.Dorm {
+	return predicate.Dorm(func(s *sql.Selector) {
+		step := newStudentStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasGrade applies the HasEdge predicate on the "grade" edge.
+func HasGrade() predicate.Dorm {
+	return predicate.Dorm(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, GradeTable, GradePrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasGradeWith applies the HasEdge predicate on the "grade" edge with a given conditions (other predicates).
+func HasGradeWith(preds ...predicate.Grade) predicate.Dorm {
+	return predicate.Dorm(func(s *sql.Selector) {
+		step := newGradeStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

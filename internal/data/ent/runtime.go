@@ -5,24 +5,35 @@ package ent
 import (
 	"eGZ-stu-log/internal/data/ent/schema"
 	"eGZ-stu-log/internal/data/ent/student"
+	"eGZ-stu-log/internal/data/ent/stulog"
 )
 
 // The init function reads all schema descriptors with runtime code
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	stulogFields := schema.StuLog{}.Fields()
+	_ = stulogFields
+	// stulogDescInvoked is the schema descriptor for invoked field.
+	stulogDescInvoked := stulogFields[2].Descriptor()
+	// stulog.DefaultInvoked holds the default value on creation for the invoked field.
+	stulog.DefaultInvoked = stulogDescInvoked.Default.(bool)
 	studentFields := schema.Student{}.Fields()
 	_ = studentFields
 	// studentDescName is the schema descriptor for name field.
-	studentDescName := studentFields[0].Descriptor()
+	studentDescName := studentFields[1].Descriptor()
 	// student.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	student.NameValidator = studentDescName.Validators[0].(func(string) error)
+	// studentDescStuNum is the schema descriptor for stuNum field.
+	studentDescStuNum := studentFields[2].Descriptor()
+	// student.StuNumValidator is a validator for the "stuNum" field. It is called by the builders before save.
+	student.StuNumValidator = studentDescStuNum.Validators[0].(func(string) error)
 	// studentDescSex is the schema descriptor for sex field.
-	studentDescSex := studentFields[1].Descriptor()
+	studentDescSex := studentFields[3].Descriptor()
 	// student.SexValidator is a validator for the "sex" field. It is called by the builders before save.
 	student.SexValidator = studentDescSex.Validators[0].(func(string) error)
 	// studentDescScore is the schema descriptor for score field.
-	studentDescScore := studentFields[2].Descriptor()
+	studentDescScore := studentFields[4].Descriptor()
 	// student.DefaultScore holds the default value on creation for the score field.
-	student.DefaultScore = studentDescScore.Default.(int)
+	student.DefaultScore = studentDescScore.Default.(int32)
 }

@@ -7,9 +7,10 @@ import (
 	"eGZ-stu-log/internal/data/ent/class"
 	"eGZ-stu-log/internal/data/ent/dorm"
 	"eGZ-stu-log/internal/data/ent/grade"
-	"eGZ-stu-log/internal/data/ent/logs"
-	"eGZ-stu-log/internal/data/ent/score"
+	"eGZ-stu-log/internal/data/ent/image"
+	"eGZ-stu-log/internal/data/ent/rule"
 	"eGZ-stu-log/internal/data/ent/student"
+	"eGZ-stu-log/internal/data/ent/stulog"
 	"eGZ-stu-log/internal/data/ent/user"
 	"errors"
 	"fmt"
@@ -82,8 +83,9 @@ func checkColumn(t, c string) error {
 			class.Table:   class.ValidColumn,
 			dorm.Table:    dorm.ValidColumn,
 			grade.Table:   grade.ValidColumn,
-			logs.Table:    logs.ValidColumn,
-			score.Table:   score.ValidColumn,
+			image.Table:   image.ValidColumn,
+			rule.Table:    rule.ValidColumn,
+			stulog.Table:  stulog.ValidColumn,
 			student.Table: student.ValidColumn,
 			user.Table:    user.ValidColumn,
 		})

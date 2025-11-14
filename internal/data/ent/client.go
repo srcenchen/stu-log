@@ -14,9 +14,10 @@ import (
 	"eGZ-stu-log/internal/data/ent/class"
 	"eGZ-stu-log/internal/data/ent/dorm"
 	"eGZ-stu-log/internal/data/ent/grade"
-	"eGZ-stu-log/internal/data/ent/logs"
-	"eGZ-stu-log/internal/data/ent/score"
+	"eGZ-stu-log/internal/data/ent/image"
+	"eGZ-stu-log/internal/data/ent/rule"
 	"eGZ-stu-log/internal/data/ent/student"
+	"eGZ-stu-log/internal/data/ent/stulog"
 	"eGZ-stu-log/internal/data/ent/user"
 
 	"entgo.io/ent"
@@ -36,10 +37,12 @@ type Client struct {
 	Dorm *DormClient
 	// Grade is the client for interacting with the Grade builders.
 	Grade *GradeClient
-	// Logs is the client for interacting with the Logs builders.
-	Logs *LogsClient
-	// Score is the client for interacting with the Score builders.
-	Score *ScoreClient
+	// Image is the client for interacting with the Image builders.
+	Image *ImageClient
+	// Rule is the client for interacting with the Rule builders.
+	Rule *RuleClient
+	// StuLog is the client for interacting with the StuLog builders.
+	StuLog *StuLogClient
 	// Student is the client for interacting with the Student builders.
 	Student *StudentClient
 	// User is the client for interacting with the User builders.
@@ -58,8 +61,9 @@ func (c *Client) init() {
 	c.Class = NewClassClient(c.config)
 	c.Dorm = NewDormClient(c.config)
 	c.Grade = NewGradeClient(c.config)
-	c.Logs = NewLogsClient(c.config)
-	c.Score = NewScoreClient(c.config)
+	c.Image = NewImageClient(c.config)
+	c.Rule = NewRuleClient(c.config)
+	c.StuLog = NewStuLogClient(c.config)
 	c.Student = NewStudentClient(c.config)
 	c.User = NewUserClient(c.config)
 }
@@ -157,8 +161,9 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Class:   NewClassClient(cfg),
 		Dorm:    NewDormClient(cfg),
 		Grade:   NewGradeClient(cfg),
-		Logs:    NewLogsClient(cfg),
-		Score:   NewScoreClient(cfg),
+		Image:   NewImageClient(cfg),
+		Rule:    NewRuleClient(cfg),
+		StuLog:  NewStuLogClient(cfg),
 		Student: NewStudentClient(cfg),
 		User:    NewUserClient(cfg),
 	}, nil
@@ -183,8 +188,9 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Class:   NewClassClient(cfg),
 		Dorm:    NewDormClient(cfg),
 		Grade:   NewGradeClient(cfg),
-		Logs:    NewLogsClient(cfg),
-		Score:   NewScoreClient(cfg),
+		Image:   NewImageClient(cfg),
+		Rule:    NewRuleClient(cfg),
+		StuLog:  NewStuLogClient(cfg),
 		Student: NewStudentClient(cfg),
 		User:    NewUserClient(cfg),
 	}, nil
@@ -216,7 +222,7 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Class, c.Dorm, c.Grade, c.Logs, c.Score, c.Student, c.User,
+		c.Class, c.Dorm, c.Grade, c.Image, c.Rule, c.StuLog, c.Student, c.User,
 	} {
 		n.Use(hooks...)
 	}
@@ -226,7 +232,7 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Class, c.Dorm, c.Grade, c.Logs, c.Score, c.Student, c.User,
+		c.Class, c.Dorm, c.Grade, c.Image, c.Rule, c.StuLog, c.Student, c.User,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -241,10 +247,12 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Dorm.mutate(ctx, m)
 	case *GradeMutation:
 		return c.Grade.mutate(ctx, m)
-	case *LogsMutation:
-		return c.Logs.mutate(ctx, m)
-	case *ScoreMutation:
-		return c.Score.mutate(ctx, m)
+	case *ImageMutation:
+		return c.Image.mutate(ctx, m)
+	case *RuleMutation:
+		return c.Rule.mutate(ctx, m)
+	case *StuLogMutation:
+		return c.StuLog.mutate(ctx, m)
 	case *StudentMutation:
 		return c.Student.mutate(ctx, m)
 	case *UserMutation:
@@ -315,7 +323,7 @@ func (c *ClassClient) UpdateOne(_m *Class) *ClassUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *ClassClient) UpdateOneID(id int) *ClassUpdateOne {
+func (c *ClassClient) UpdateOneID(id int64) *ClassUpdateOne {
 	mutation := newClassMutation(c.config, OpUpdateOne, withClassID(id))
 	return &ClassUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -332,7 +340,7 @@ func (c *ClassClient) DeleteOne(_m *Class) *ClassDeleteOne {
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *ClassClient) DeleteOneID(id int) *ClassDeleteOne {
+func (c *ClassClient) DeleteOneID(id int64) *ClassDeleteOne {
 	builder := c.Delete().Where(class.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -349,12 +357,12 @@ func (c *ClassClient) Query() *ClassQuery {
 }
 
 // Get returns a Class entity by its id.
-func (c *ClassClient) Get(ctx context.Context, id int) (*Class, error) {
+func (c *ClassClient) Get(ctx context.Context, id int64) (*Class, error) {
 	return c.Query().Where(class.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *ClassClient) GetX(ctx context.Context, id int) *Class {
+func (c *ClassClient) GetX(ctx context.Context, id int64) *Class {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -371,6 +379,22 @@ func (c *ClassClient) QueryGrade(_m *Class) *GradeQuery {
 			sqlgraph.From(class.Table, class.FieldID, id),
 			sqlgraph.To(grade.Table, grade.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, class.GradeTable, class.GradeColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryStudent queries the student edge of a Class.
+func (c *ClassClient) QueryStudent(_m *Class) *StudentQuery {
+	query := (&StudentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(class.Table, class.FieldID, id),
+			sqlgraph.To(student.Table, student.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, class.StudentTable, class.StudentColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -464,7 +488,7 @@ func (c *DormClient) UpdateOne(_m *Dorm) *DormUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *DormClient) UpdateOneID(id int) *DormUpdateOne {
+func (c *DormClient) UpdateOneID(id int64) *DormUpdateOne {
 	mutation := newDormMutation(c.config, OpUpdateOne, withDormID(id))
 	return &DormUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -481,7 +505,7 @@ func (c *DormClient) DeleteOne(_m *Dorm) *DormDeleteOne {
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *DormClient) DeleteOneID(id int) *DormDeleteOne {
+func (c *DormClient) DeleteOneID(id int64) *DormDeleteOne {
 	builder := c.Delete().Where(dorm.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -498,17 +522,49 @@ func (c *DormClient) Query() *DormQuery {
 }
 
 // Get returns a Dorm entity by its id.
-func (c *DormClient) Get(ctx context.Context, id int) (*Dorm, error) {
+func (c *DormClient) Get(ctx context.Context, id int64) (*Dorm, error) {
 	return c.Query().Where(dorm.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *DormClient) GetX(ctx context.Context, id int) *Dorm {
+func (c *DormClient) GetX(ctx context.Context, id int64) *Dorm {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
 	}
 	return obj
+}
+
+// QueryStudent queries the student edge of a Dorm.
+func (c *DormClient) QueryStudent(_m *Dorm) *StudentQuery {
+	query := (&StudentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dorm.Table, dorm.FieldID, id),
+			sqlgraph.To(student.Table, student.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, dorm.StudentTable, dorm.StudentColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryGrade queries the grade edge of a Dorm.
+func (c *DormClient) QueryGrade(_m *Dorm) *GradeQuery {
+	query := (&GradeClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dorm.Table, dorm.FieldID, id),
+			sqlgraph.To(grade.Table, grade.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, dorm.GradeTable, dorm.GradePrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // Hooks returns the client hooks.
@@ -597,7 +653,7 @@ func (c *GradeClient) UpdateOne(_m *Grade) *GradeUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *GradeClient) UpdateOneID(id int) *GradeUpdateOne {
+func (c *GradeClient) UpdateOneID(id int64) *GradeUpdateOne {
 	mutation := newGradeMutation(c.config, OpUpdateOne, withGradeID(id))
 	return &GradeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -614,7 +670,7 @@ func (c *GradeClient) DeleteOne(_m *Grade) *GradeDeleteOne {
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *GradeClient) DeleteOneID(id int) *GradeDeleteOne {
+func (c *GradeClient) DeleteOneID(id int64) *GradeDeleteOne {
 	builder := c.Delete().Where(grade.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -631,12 +687,12 @@ func (c *GradeClient) Query() *GradeQuery {
 }
 
 // Get returns a Grade entity by its id.
-func (c *GradeClient) Get(ctx context.Context, id int) (*Grade, error) {
+func (c *GradeClient) Get(ctx context.Context, id int64) (*Grade, error) {
 	return c.Query().Where(grade.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *GradeClient) GetX(ctx context.Context, id int) *Grade {
+func (c *GradeClient) GetX(ctx context.Context, id int64) *Grade {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -653,6 +709,38 @@ func (c *GradeClient) QueryClass(_m *Grade) *ClassQuery {
 			sqlgraph.From(grade.Table, grade.FieldID, id),
 			sqlgraph.To(class.Table, class.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, grade.ClassTable, grade.ClassColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryStudent queries the student edge of a Grade.
+func (c *GradeClient) QueryStudent(_m *Grade) *StudentQuery {
+	query := (&StudentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(grade.Table, grade.FieldID, id),
+			sqlgraph.To(student.Table, student.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, grade.StudentTable, grade.StudentColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDorm queries the dorm edge of a Grade.
+func (c *GradeClient) QueryDorm(_m *Grade) *DormQuery {
+	query := (&DormClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(grade.Table, grade.FieldID, id),
+			sqlgraph.To(dorm.Table, dorm.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, grade.DormTable, grade.DormPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -685,107 +773,107 @@ func (c *GradeClient) mutate(ctx context.Context, m *GradeMutation) (Value, erro
 	}
 }
 
-// LogsClient is a client for the Logs schema.
-type LogsClient struct {
+// ImageClient is a client for the Image schema.
+type ImageClient struct {
 	config
 }
 
-// NewLogsClient returns a client for the Logs from the given config.
-func NewLogsClient(c config) *LogsClient {
-	return &LogsClient{config: c}
+// NewImageClient returns a client for the Image from the given config.
+func NewImageClient(c config) *ImageClient {
+	return &ImageClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `logs.Hooks(f(g(h())))`.
-func (c *LogsClient) Use(hooks ...Hook) {
-	c.hooks.Logs = append(c.hooks.Logs, hooks...)
+// A call to `Use(f, g, h)` equals to `image.Hooks(f(g(h())))`.
+func (c *ImageClient) Use(hooks ...Hook) {
+	c.hooks.Image = append(c.hooks.Image, hooks...)
 }
 
 // Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `logs.Intercept(f(g(h())))`.
-func (c *LogsClient) Intercept(interceptors ...Interceptor) {
-	c.inters.Logs = append(c.inters.Logs, interceptors...)
+// A call to `Intercept(f, g, h)` equals to `image.Intercept(f(g(h())))`.
+func (c *ImageClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Image = append(c.inters.Image, interceptors...)
 }
 
-// Create returns a builder for creating a Logs entity.
-func (c *LogsClient) Create() *LogsCreate {
-	mutation := newLogsMutation(c.config, OpCreate)
-	return &LogsCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a Image entity.
+func (c *ImageClient) Create() *ImageCreate {
+	mutation := newImageMutation(c.config, OpCreate)
+	return &ImageCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of Logs entities.
-func (c *LogsClient) CreateBulk(builders ...*LogsCreate) *LogsCreateBulk {
-	return &LogsCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of Image entities.
+func (c *ImageClient) CreateBulk(builders ...*ImageCreate) *ImageCreateBulk {
+	return &ImageCreateBulk{config: c.config, builders: builders}
 }
 
 // MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
 // a builder and applies setFunc on it.
-func (c *LogsClient) MapCreateBulk(slice any, setFunc func(*LogsCreate, int)) *LogsCreateBulk {
+func (c *ImageClient) MapCreateBulk(slice any, setFunc func(*ImageCreate, int)) *ImageCreateBulk {
 	rv := reflect.ValueOf(slice)
 	if rv.Kind() != reflect.Slice {
-		return &LogsCreateBulk{err: fmt.Errorf("calling to LogsClient.MapCreateBulk with wrong type %T, need slice", slice)}
+		return &ImageCreateBulk{err: fmt.Errorf("calling to ImageClient.MapCreateBulk with wrong type %T, need slice", slice)}
 	}
-	builders := make([]*LogsCreate, rv.Len())
+	builders := make([]*ImageCreate, rv.Len())
 	for i := 0; i < rv.Len(); i++ {
 		builders[i] = c.Create()
 		setFunc(builders[i], i)
 	}
-	return &LogsCreateBulk{config: c.config, builders: builders}
+	return &ImageCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for Logs.
-func (c *LogsClient) Update() *LogsUpdate {
-	mutation := newLogsMutation(c.config, OpUpdate)
-	return &LogsUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for Image.
+func (c *ImageClient) Update() *ImageUpdate {
+	mutation := newImageMutation(c.config, OpUpdate)
+	return &ImageUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *LogsClient) UpdateOne(_m *Logs) *LogsUpdateOne {
-	mutation := newLogsMutation(c.config, OpUpdateOne, withLogs(_m))
-	return &LogsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *ImageClient) UpdateOne(_m *Image) *ImageUpdateOne {
+	mutation := newImageMutation(c.config, OpUpdateOne, withImage(_m))
+	return &ImageUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *LogsClient) UpdateOneID(id int) *LogsUpdateOne {
-	mutation := newLogsMutation(c.config, OpUpdateOne, withLogsID(id))
-	return &LogsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *ImageClient) UpdateOneID(id int64) *ImageUpdateOne {
+	mutation := newImageMutation(c.config, OpUpdateOne, withImageID(id))
+	return &ImageUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for Logs.
-func (c *LogsClient) Delete() *LogsDelete {
-	mutation := newLogsMutation(c.config, OpDelete)
-	return &LogsDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for Image.
+func (c *ImageClient) Delete() *ImageDelete {
+	mutation := newImageMutation(c.config, OpDelete)
+	return &ImageDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *LogsClient) DeleteOne(_m *Logs) *LogsDeleteOne {
+func (c *ImageClient) DeleteOne(_m *Image) *ImageDeleteOne {
 	return c.DeleteOneID(_m.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *LogsClient) DeleteOneID(id int) *LogsDeleteOne {
-	builder := c.Delete().Where(logs.ID(id))
+func (c *ImageClient) DeleteOneID(id int64) *ImageDeleteOne {
+	builder := c.Delete().Where(image.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &LogsDeleteOne{builder}
+	return &ImageDeleteOne{builder}
 }
 
-// Query returns a query builder for Logs.
-func (c *LogsClient) Query() *LogsQuery {
-	return &LogsQuery{
+// Query returns a query builder for Image.
+func (c *ImageClient) Query() *ImageQuery {
+	return &ImageQuery{
 		config: c.config,
-		ctx:    &QueryContext{Type: TypeLogs},
+		ctx:    &QueryContext{Type: TypeImage},
 		inters: c.Interceptors(),
 	}
 }
 
-// Get returns a Logs entity by its id.
-func (c *LogsClient) Get(ctx context.Context, id int) (*Logs, error) {
-	return c.Query().Where(logs.ID(id)).Only(ctx)
+// Get returns a Image entity by its id.
+func (c *ImageClient) Get(ctx context.Context, id int64) (*Image, error) {
+	return c.Query().Where(image.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *LogsClient) GetX(ctx context.Context, id int) *Logs {
+func (c *ImageClient) GetX(ctx context.Context, id int64) *Image {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -794,131 +882,131 @@ func (c *LogsClient) GetX(ctx context.Context, id int) *Logs {
 }
 
 // Hooks returns the client hooks.
-func (c *LogsClient) Hooks() []Hook {
-	return c.hooks.Logs
+func (c *ImageClient) Hooks() []Hook {
+	return c.hooks.Image
 }
 
 // Interceptors returns the client interceptors.
-func (c *LogsClient) Interceptors() []Interceptor {
-	return c.inters.Logs
+func (c *ImageClient) Interceptors() []Interceptor {
+	return c.inters.Image
 }
 
-func (c *LogsClient) mutate(ctx context.Context, m *LogsMutation) (Value, error) {
+func (c *ImageClient) mutate(ctx context.Context, m *ImageMutation) (Value, error) {
 	switch m.Op() {
 	case OpCreate:
-		return (&LogsCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&ImageCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdate:
-		return (&LogsUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&ImageUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdateOne:
-		return (&LogsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&ImageUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpDelete, OpDeleteOne:
-		return (&LogsDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+		return (&ImageDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
-		return nil, fmt.Errorf("ent: unknown Logs mutation op: %q", m.Op())
+		return nil, fmt.Errorf("ent: unknown Image mutation op: %q", m.Op())
 	}
 }
 
-// ScoreClient is a client for the Score schema.
-type ScoreClient struct {
+// RuleClient is a client for the Rule schema.
+type RuleClient struct {
 	config
 }
 
-// NewScoreClient returns a client for the Score from the given config.
-func NewScoreClient(c config) *ScoreClient {
-	return &ScoreClient{config: c}
+// NewRuleClient returns a client for the Rule from the given config.
+func NewRuleClient(c config) *RuleClient {
+	return &RuleClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `score.Hooks(f(g(h())))`.
-func (c *ScoreClient) Use(hooks ...Hook) {
-	c.hooks.Score = append(c.hooks.Score, hooks...)
+// A call to `Use(f, g, h)` equals to `rule.Hooks(f(g(h())))`.
+func (c *RuleClient) Use(hooks ...Hook) {
+	c.hooks.Rule = append(c.hooks.Rule, hooks...)
 }
 
 // Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `score.Intercept(f(g(h())))`.
-func (c *ScoreClient) Intercept(interceptors ...Interceptor) {
-	c.inters.Score = append(c.inters.Score, interceptors...)
+// A call to `Intercept(f, g, h)` equals to `rule.Intercept(f(g(h())))`.
+func (c *RuleClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Rule = append(c.inters.Rule, interceptors...)
 }
 
-// Create returns a builder for creating a Score entity.
-func (c *ScoreClient) Create() *ScoreCreate {
-	mutation := newScoreMutation(c.config, OpCreate)
-	return &ScoreCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a Rule entity.
+func (c *RuleClient) Create() *RuleCreate {
+	mutation := newRuleMutation(c.config, OpCreate)
+	return &RuleCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of Score entities.
-func (c *ScoreClient) CreateBulk(builders ...*ScoreCreate) *ScoreCreateBulk {
-	return &ScoreCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of Rule entities.
+func (c *RuleClient) CreateBulk(builders ...*RuleCreate) *RuleCreateBulk {
+	return &RuleCreateBulk{config: c.config, builders: builders}
 }
 
 // MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
 // a builder and applies setFunc on it.
-func (c *ScoreClient) MapCreateBulk(slice any, setFunc func(*ScoreCreate, int)) *ScoreCreateBulk {
+func (c *RuleClient) MapCreateBulk(slice any, setFunc func(*RuleCreate, int)) *RuleCreateBulk {
 	rv := reflect.ValueOf(slice)
 	if rv.Kind() != reflect.Slice {
-		return &ScoreCreateBulk{err: fmt.Errorf("calling to ScoreClient.MapCreateBulk with wrong type %T, need slice", slice)}
+		return &RuleCreateBulk{err: fmt.Errorf("calling to RuleClient.MapCreateBulk with wrong type %T, need slice", slice)}
 	}
-	builders := make([]*ScoreCreate, rv.Len())
+	builders := make([]*RuleCreate, rv.Len())
 	for i := 0; i < rv.Len(); i++ {
 		builders[i] = c.Create()
 		setFunc(builders[i], i)
 	}
-	return &ScoreCreateBulk{config: c.config, builders: builders}
+	return &RuleCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for Score.
-func (c *ScoreClient) Update() *ScoreUpdate {
-	mutation := newScoreMutation(c.config, OpUpdate)
-	return &ScoreUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for Rule.
+func (c *RuleClient) Update() *RuleUpdate {
+	mutation := newRuleMutation(c.config, OpUpdate)
+	return &RuleUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *ScoreClient) UpdateOne(_m *Score) *ScoreUpdateOne {
-	mutation := newScoreMutation(c.config, OpUpdateOne, withScore(_m))
-	return &ScoreUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *RuleClient) UpdateOne(_m *Rule) *RuleUpdateOne {
+	mutation := newRuleMutation(c.config, OpUpdateOne, withRule(_m))
+	return &RuleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *ScoreClient) UpdateOneID(id int) *ScoreUpdateOne {
-	mutation := newScoreMutation(c.config, OpUpdateOne, withScoreID(id))
-	return &ScoreUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *RuleClient) UpdateOneID(id int64) *RuleUpdateOne {
+	mutation := newRuleMutation(c.config, OpUpdateOne, withRuleID(id))
+	return &RuleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for Score.
-func (c *ScoreClient) Delete() *ScoreDelete {
-	mutation := newScoreMutation(c.config, OpDelete)
-	return &ScoreDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for Rule.
+func (c *RuleClient) Delete() *RuleDelete {
+	mutation := newRuleMutation(c.config, OpDelete)
+	return &RuleDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *ScoreClient) DeleteOne(_m *Score) *ScoreDeleteOne {
+func (c *RuleClient) DeleteOne(_m *Rule) *RuleDeleteOne {
 	return c.DeleteOneID(_m.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *ScoreClient) DeleteOneID(id int) *ScoreDeleteOne {
-	builder := c.Delete().Where(score.ID(id))
+func (c *RuleClient) DeleteOneID(id int64) *RuleDeleteOne {
+	builder := c.Delete().Where(rule.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &ScoreDeleteOne{builder}
+	return &RuleDeleteOne{builder}
 }
 
-// Query returns a query builder for Score.
-func (c *ScoreClient) Query() *ScoreQuery {
-	return &ScoreQuery{
+// Query returns a query builder for Rule.
+func (c *RuleClient) Query() *RuleQuery {
+	return &RuleQuery{
 		config: c.config,
-		ctx:    &QueryContext{Type: TypeScore},
+		ctx:    &QueryContext{Type: TypeRule},
 		inters: c.Interceptors(),
 	}
 }
 
-// Get returns a Score entity by its id.
-func (c *ScoreClient) Get(ctx context.Context, id int) (*Score, error) {
-	return c.Query().Where(score.ID(id)).Only(ctx)
+// Get returns a Rule entity by its id.
+func (c *RuleClient) Get(ctx context.Context, id int64) (*Rule, error) {
+	return c.Query().Where(rule.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *ScoreClient) GetX(ctx context.Context, id int) *Score {
+func (c *RuleClient) GetX(ctx context.Context, id int64) *Rule {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -927,27 +1015,240 @@ func (c *ScoreClient) GetX(ctx context.Context, id int) *Score {
 }
 
 // Hooks returns the client hooks.
-func (c *ScoreClient) Hooks() []Hook {
-	return c.hooks.Score
+func (c *RuleClient) Hooks() []Hook {
+	return c.hooks.Rule
 }
 
 // Interceptors returns the client interceptors.
-func (c *ScoreClient) Interceptors() []Interceptor {
-	return c.inters.Score
+func (c *RuleClient) Interceptors() []Interceptor {
+	return c.inters.Rule
 }
 
-func (c *ScoreClient) mutate(ctx context.Context, m *ScoreMutation) (Value, error) {
+func (c *RuleClient) mutate(ctx context.Context, m *RuleMutation) (Value, error) {
 	switch m.Op() {
 	case OpCreate:
-		return (&ScoreCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&RuleCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdate:
-		return (&ScoreUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&RuleUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdateOne:
-		return (&ScoreUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&RuleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpDelete, OpDeleteOne:
-		return (&ScoreDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+		return (&RuleDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
-		return nil, fmt.Errorf("ent: unknown Score mutation op: %q", m.Op())
+		return nil, fmt.Errorf("ent: unknown Rule mutation op: %q", m.Op())
+	}
+}
+
+// StuLogClient is a client for the StuLog schema.
+type StuLogClient struct {
+	config
+}
+
+// NewStuLogClient returns a client for the StuLog from the given config.
+func NewStuLogClient(c config) *StuLogClient {
+	return &StuLogClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `stulog.Hooks(f(g(h())))`.
+func (c *StuLogClient) Use(hooks ...Hook) {
+	c.hooks.StuLog = append(c.hooks.StuLog, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `stulog.Intercept(f(g(h())))`.
+func (c *StuLogClient) Intercept(interceptors ...Interceptor) {
+	c.inters.StuLog = append(c.inters.StuLog, interceptors...)
+}
+
+// Create returns a builder for creating a StuLog entity.
+func (c *StuLogClient) Create() *StuLogCreate {
+	mutation := newStuLogMutation(c.config, OpCreate)
+	return &StuLogCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of StuLog entities.
+func (c *StuLogClient) CreateBulk(builders ...*StuLogCreate) *StuLogCreateBulk {
+	return &StuLogCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *StuLogClient) MapCreateBulk(slice any, setFunc func(*StuLogCreate, int)) *StuLogCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &StuLogCreateBulk{err: fmt.Errorf("calling to StuLogClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*StuLogCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &StuLogCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for StuLog.
+func (c *StuLogClient) Update() *StuLogUpdate {
+	mutation := newStuLogMutation(c.config, OpUpdate)
+	return &StuLogUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *StuLogClient) UpdateOne(_m *StuLog) *StuLogUpdateOne {
+	mutation := newStuLogMutation(c.config, OpUpdateOne, withStuLog(_m))
+	return &StuLogUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *StuLogClient) UpdateOneID(id int64) *StuLogUpdateOne {
+	mutation := newStuLogMutation(c.config, OpUpdateOne, withStuLogID(id))
+	return &StuLogUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for StuLog.
+func (c *StuLogClient) Delete() *StuLogDelete {
+	mutation := newStuLogMutation(c.config, OpDelete)
+	return &StuLogDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *StuLogClient) DeleteOne(_m *StuLog) *StuLogDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *StuLogClient) DeleteOneID(id int64) *StuLogDeleteOne {
+	builder := c.Delete().Where(stulog.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &StuLogDeleteOne{builder}
+}
+
+// Query returns a query builder for StuLog.
+func (c *StuLogClient) Query() *StuLogQuery {
+	return &StuLogQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeStuLog},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a StuLog entity by its id.
+func (c *StuLogClient) Get(ctx context.Context, id int64) (*StuLog, error) {
+	return c.Query().Where(stulog.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *StuLogClient) GetX(ctx context.Context, id int64) *StuLog {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryClass queries the class edge of a StuLog.
+func (c *StuLogClient) QueryClass(_m *StuLog) *ClassQuery {
+	query := (&ClassClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(stulog.Table, stulog.FieldID, id),
+			sqlgraph.To(class.Table, class.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, stulog.ClassTable, stulog.ClassColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryGrade queries the grade edge of a StuLog.
+func (c *StuLogClient) QueryGrade(_m *StuLog) *GradeQuery {
+	query := (&GradeClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(stulog.Table, stulog.FieldID, id),
+			sqlgraph.To(grade.Table, grade.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, stulog.GradeTable, stulog.GradeColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryRule queries the rule edge of a StuLog.
+func (c *StuLogClient) QueryRule(_m *StuLog) *RuleQuery {
+	query := (&RuleClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(stulog.Table, stulog.FieldID, id),
+			sqlgraph.To(rule.Table, rule.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, stulog.RuleTable, stulog.RuleColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryStudents queries the students edge of a StuLog.
+func (c *StuLogClient) QueryStudents(_m *StuLog) *StudentQuery {
+	query := (&StudentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(stulog.Table, stulog.FieldID, id),
+			sqlgraph.To(student.Table, student.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, stulog.StudentsTable, stulog.StudentsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryImages queries the images edge of a StuLog.
+func (c *StuLogClient) QueryImages(_m *StuLog) *ImageQuery {
+	query := (&ImageClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(stulog.Table, stulog.FieldID, id),
+			sqlgraph.To(image.Table, image.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, stulog.ImagesTable, stulog.ImagesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *StuLogClient) Hooks() []Hook {
+	return c.hooks.StuLog
+}
+
+// Interceptors returns the client interceptors.
+func (c *StuLogClient) Interceptors() []Interceptor {
+	return c.inters.StuLog
+}
+
+func (c *StuLogClient) mutate(ctx context.Context, m *StuLogMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&StuLogCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&StuLogUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&StuLogUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&StuLogDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown StuLog mutation op: %q", m.Op())
 	}
 }
 
@@ -1012,7 +1313,7 @@ func (c *StudentClient) UpdateOne(_m *Student) *StudentUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *StudentClient) UpdateOneID(id int) *StudentUpdateOne {
+func (c *StudentClient) UpdateOneID(id int64) *StudentUpdateOne {
 	mutation := newStudentMutation(c.config, OpUpdateOne, withStudentID(id))
 	return &StudentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -1029,7 +1330,7 @@ func (c *StudentClient) DeleteOne(_m *Student) *StudentDeleteOne {
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *StudentClient) DeleteOneID(id int) *StudentDeleteOne {
+func (c *StudentClient) DeleteOneID(id int64) *StudentDeleteOne {
 	builder := c.Delete().Where(student.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -1046,12 +1347,12 @@ func (c *StudentClient) Query() *StudentQuery {
 }
 
 // Get returns a Student entity by its id.
-func (c *StudentClient) Get(ctx context.Context, id int) (*Student, error) {
+func (c *StudentClient) Get(ctx context.Context, id int64) (*Student, error) {
 	return c.Query().Where(student.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *StudentClient) GetX(ctx context.Context, id int) *Student {
+func (c *StudentClient) GetX(ctx context.Context, id int64) *Student {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -1100,6 +1401,22 @@ func (c *StudentClient) QueryDorm(_m *Student) *DormQuery {
 			sqlgraph.From(student.Table, student.FieldID, id),
 			sqlgraph.To(dorm.Table, dorm.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, student.DormTable, student.DormColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryStuLogs queries the stuLogs edge of a Student.
+func (c *StudentClient) QueryStuLogs(_m *Student) *StuLogQuery {
+	query := (&StuLogClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(student.Table, student.FieldID, id),
+			sqlgraph.To(stulog.Table, stulog.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, student.StuLogsTable, student.StuLogsColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -1268,9 +1585,9 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Class, Dorm, Grade, Logs, Score, Student, User []ent.Hook
+		Class, Dorm, Grade, Image, Rule, StuLog, Student, User []ent.Hook
 	}
 	inters struct {
-		Class, Dorm, Grade, Logs, Score, Student, User []ent.Interceptor
+		Class, Dorm, Grade, Image, Rule, StuLog, Student, User []ent.Interceptor
 	}
 )

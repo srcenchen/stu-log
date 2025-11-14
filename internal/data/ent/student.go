@@ -18,20 +18,25 @@ import (
 type Student struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID int64 `json:"id,omitempty"`
 	// 学生姓名
 	Name string `json:"name,omitempty"`
+	// 学号
+	StuNum string `json:"stuNum,omitempty"`
 	// 性别
 	Sex string `json:"sex,omitempty"`
-	// Score holds the value of the "score" field.
-	Score int `json:"score,omitempty"`
+	// 学生分数
+	Score int32 `json:"score,omitempty"`
+	// 宿舍床铺的位置
+	DormPos string `json:"dormPos,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the StudentQuery when eager-loading is set.
-	Edges         StudentEdges `json:"edges"`
-	student_grade *int
-	student_class *int
-	student_dorm  *int
-	selectValues  sql.SelectValues
+	Edges            StudentEdges `json:"edges"`
+	stu_log_students *int64
+	student_grade    *int64
+	student_class    *int64
+	student_dorm     *int64
+	selectValues     sql.SelectValues
 }
 
 // StudentEdges holds the relations/edges for other nodes in the graph.
@@ -42,9 +47,11 @@ type StudentEdges struct {
 	Class *Class `json:"class,omitempty"`
 	// Dorm holds the value of the dorm edge.
 	Dorm *Dorm `json:"dorm,omitempty"`
+	// StuLogs holds the value of the stuLogs edge.
+	StuLogs []*StuLog `json:"stuLogs,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // GradeOrErr returns the Grade value or an error if the edge
@@ -80,6 +87,15 @@ func (e StudentEdges) DormOrErr() (*Dorm, error) {
 	return nil, &NotLoadedError{edge: "dorm"}
 }
 
+// StuLogsOrErr returns the StuLogs value or an error if the edge
+// was not loaded in eager-loading.
+func (e StudentEdges) StuLogsOrErr() ([]*StuLog, error) {
+	if e.loadedTypes[3] {
+		return e.StuLogs, nil
+	}
+	return nil, &NotLoadedError{edge: "stuLogs"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Student) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -87,13 +103,15 @@ func (*Student) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case student.FieldID, student.FieldScore:
 			values[i] = new(sql.NullInt64)
-		case student.FieldName, student.FieldSex:
+		case student.FieldName, student.FieldStuNum, student.FieldSex, student.FieldDormPos:
 			values[i] = new(sql.NullString)
-		case student.ForeignKeys[0]: // student_grade
+		case student.ForeignKeys[0]: // stu_log_students
 			values[i] = new(sql.NullInt64)
-		case student.ForeignKeys[1]: // student_class
+		case student.ForeignKeys[1]: // student_grade
 			values[i] = new(sql.NullInt64)
-		case student.ForeignKeys[2]: // student_dorm
+		case student.ForeignKeys[2]: // student_class
+			values[i] = new(sql.NullInt64)
+		case student.ForeignKeys[3]: // student_dorm
 			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -115,12 +133,18 @@ func (_m *Student) assignValues(columns []string, values []any) error {
 			if !ok {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
-			_m.ID = int(value.Int64)
+			_m.ID = int64(value.Int64)
 		case student.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
 				_m.Name = value.String
+			}
+		case student.FieldStuNum:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field stuNum", values[i])
+			} else if value.Valid {
+				_m.StuNum = value.String
 			}
 		case student.FieldSex:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -132,28 +156,41 @@ func (_m *Student) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field score", values[i])
 			} else if value.Valid {
-				_m.Score = int(value.Int64)
+				_m.Score = int32(value.Int64)
+			}
+		case student.FieldDormPos:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field dormPos", values[i])
+			} else if value.Valid {
+				_m.DormPos = value.String
 			}
 		case student.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field student_grade", value)
+				return fmt.Errorf("unexpected type %T for edge-field stu_log_students", value)
 			} else if value.Valid {
-				_m.student_grade = new(int)
-				*_m.student_grade = int(value.Int64)
+				_m.stu_log_students = new(int64)
+				*_m.stu_log_students = int64(value.Int64)
 			}
 		case student.ForeignKeys[1]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field student_class", value)
+				return fmt.Errorf("unexpected type %T for edge-field student_grade", value)
 			} else if value.Valid {
-				_m.student_class = new(int)
-				*_m.student_class = int(value.Int64)
+				_m.student_grade = new(int64)
+				*_m.student_grade = int64(value.Int64)
 			}
 		case student.ForeignKeys[2]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field student_class", value)
+			} else if value.Valid {
+				_m.student_class = new(int64)
+				*_m.student_class = int64(value.Int64)
+			}
+		case student.ForeignKeys[3]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field student_dorm", value)
 			} else if value.Valid {
-				_m.student_dorm = new(int)
-				*_m.student_dorm = int(value.Int64)
+				_m.student_dorm = new(int64)
+				*_m.student_dorm = int64(value.Int64)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -183,6 +220,11 @@ func (_m *Student) QueryDorm() *DormQuery {
 	return NewStudentClient(_m.config).QueryDorm(_m)
 }
 
+// QueryStuLogs queries the "stuLogs" edge of the Student entity.
+func (_m *Student) QueryStuLogs() *StuLogQuery {
+	return NewStudentClient(_m.config).QueryStuLogs(_m)
+}
+
 // Update returns a builder for updating this Student.
 // Note that you need to call Student.Unwrap() before calling this method if this Student
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -209,11 +251,17 @@ func (_m *Student) String() string {
 	builder.WriteString("name=")
 	builder.WriteString(_m.Name)
 	builder.WriteString(", ")
+	builder.WriteString("stuNum=")
+	builder.WriteString(_m.StuNum)
+	builder.WriteString(", ")
 	builder.WriteString("sex=")
 	builder.WriteString(_m.Sex)
 	builder.WriteString(", ")
 	builder.WriteString("score=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Score))
+	builder.WriteString(", ")
+	builder.WriteString("dormPos=")
+	builder.WriteString(_m.DormPos)
 	builder.WriteByte(')')
 	return builder.String()
 }
