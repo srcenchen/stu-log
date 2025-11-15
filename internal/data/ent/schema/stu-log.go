@@ -26,8 +26,8 @@ func (StuLog) Fields() []ent.Field {
 func (StuLog) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("class", Class.Type),
-		edge.To("grade", Grade.Type).Required(),
-		edge.To("rule", Rule.Type).Required(),
+		edge.To("grade", Grade.Type).Unique().Required(),
+		edge.To("rule", Rule.Type).Unique().Required(),
 		edge.To("students", Student.Type),
 		edge.To("images", Image.Type),
 	}

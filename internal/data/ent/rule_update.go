@@ -168,10 +168,10 @@ func (_u *RuleUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.StuLogsCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   rule.StuLogsTable,
-			Columns: rule.StuLogsPrimaryKey,
+			Columns: []string{rule.StuLogsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(stulog.FieldID, field.TypeInt64),
@@ -181,10 +181,10 @@ func (_u *RuleUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if nodes := _u.mutation.RemovedStuLogsIDs(); len(nodes) > 0 && !_u.mutation.StuLogsCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   rule.StuLogsTable,
-			Columns: rule.StuLogsPrimaryKey,
+			Columns: []string{rule.StuLogsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(stulog.FieldID, field.TypeInt64),
@@ -197,10 +197,10 @@ func (_u *RuleUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if nodes := _u.mutation.StuLogsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   rule.StuLogsTable,
-			Columns: rule.StuLogsPrimaryKey,
+			Columns: []string{rule.StuLogsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(stulog.FieldID, field.TypeInt64),
@@ -401,10 +401,10 @@ func (_u *RuleUpdateOne) sqlSave(ctx context.Context) (_node *Rule, err error) {
 	}
 	if _u.mutation.StuLogsCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   rule.StuLogsTable,
-			Columns: rule.StuLogsPrimaryKey,
+			Columns: []string{rule.StuLogsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(stulog.FieldID, field.TypeInt64),
@@ -414,10 +414,10 @@ func (_u *RuleUpdateOne) sqlSave(ctx context.Context) (_node *Rule, err error) {
 	}
 	if nodes := _u.mutation.RemovedStuLogsIDs(); len(nodes) > 0 && !_u.mutation.StuLogsCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   rule.StuLogsTable,
-			Columns: rule.StuLogsPrimaryKey,
+			Columns: []string{rule.StuLogsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(stulog.FieldID, field.TypeInt64),
@@ -430,10 +430,10 @@ func (_u *RuleUpdateOne) sqlSave(ctx context.Context) (_node *Rule, err error) {
 	}
 	if nodes := _u.mutation.StuLogsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   rule.StuLogsTable,
-			Columns: rule.StuLogsPrimaryKey,
+			Columns: []string{rule.StuLogsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(stulog.FieldID, field.TypeInt64),

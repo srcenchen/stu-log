@@ -38,7 +38,6 @@ func (s *StudentService) CreateStudent(ctx context.Context, req *pb.CreateStuden
 		Message: "学生添加成功",
 	}, nil
 }
-
 func (s *StudentService) QueryStudent(ctx context.Context, req *pb.QueryStudentRequest) (*pb.QueryStudentReply, error) {
 	// 根据id查询学生
 	studentQuery, err := s.data.DB.Student.Query().WithDorm().WithGrade().WithClass().Where(student.ID(req.Id)).First(ctx)

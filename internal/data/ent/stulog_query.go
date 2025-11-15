@@ -33,6 +33,7 @@ type StuLogQuery struct {
 	withRule     *RuleQuery
 	withStudents *StudentQuery
 	withImages   *ImageQuery
+	withFKs      bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -105,7 +106,7 @@ func (_q *StuLogQuery) QueryGrade() *GradeQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(stulog.Table, stulog.FieldID, selector),
 			sqlgraph.To(grade.Table, grade.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, stulog.GradeTable, stulog.GradePrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, stulog.GradeTable, stulog.GradeColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -127,7 +128,7 @@ func (_q *StuLogQuery) QueryRule() *RuleQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(stulog.Table, stulog.FieldID, selector),
 			sqlgraph.To(rule.Table, rule.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, stulog.RuleTable, stulog.RulePrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, stulog.RuleTable, stulog.RuleColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -514,6 +515,7 @@ func (_q *StuLogQuery) prepareQuery(ctx context.Context) error {
 func (_q *StuLogQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*StuLog, error) {
 	var (
 		nodes       = []*StuLog{}
+		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
 		loadedTypes = [5]bool{
 			_q.withClass != nil,
@@ -523,6 +525,12 @@ func (_q *StuLogQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*StuLo
 			_q.withImages != nil,
 		}
 	)
+	if _q.withGrade != nil || _q.withRule != nil {
+		withFKs = true
+	}
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, stulog.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*StuLog).scanValues(nil, columns)
 	}
@@ -549,16 +557,14 @@ func (_q *StuLogQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*StuLo
 		}
 	}
 	if query := _q.withGrade; query != nil {
-		if err := _q.loadGrade(ctx, query, nodes,
-			func(n *StuLog) { n.Edges.Grade = []*Grade{} },
-			func(n *StuLog, e *Grade) { n.Edges.Grade = append(n.Edges.Grade, e) }); err != nil {
+		if err := _q.loadGrade(ctx, query, nodes, nil,
+			func(n *StuLog, e *Grade) { n.Edges.Grade = e }); err != nil {
 			return nil, err
 		}
 	}
 	if query := _q.withRule; query != nil {
-		if err := _q.loadRule(ctx, query, nodes,
-			func(n *StuLog) { n.Edges.Rule = []*Rule{} },
-			func(n *StuLog, e *Rule) { n.Edges.Rule = append(n.Edges.Rule, e) }); err != nil {
+		if err := _q.loadRule(ctx, query, nodes, nil,
+			func(n *StuLog, e *Rule) { n.Edges.Rule = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -641,123 +647,65 @@ func (_q *StuLogQuery) loadClass(ctx context.Context, query *ClassQuery, nodes [
 	return nil
 }
 func (_q *StuLogQuery) loadGrade(ctx context.Context, query *GradeQuery, nodes []*StuLog, init func(*StuLog), assign func(*StuLog, *Grade)) error {
-	edgeIDs := make([]driver.Value, len(nodes))
-	byID := make(map[int64]*StuLog)
-	nids := make(map[int64]map[*StuLog]struct{})
-	for i, node := range nodes {
-		edgeIDs[i] = node.ID
-		byID[node.ID] = node
-		if init != nil {
-			init(node)
+	ids := make([]int64, 0, len(nodes))
+	nodeids := make(map[int64][]*StuLog)
+	for i := range nodes {
+		if nodes[i].stu_log_grade == nil {
+			continue
 		}
+		fk := *nodes[i].stu_log_grade
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
 	}
-	query.Where(func(s *sql.Selector) {
-		joinT := sql.Table(stulog.GradeTable)
-		s.Join(joinT).On(s.C(grade.FieldID), joinT.C(stulog.GradePrimaryKey[1]))
-		s.Where(sql.InValues(joinT.C(stulog.GradePrimaryKey[0]), edgeIDs...))
-		columns := s.SelectedColumns()
-		s.Select(joinT.C(stulog.GradePrimaryKey[0]))
-		s.AppendSelect(columns...)
-		s.SetDistinct(false)
-	})
-	if err := query.prepareQuery(ctx); err != nil {
-		return err
+	if len(ids) == 0 {
+		return nil
 	}
-	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
-		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
-			assign := spec.Assign
-			values := spec.ScanValues
-			spec.ScanValues = func(columns []string) ([]any, error) {
-				values, err := values(columns[1:])
-				if err != nil {
-					return nil, err
-				}
-				return append([]any{new(sql.NullInt64)}, values...), nil
-			}
-			spec.Assign = func(columns []string, values []any) error {
-				outValue := values[0].(*sql.NullInt64).Int64
-				inValue := values[1].(*sql.NullInt64).Int64
-				if nids[inValue] == nil {
-					nids[inValue] = map[*StuLog]struct{}{byID[outValue]: {}}
-					return assign(columns[1:], values[1:])
-				}
-				nids[inValue][byID[outValue]] = struct{}{}
-				return nil
-			}
-		})
-	})
-	neighbors, err := withInterceptors[[]*Grade](ctx, query, qr, query.inters)
+	query.Where(grade.IDIn(ids...))
+	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		nodes, ok := nids[n.ID]
+		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected "grade" node returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "stu_log_grade" returned %v`, n.ID)
 		}
-		for kn := range nodes {
-			assign(kn, n)
+		for i := range nodes {
+			assign(nodes[i], n)
 		}
 	}
 	return nil
 }
 func (_q *StuLogQuery) loadRule(ctx context.Context, query *RuleQuery, nodes []*StuLog, init func(*StuLog), assign func(*StuLog, *Rule)) error {
-	edgeIDs := make([]driver.Value, len(nodes))
-	byID := make(map[int64]*StuLog)
-	nids := make(map[int64]map[*StuLog]struct{})
-	for i, node := range nodes {
-		edgeIDs[i] = node.ID
-		byID[node.ID] = node
-		if init != nil {
-			init(node)
+	ids := make([]int64, 0, len(nodes))
+	nodeids := make(map[int64][]*StuLog)
+	for i := range nodes {
+		if nodes[i].stu_log_rule == nil {
+			continue
 		}
+		fk := *nodes[i].stu_log_rule
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
 	}
-	query.Where(func(s *sql.Selector) {
-		joinT := sql.Table(stulog.RuleTable)
-		s.Join(joinT).On(s.C(rule.FieldID), joinT.C(stulog.RulePrimaryKey[1]))
-		s.Where(sql.InValues(joinT.C(stulog.RulePrimaryKey[0]), edgeIDs...))
-		columns := s.SelectedColumns()
-		s.Select(joinT.C(stulog.RulePrimaryKey[0]))
-		s.AppendSelect(columns...)
-		s.SetDistinct(false)
-	})
-	if err := query.prepareQuery(ctx); err != nil {
-		return err
+	if len(ids) == 0 {
+		return nil
 	}
-	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
-		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
-			assign := spec.Assign
-			values := spec.ScanValues
-			spec.ScanValues = func(columns []string) ([]any, error) {
-				values, err := values(columns[1:])
-				if err != nil {
-					return nil, err
-				}
-				return append([]any{new(sql.NullInt64)}, values...), nil
-			}
-			spec.Assign = func(columns []string, values []any) error {
-				outValue := values[0].(*sql.NullInt64).Int64
-				inValue := values[1].(*sql.NullInt64).Int64
-				if nids[inValue] == nil {
-					nids[inValue] = map[*StuLog]struct{}{byID[outValue]: {}}
-					return assign(columns[1:], values[1:])
-				}
-				nids[inValue][byID[outValue]] = struct{}{}
-				return nil
-			}
-		})
-	})
-	neighbors, err := withInterceptors[[]*Rule](ctx, query, qr, query.inters)
+	query.Where(rule.IDIn(ids...))
+	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		nodes, ok := nids[n.ID]
+		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected "rule" node returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "stu_log_rule" returned %v`, n.ID)
 		}
-		for kn := range nodes {
-			assign(kn, n)
+		for i := range nodes {
+			assign(nodes[i], n)
 		}
 	}
 	return nil

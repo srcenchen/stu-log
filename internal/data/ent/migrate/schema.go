@@ -92,12 +92,28 @@ var (
 		{Name: "revoked", Type: field.TypeBool, Default: false},
 		{Name: "score", Type: field.TypeInt32},
 		{Name: "time", Type: field.TypeTime},
+		{Name: "stu_log_grade", Type: field.TypeInt64},
+		{Name: "stu_log_rule", Type: field.TypeInt64},
 	}
 	// StuLogsTable holds the schema information for the "stu_logs" table.
 	StuLogsTable = &schema.Table{
 		Name:       "stu_logs",
 		Columns:    StuLogsColumns,
 		PrimaryKey: []*schema.Column{StuLogsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "stu_logs_grades_grade",
+				Columns:    []*schema.Column{StuLogsColumns[5]},
+				RefColumns: []*schema.Column{GradesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "stu_logs_rules_rule",
+				Columns:    []*schema.Column{StuLogsColumns[6]},
+				RefColumns: []*schema.Column{RulesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
 	}
 	// StudentsColumns holds the columns for the "students" table.
 	StudentsColumns = []*schema.Column{
@@ -172,56 +188,6 @@ var (
 			},
 		},
 	}
-	// StuLogGradeColumns holds the columns for the "stu_log_grade" table.
-	StuLogGradeColumns = []*schema.Column{
-		{Name: "stu_log_id", Type: field.TypeInt64},
-		{Name: "grade_id", Type: field.TypeInt64},
-	}
-	// StuLogGradeTable holds the schema information for the "stu_log_grade" table.
-	StuLogGradeTable = &schema.Table{
-		Name:       "stu_log_grade",
-		Columns:    StuLogGradeColumns,
-		PrimaryKey: []*schema.Column{StuLogGradeColumns[0], StuLogGradeColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "stu_log_grade_stu_log_id",
-				Columns:    []*schema.Column{StuLogGradeColumns[0]},
-				RefColumns: []*schema.Column{StuLogsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:     "stu_log_grade_grade_id",
-				Columns:    []*schema.Column{StuLogGradeColumns[1]},
-				RefColumns: []*schema.Column{GradesColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
-	// StuLogRuleColumns holds the columns for the "stu_log_rule" table.
-	StuLogRuleColumns = []*schema.Column{
-		{Name: "stu_log_id", Type: field.TypeInt64},
-		{Name: "rule_id", Type: field.TypeInt64},
-	}
-	// StuLogRuleTable holds the schema information for the "stu_log_rule" table.
-	StuLogRuleTable = &schema.Table{
-		Name:       "stu_log_rule",
-		Columns:    StuLogRuleColumns,
-		PrimaryKey: []*schema.Column{StuLogRuleColumns[0], StuLogRuleColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "stu_log_rule_stu_log_id",
-				Columns:    []*schema.Column{StuLogRuleColumns[0]},
-				RefColumns: []*schema.Column{StuLogsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:     "stu_log_rule_rule_id",
-				Columns:    []*schema.Column{StuLogRuleColumns[1]},
-				RefColumns: []*schema.Column{RulesColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
 	// StuLogStudentsColumns holds the columns for the "stu_log_students" table.
 	StuLogStudentsColumns = []*schema.Column{
 		{Name: "stu_log_id", Type: field.TypeInt64},
@@ -283,8 +249,6 @@ var (
 		StudentsTable,
 		UsersTable,
 		StuLogClassTable,
-		StuLogGradeTable,
-		StuLogRuleTable,
 		StuLogStudentsTable,
 		StuLogImagesTable,
 	}
@@ -293,15 +257,13 @@ var (
 func init() {
 	ClassesTable.ForeignKeys[0].RefTable = GradesTable
 	DormsTable.ForeignKeys[0].RefTable = GradesTable
+	StuLogsTable.ForeignKeys[0].RefTable = GradesTable
+	StuLogsTable.ForeignKeys[1].RefTable = RulesTable
 	StudentsTable.ForeignKeys[0].RefTable = GradesTable
 	StudentsTable.ForeignKeys[1].RefTable = ClassesTable
 	StudentsTable.ForeignKeys[2].RefTable = DormsTable
 	StuLogClassTable.ForeignKeys[0].RefTable = StuLogsTable
 	StuLogClassTable.ForeignKeys[1].RefTable = ClassesTable
-	StuLogGradeTable.ForeignKeys[0].RefTable = StuLogsTable
-	StuLogGradeTable.ForeignKeys[1].RefTable = GradesTable
-	StuLogRuleTable.ForeignKeys[0].RefTable = StuLogsTable
-	StuLogRuleTable.ForeignKeys[1].RefTable = RulesTable
 	StuLogStudentsTable.ForeignKeys[0].RefTable = StuLogsTable
 	StuLogStudentsTable.ForeignKeys[1].RefTable = StudentsTable
 	StuLogImagesTable.ForeignKeys[0].RefTable = StuLogsTable

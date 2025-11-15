@@ -78,34 +78,26 @@ func (_c *StuLogCreate) AddClass(v ...*Class) *StuLogCreate {
 	return _c.AddClasIDs(ids...)
 }
 
-// AddGradeIDs adds the "grade" edge to the Grade entity by IDs.
-func (_c *StuLogCreate) AddGradeIDs(ids ...int64) *StuLogCreate {
-	_c.mutation.AddGradeIDs(ids...)
+// SetGradeID sets the "grade" edge to the Grade entity by ID.
+func (_c *StuLogCreate) SetGradeID(id int64) *StuLogCreate {
+	_c.mutation.SetGradeID(id)
 	return _c
 }
 
-// AddGrade adds the "grade" edges to the Grade entity.
-func (_c *StuLogCreate) AddGrade(v ...*Grade) *StuLogCreate {
-	ids := make([]int64, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddGradeIDs(ids...)
+// SetGrade sets the "grade" edge to the Grade entity.
+func (_c *StuLogCreate) SetGrade(v *Grade) *StuLogCreate {
+	return _c.SetGradeID(v.ID)
 }
 
-// AddRuleIDs adds the "rule" edge to the Rule entity by IDs.
-func (_c *StuLogCreate) AddRuleIDs(ids ...int64) *StuLogCreate {
-	_c.mutation.AddRuleIDs(ids...)
+// SetRuleID sets the "rule" edge to the Rule entity by ID.
+func (_c *StuLogCreate) SetRuleID(id int64) *StuLogCreate {
+	_c.mutation.SetRuleID(id)
 	return _c
 }
 
-// AddRule adds the "rule" edges to the Rule entity.
-func (_c *StuLogCreate) AddRule(v ...*Rule) *StuLogCreate {
-	ids := make([]int64, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddRuleIDs(ids...)
+// SetRule sets the "rule" edge to the Rule entity.
+func (_c *StuLogCreate) SetRule(v *Rule) *StuLogCreate {
+	return _c.SetRuleID(v.ID)
 }
 
 // AddStudentIDs adds the "students" edge to the Student entity by IDs.
@@ -265,10 +257,10 @@ func (_c *StuLogCreate) createSpec() (*StuLog, *sqlgraph.CreateSpec) {
 	}
 	if nodes := _c.mutation.GradeIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   stulog.GradeTable,
-			Columns: stulog.GradePrimaryKey,
+			Columns: []string{stulog.GradeColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(grade.FieldID, field.TypeInt64),
@@ -277,14 +269,15 @@ func (_c *StuLogCreate) createSpec() (*StuLog, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.stu_log_grade = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.RuleIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   stulog.RuleTable,
-			Columns: stulog.RulePrimaryKey,
+			Columns: []string{stulog.RuleColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(rule.FieldID, field.TypeInt64),
@@ -293,6 +286,7 @@ func (_c *StuLogCreate) createSpec() (*StuLog, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.stu_log_rule = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.StudentsIDs(); len(nodes) > 0 {

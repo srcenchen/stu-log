@@ -724,7 +724,7 @@ func (c *GradeClient) QueryStuLogs(_m *Grade) *StuLogQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(grade.Table, grade.FieldID, id),
 			sqlgraph.To(stulog.Table, stulog.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, grade.StuLogsTable, grade.StuLogsPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, true, grade.StuLogsTable, grade.StuLogsColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -1070,7 +1070,7 @@ func (c *RuleClient) QueryStuLogs(_m *Rule) *StuLogQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(rule.Table, rule.FieldID, id),
 			sqlgraph.To(stulog.Table, stulog.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, rule.StuLogsTable, rule.StuLogsPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, true, rule.StuLogsTable, rule.StuLogsColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -1235,7 +1235,7 @@ func (c *StuLogClient) QueryGrade(_m *StuLog) *GradeQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(stulog.Table, stulog.FieldID, id),
 			sqlgraph.To(grade.Table, grade.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, stulog.GradeTable, stulog.GradePrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, stulog.GradeTable, stulog.GradeColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -1251,7 +1251,7 @@ func (c *StuLogClient) QueryRule(_m *StuLog) *RuleQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(stulog.Table, stulog.FieldID, id),
 			sqlgraph.To(rule.Table, rule.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, stulog.RuleTable, stulog.RulePrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, stulog.RuleTable, stulog.RuleColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil

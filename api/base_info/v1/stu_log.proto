@@ -6,24 +6,73 @@ import "google/api/annotations.proto";
 option go_package = "eGZ-stu-log/api/base_info/v1;v1";
 option java_multiple_files = true;
 option java_package = "api.base_info.v1";
+
+message StuLogStudentItem  {
+  int64 id = 1;
+  string name = 2;
+  string class = 4;
+  string stuNum = 5;
+}
+
+message StuLogItem {
+  int64 id = 1;
+  repeated StuLogStudentItem students = 2;
+  string rule = 3;
+  string content = 4;
+  int32 score = 5;
+  string Grade = 6;
+  bool revoked = 8;
+  string time = 9;
+  repeated string imageUrls = 7;
+}
+
 service StuLog {
-	rpc ReportStuLog (ReportStuLogRequest) returns (ReportStuLogReply) {
-		option (google.api.http) = {
-			post: "/v1/stu_log/report",
-			body: "*"
-		};
-	};
+  rpc ReportStuLog (ReportStuLogRequest) returns (ReportStuLogReply) {
+    option (google.api.http) = {
+      post: "/v1/stu_log/report",
+      body: "*"
+    };
+  };
+  rpc GetStuLog (GetStuLogRequest) returns (StuLogItem) {
+    option (google.api.http) = {
+      get: "/v1/stu_log/{id}",
+    };
+  };
+  rpc GetStuLogList (GetStuLogListRequest) returns (GetStuLogListReply) {
+    option (google.api.http) = {
+      get: "/v1/stu_log",
+    };
+  };
 }
 
 message ReportStuLogRequest {
-	repeated int64 studentIds = 1;
-	int64 ruleId = 2;
-	string content = 3;
-	int32 score = 4;
-	int64 gradeId = 6;
-	repeated int64 imageIds = 5;
+  repeated int64 studentIds = 1;
+  int64 ruleId = 2;
+  string content = 3;
+  int32 score = 4;
+  int64 gradeId = 6;
+  repeated int64 imageIds = 5;
 }
 
 message ReportStuLogReply {
-	string message = 1;
+  string message = 1;
+}
+
+message GetStuLogRequest {
+  int64 id = 1;
+}
+
+message GetStuLogListRequest {
+  int64 page = 1;
+  int64 pageSize = 2;
+  optional int64 gradeId = 3;
+  optional int64 ruleId = 4;
+  optional int64 studentId = 5;
+  optional int64 startTime = 6;
+  optional int64 endTime = 7;
+}
+
+message GetStuLogListReply {
+  repeated StuLogItem list = 1;
+  int64 totalPages = 2;
 }

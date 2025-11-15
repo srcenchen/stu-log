@@ -37,16 +37,20 @@ const (
 	// ClassInverseTable is the table name for the Class entity.
 	// It exists in this package in order to avoid circular dependency with the "class" package.
 	ClassInverseTable = "classes"
-	// GradeTable is the table that holds the grade relation/edge. The primary key declared below.
-	GradeTable = "stu_log_grade"
+	// GradeTable is the table that holds the grade relation/edge.
+	GradeTable = "stu_logs"
 	// GradeInverseTable is the table name for the Grade entity.
 	// It exists in this package in order to avoid circular dependency with the "grade" package.
 	GradeInverseTable = "grades"
-	// RuleTable is the table that holds the rule relation/edge. The primary key declared below.
-	RuleTable = "stu_log_rule"
+	// GradeColumn is the table column denoting the grade relation/edge.
+	GradeColumn = "stu_log_grade"
+	// RuleTable is the table that holds the rule relation/edge.
+	RuleTable = "stu_logs"
 	// RuleInverseTable is the table name for the Rule entity.
 	// It exists in this package in order to avoid circular dependency with the "rule" package.
 	RuleInverseTable = "rules"
+	// RuleColumn is the table column denoting the rule relation/edge.
+	RuleColumn = "stu_log_rule"
 	// StudentsTable is the table that holds the students relation/edge. The primary key declared below.
 	StudentsTable = "stu_log_students"
 	// StudentsInverseTable is the table name for the Student entity.
@@ -68,16 +72,17 @@ var Columns = []string{
 	FieldTime,
 }
 
+// ForeignKeys holds the SQL foreign-keys that are owned by the "stu_logs"
+// table and are not defined as standalone fields in the schema.
+var ForeignKeys = []string{
+	"stu_log_grade",
+	"stu_log_rule",
+}
+
 var (
 	// ClassPrimaryKey and ClassColumn2 are the table columns denoting the
 	// primary key for the class relation (M2M).
 	ClassPrimaryKey = []string{"stu_log_id", "class_id"}
-	// GradePrimaryKey and GradeColumn2 are the table columns denoting the
-	// primary key for the grade relation (M2M).
-	GradePrimaryKey = []string{"stu_log_id", "grade_id"}
-	// RulePrimaryKey and RuleColumn2 are the table columns denoting the
-	// primary key for the rule relation (M2M).
-	RulePrimaryKey = []string{"stu_log_id", "rule_id"}
 	// StudentsPrimaryKey and StudentsColumn2 are the table columns denoting the
 	// primary key for the students relation (M2M).
 	StudentsPrimaryKey = []string{"stu_log_id", "student_id"}
@@ -90,6 +95,11 @@ var (
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -143,31 +153,17 @@ func ByClass(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByGradeCount orders the results by grade count.
-func ByGradeCount(opts ...sql.OrderTermOption) OrderOption {
+// ByGradeField orders the results by grade field.
+func ByGradeField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newGradeStep(), opts...)
+		sqlgraph.OrderByNeighborTerms(s, newGradeStep(), sql.OrderByField(field, opts...))
 	}
 }
 
-// ByGrade orders the results by grade terms.
-func ByGrade(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByRuleField orders the results by rule field.
+func ByRuleField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newGradeStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// ByRuleCount orders the results by rule count.
-func ByRuleCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newRuleStep(), opts...)
-	}
-}
-
-// ByRule orders the results by rule terms.
-func ByRule(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newRuleStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newRuleStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -209,14 +205,14 @@ func newGradeStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(GradeInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2M, false, GradeTable, GradePrimaryKey...),
+		sqlgraph.Edge(sqlgraph.M2O, false, GradeTable, GradeColumn),
 	)
 }
 func newRuleStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(RuleInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2M, false, RuleTable, RulePrimaryKey...),
+		sqlgraph.Edge(sqlgraph.M2O, false, RuleTable, RuleColumn),
 	)
 }
 func newStudentsStep() *sqlgraph.Step {

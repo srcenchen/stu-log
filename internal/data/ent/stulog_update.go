@@ -111,34 +111,26 @@ func (_u *StuLogUpdate) AddClass(v ...*Class) *StuLogUpdate {
 	return _u.AddClasIDs(ids...)
 }
 
-// AddGradeIDs adds the "grade" edge to the Grade entity by IDs.
-func (_u *StuLogUpdate) AddGradeIDs(ids ...int64) *StuLogUpdate {
-	_u.mutation.AddGradeIDs(ids...)
+// SetGradeID sets the "grade" edge to the Grade entity by ID.
+func (_u *StuLogUpdate) SetGradeID(id int64) *StuLogUpdate {
+	_u.mutation.SetGradeID(id)
 	return _u
 }
 
-// AddGrade adds the "grade" edges to the Grade entity.
-func (_u *StuLogUpdate) AddGrade(v ...*Grade) *StuLogUpdate {
-	ids := make([]int64, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddGradeIDs(ids...)
+// SetGrade sets the "grade" edge to the Grade entity.
+func (_u *StuLogUpdate) SetGrade(v *Grade) *StuLogUpdate {
+	return _u.SetGradeID(v.ID)
 }
 
-// AddRuleIDs adds the "rule" edge to the Rule entity by IDs.
-func (_u *StuLogUpdate) AddRuleIDs(ids ...int64) *StuLogUpdate {
-	_u.mutation.AddRuleIDs(ids...)
+// SetRuleID sets the "rule" edge to the Rule entity by ID.
+func (_u *StuLogUpdate) SetRuleID(id int64) *StuLogUpdate {
+	_u.mutation.SetRuleID(id)
 	return _u
 }
 
-// AddRule adds the "rule" edges to the Rule entity.
-func (_u *StuLogUpdate) AddRule(v ...*Rule) *StuLogUpdate {
-	ids := make([]int64, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddRuleIDs(ids...)
+// SetRule sets the "rule" edge to the Rule entity.
+func (_u *StuLogUpdate) SetRule(v *Rule) *StuLogUpdate {
+	return _u.SetRuleID(v.ID)
 }
 
 // AddStudentIDs adds the "students" edge to the Student entity by IDs.
@@ -197,46 +189,16 @@ func (_u *StuLogUpdate) RemoveClass(v ...*Class) *StuLogUpdate {
 	return _u.RemoveClasIDs(ids...)
 }
 
-// ClearGrade clears all "grade" edges to the Grade entity.
+// ClearGrade clears the "grade" edge to the Grade entity.
 func (_u *StuLogUpdate) ClearGrade() *StuLogUpdate {
 	_u.mutation.ClearGrade()
 	return _u
 }
 
-// RemoveGradeIDs removes the "grade" edge to Grade entities by IDs.
-func (_u *StuLogUpdate) RemoveGradeIDs(ids ...int64) *StuLogUpdate {
-	_u.mutation.RemoveGradeIDs(ids...)
-	return _u
-}
-
-// RemoveGrade removes "grade" edges to Grade entities.
-func (_u *StuLogUpdate) RemoveGrade(v ...*Grade) *StuLogUpdate {
-	ids := make([]int64, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveGradeIDs(ids...)
-}
-
-// ClearRule clears all "rule" edges to the Rule entity.
+// ClearRule clears the "rule" edge to the Rule entity.
 func (_u *StuLogUpdate) ClearRule() *StuLogUpdate {
 	_u.mutation.ClearRule()
 	return _u
-}
-
-// RemoveRuleIDs removes the "rule" edge to Rule entities by IDs.
-func (_u *StuLogUpdate) RemoveRuleIDs(ids ...int64) *StuLogUpdate {
-	_u.mutation.RemoveRuleIDs(ids...)
-	return _u
-}
-
-// RemoveRule removes "rule" edges to Rule entities.
-func (_u *StuLogUpdate) RemoveRule(v ...*Rule) *StuLogUpdate {
-	ids := make([]int64, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveRuleIDs(ids...)
 }
 
 // ClearStudents clears all "students" edges to the Student entity.
@@ -308,7 +270,21 @@ func (_u *StuLogUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (_u *StuLogUpdate) check() error {
+	if _u.mutation.GradeCleared() && len(_u.mutation.GradeIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "StuLog.grade"`)
+	}
+	if _u.mutation.RuleCleared() && len(_u.mutation.RuleIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "StuLog.rule"`)
+	}
+	return nil
+}
+
 func (_u *StuLogUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(stulog.Table, stulog.Columns, sqlgraph.NewFieldSpec(stulog.FieldID, field.TypeInt64))
 	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -379,39 +355,23 @@ func (_u *StuLogUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.GradeCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   stulog.GradeTable,
-			Columns: stulog.GradePrimaryKey,
+			Columns: []string{stulog.GradeColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(grade.FieldID, field.TypeInt64),
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedGradeIDs(); len(nodes) > 0 && !_u.mutation.GradeCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   stulog.GradeTable,
-			Columns: stulog.GradePrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(grade.FieldID, field.TypeInt64),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.GradeIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   stulog.GradeTable,
-			Columns: stulog.GradePrimaryKey,
+			Columns: []string{stulog.GradeColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(grade.FieldID, field.TypeInt64),
@@ -424,39 +384,23 @@ func (_u *StuLogUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.RuleCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   stulog.RuleTable,
-			Columns: stulog.RulePrimaryKey,
+			Columns: []string{stulog.RuleColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(rule.FieldID, field.TypeInt64),
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedRuleIDs(); len(nodes) > 0 && !_u.mutation.RuleCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   stulog.RuleTable,
-			Columns: stulog.RulePrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(rule.FieldID, field.TypeInt64),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RuleIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   stulog.RuleTable,
-			Columns: stulog.RulePrimaryKey,
+			Columns: []string{stulog.RuleColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(rule.FieldID, field.TypeInt64),
@@ -655,34 +599,26 @@ func (_u *StuLogUpdateOne) AddClass(v ...*Class) *StuLogUpdateOne {
 	return _u.AddClasIDs(ids...)
 }
 
-// AddGradeIDs adds the "grade" edge to the Grade entity by IDs.
-func (_u *StuLogUpdateOne) AddGradeIDs(ids ...int64) *StuLogUpdateOne {
-	_u.mutation.AddGradeIDs(ids...)
+// SetGradeID sets the "grade" edge to the Grade entity by ID.
+func (_u *StuLogUpdateOne) SetGradeID(id int64) *StuLogUpdateOne {
+	_u.mutation.SetGradeID(id)
 	return _u
 }
 
-// AddGrade adds the "grade" edges to the Grade entity.
-func (_u *StuLogUpdateOne) AddGrade(v ...*Grade) *StuLogUpdateOne {
-	ids := make([]int64, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddGradeIDs(ids...)
+// SetGrade sets the "grade" edge to the Grade entity.
+func (_u *StuLogUpdateOne) SetGrade(v *Grade) *StuLogUpdateOne {
+	return _u.SetGradeID(v.ID)
 }
 
-// AddRuleIDs adds the "rule" edge to the Rule entity by IDs.
-func (_u *StuLogUpdateOne) AddRuleIDs(ids ...int64) *StuLogUpdateOne {
-	_u.mutation.AddRuleIDs(ids...)
+// SetRuleID sets the "rule" edge to the Rule entity by ID.
+func (_u *StuLogUpdateOne) SetRuleID(id int64) *StuLogUpdateOne {
+	_u.mutation.SetRuleID(id)
 	return _u
 }
 
-// AddRule adds the "rule" edges to the Rule entity.
-func (_u *StuLogUpdateOne) AddRule(v ...*Rule) *StuLogUpdateOne {
-	ids := make([]int64, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddRuleIDs(ids...)
+// SetRule sets the "rule" edge to the Rule entity.
+func (_u *StuLogUpdateOne) SetRule(v *Rule) *StuLogUpdateOne {
+	return _u.SetRuleID(v.ID)
 }
 
 // AddStudentIDs adds the "students" edge to the Student entity by IDs.
@@ -741,46 +677,16 @@ func (_u *StuLogUpdateOne) RemoveClass(v ...*Class) *StuLogUpdateOne {
 	return _u.RemoveClasIDs(ids...)
 }
 
-// ClearGrade clears all "grade" edges to the Grade entity.
+// ClearGrade clears the "grade" edge to the Grade entity.
 func (_u *StuLogUpdateOne) ClearGrade() *StuLogUpdateOne {
 	_u.mutation.ClearGrade()
 	return _u
 }
 
-// RemoveGradeIDs removes the "grade" edge to Grade entities by IDs.
-func (_u *StuLogUpdateOne) RemoveGradeIDs(ids ...int64) *StuLogUpdateOne {
-	_u.mutation.RemoveGradeIDs(ids...)
-	return _u
-}
-
-// RemoveGrade removes "grade" edges to Grade entities.
-func (_u *StuLogUpdateOne) RemoveGrade(v ...*Grade) *StuLogUpdateOne {
-	ids := make([]int64, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveGradeIDs(ids...)
-}
-
-// ClearRule clears all "rule" edges to the Rule entity.
+// ClearRule clears the "rule" edge to the Rule entity.
 func (_u *StuLogUpdateOne) ClearRule() *StuLogUpdateOne {
 	_u.mutation.ClearRule()
 	return _u
-}
-
-// RemoveRuleIDs removes the "rule" edge to Rule entities by IDs.
-func (_u *StuLogUpdateOne) RemoveRuleIDs(ids ...int64) *StuLogUpdateOne {
-	_u.mutation.RemoveRuleIDs(ids...)
-	return _u
-}
-
-// RemoveRule removes "rule" edges to Rule entities.
-func (_u *StuLogUpdateOne) RemoveRule(v ...*Rule) *StuLogUpdateOne {
-	ids := make([]int64, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveRuleIDs(ids...)
 }
 
 // ClearStudents clears all "students" edges to the Student entity.
@@ -865,7 +771,21 @@ func (_u *StuLogUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (_u *StuLogUpdateOne) check() error {
+	if _u.mutation.GradeCleared() && len(_u.mutation.GradeIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "StuLog.grade"`)
+	}
+	if _u.mutation.RuleCleared() && len(_u.mutation.RuleIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "StuLog.rule"`)
+	}
+	return nil
+}
+
 func (_u *StuLogUpdateOne) sqlSave(ctx context.Context) (_node *StuLog, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(stulog.Table, stulog.Columns, sqlgraph.NewFieldSpec(stulog.FieldID, field.TypeInt64))
 	id, ok := _u.mutation.ID()
 	if !ok {
@@ -953,39 +873,23 @@ func (_u *StuLogUpdateOne) sqlSave(ctx context.Context) (_node *StuLog, err erro
 	}
 	if _u.mutation.GradeCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   stulog.GradeTable,
-			Columns: stulog.GradePrimaryKey,
+			Columns: []string{stulog.GradeColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(grade.FieldID, field.TypeInt64),
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedGradeIDs(); len(nodes) > 0 && !_u.mutation.GradeCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   stulog.GradeTable,
-			Columns: stulog.GradePrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(grade.FieldID, field.TypeInt64),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.GradeIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   stulog.GradeTable,
-			Columns: stulog.GradePrimaryKey,
+			Columns: []string{stulog.GradeColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(grade.FieldID, field.TypeInt64),
@@ -998,39 +902,23 @@ func (_u *StuLogUpdateOne) sqlSave(ctx context.Context) (_node *StuLog, err erro
 	}
 	if _u.mutation.RuleCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   stulog.RuleTable,
-			Columns: stulog.RulePrimaryKey,
+			Columns: []string{stulog.RuleColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(rule.FieldID, field.TypeInt64),
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedRuleIDs(); len(nodes) > 0 && !_u.mutation.RuleCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   stulog.RuleTable,
-			Columns: stulog.RulePrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(rule.FieldID, field.TypeInt64),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RuleIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   stulog.RuleTable,
-			Columns: stulog.RulePrimaryKey,
+			Columns: []string{stulog.RuleColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(rule.FieldID, field.TypeInt64),

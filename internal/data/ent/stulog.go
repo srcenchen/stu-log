@@ -3,6 +3,8 @@
 package ent
 
 import (
+	"eGZ-stu-log/internal/data/ent/grade"
+	"eGZ-stu-log/internal/data/ent/rule"
 	"eGZ-stu-log/internal/data/ent/stulog"
 	"fmt"
 	"strings"
@@ -27,8 +29,10 @@ type StuLog struct {
 	Time time.Time `json:"time,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the StuLogQuery when eager-loading is set.
-	Edges        StuLogEdges `json:"edges"`
-	selectValues sql.SelectValues
+	Edges         StuLogEdges `json:"edges"`
+	stu_log_grade *int64
+	stu_log_rule  *int64
+	selectValues  sql.SelectValues
 }
 
 // StuLogEdges holds the relations/edges for other nodes in the graph.
@@ -36,9 +40,9 @@ type StuLogEdges struct {
 	// Class holds the value of the class edge.
 	Class []*Class `json:"class,omitempty"`
 	// Grade holds the value of the grade edge.
-	Grade []*Grade `json:"grade,omitempty"`
+	Grade *Grade `json:"grade,omitempty"`
 	// Rule holds the value of the rule edge.
-	Rule []*Rule `json:"rule,omitempty"`
+	Rule *Rule `json:"rule,omitempty"`
 	// Students holds the value of the students edge.
 	Students []*Student `json:"students,omitempty"`
 	// Images holds the value of the images edge.
@@ -58,19 +62,23 @@ func (e StuLogEdges) ClassOrErr() ([]*Class, error) {
 }
 
 // GradeOrErr returns the Grade value or an error if the edge
-// was not loaded in eager-loading.
-func (e StuLogEdges) GradeOrErr() ([]*Grade, error) {
-	if e.loadedTypes[1] {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e StuLogEdges) GradeOrErr() (*Grade, error) {
+	if e.Grade != nil {
 		return e.Grade, nil
+	} else if e.loadedTypes[1] {
+		return nil, &NotFoundError{label: grade.Label}
 	}
 	return nil, &NotLoadedError{edge: "grade"}
 }
 
 // RuleOrErr returns the Rule value or an error if the edge
-// was not loaded in eager-loading.
-func (e StuLogEdges) RuleOrErr() ([]*Rule, error) {
-	if e.loadedTypes[2] {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e StuLogEdges) RuleOrErr() (*Rule, error) {
+	if e.Rule != nil {
 		return e.Rule, nil
+	} else if e.loadedTypes[2] {
+		return nil, &NotFoundError{label: rule.Label}
 	}
 	return nil, &NotLoadedError{edge: "rule"}
 }
@@ -106,6 +114,10 @@ func (*StuLog) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case stulog.FieldTime:
 			values[i] = new(sql.NullTime)
+		case stulog.ForeignKeys[0]: // stu_log_grade
+			values[i] = new(sql.NullInt64)
+		case stulog.ForeignKeys[1]: // stu_log_rule
+			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -150,6 +162,20 @@ func (_m *StuLog) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field time", values[i])
 			} else if value.Valid {
 				_m.Time = value.Time
+			}
+		case stulog.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field stu_log_grade", value)
+			} else if value.Valid {
+				_m.stu_log_grade = new(int64)
+				*_m.stu_log_grade = int64(value.Int64)
+			}
+		case stulog.ForeignKeys[1]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field stu_log_rule", value)
+			} else if value.Valid {
+				_m.stu_log_rule = new(int64)
+				*_m.stu_log_rule = int64(value.Int64)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])

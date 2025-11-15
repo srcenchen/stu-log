@@ -235,10 +235,10 @@ func (_u *GradeUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.StuLogsCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   grade.StuLogsTable,
-			Columns: grade.StuLogsPrimaryKey,
+			Columns: []string{grade.StuLogsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(stulog.FieldID, field.TypeInt64),
@@ -248,10 +248,10 @@ func (_u *GradeUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if nodes := _u.mutation.RemovedStuLogsIDs(); len(nodes) > 0 && !_u.mutation.StuLogsCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   grade.StuLogsTable,
-			Columns: grade.StuLogsPrimaryKey,
+			Columns: []string{grade.StuLogsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(stulog.FieldID, field.TypeInt64),
@@ -264,10 +264,10 @@ func (_u *GradeUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if nodes := _u.mutation.StuLogsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   grade.StuLogsTable,
-			Columns: grade.StuLogsPrimaryKey,
+			Columns: []string{grade.StuLogsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(stulog.FieldID, field.TypeInt64),
@@ -667,10 +667,10 @@ func (_u *GradeUpdateOne) sqlSave(ctx context.Context) (_node *Grade, err error)
 	}
 	if _u.mutation.StuLogsCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   grade.StuLogsTable,
-			Columns: grade.StuLogsPrimaryKey,
+			Columns: []string{grade.StuLogsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(stulog.FieldID, field.TypeInt64),
@@ -680,10 +680,10 @@ func (_u *GradeUpdateOne) sqlSave(ctx context.Context) (_node *Grade, err error)
 	}
 	if nodes := _u.mutation.RemovedStuLogsIDs(); len(nodes) > 0 && !_u.mutation.StuLogsCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   grade.StuLogsTable,
-			Columns: grade.StuLogsPrimaryKey,
+			Columns: []string{grade.StuLogsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(stulog.FieldID, field.TypeInt64),
@@ -696,10 +696,10 @@ func (_u *GradeUpdateOne) sqlSave(ctx context.Context) (_node *Grade, err error)
 	}
 	if nodes := _u.mutation.StuLogsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   grade.StuLogsTable,
-			Columns: grade.StuLogsPrimaryKey,
+			Columns: []string{grade.StuLogsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(stulog.FieldID, field.TypeInt64),

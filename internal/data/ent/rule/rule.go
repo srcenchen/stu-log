@@ -22,11 +22,13 @@ const (
 	EdgeStuLogs = "stuLogs"
 	// Table holds the table name of the rule in the database.
 	Table = "rules"
-	// StuLogsTable is the table that holds the stuLogs relation/edge. The primary key declared below.
-	StuLogsTable = "stu_log_rule"
+	// StuLogsTable is the table that holds the stuLogs relation/edge.
+	StuLogsTable = "stu_logs"
 	// StuLogsInverseTable is the table name for the StuLog entity.
 	// It exists in this package in order to avoid circular dependency with the "stulog" package.
 	StuLogsInverseTable = "stu_logs"
+	// StuLogsColumn is the table column denoting the stuLogs relation/edge.
+	StuLogsColumn = "stu_log_rule"
 )
 
 // Columns holds all SQL columns for rule fields.
@@ -36,12 +38,6 @@ var Columns = []string{
 	FieldScore,
 	FieldGroup,
 }
-
-var (
-	// StuLogsPrimaryKey and StuLogsColumn2 are the table columns denoting the
-	// primary key for the stuLogs relation (M2M).
-	StuLogsPrimaryKey = []string{"stu_log_id", "rule_id"}
-)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -93,6 +89,6 @@ func newStuLogsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(StuLogsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2M, true, StuLogsTable, StuLogsPrimaryKey...),
+		sqlgraph.Edge(sqlgraph.O2M, true, StuLogsTable, StuLogsColumn),
 	)
 }

@@ -258,7 +258,7 @@ func HasGrade() predicate.StuLog {
 	return predicate.StuLog(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, GradeTable, GradePrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, GradeTable, GradeColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -281,7 +281,7 @@ func HasRule() predicate.StuLog {
 	return predicate.StuLog(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, RuleTable, RulePrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, RuleTable, RuleColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})

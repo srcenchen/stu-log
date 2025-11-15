@@ -129,7 +129,7 @@ func HasStuLogs() predicate.Grade {
 	return predicate.Grade(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, StuLogsTable, StuLogsPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, true, StuLogsTable, StuLogsColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})

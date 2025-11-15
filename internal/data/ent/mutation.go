@@ -2882,11 +2882,9 @@ type StuLogMutation struct {
 	class           map[int64]struct{}
 	removedclass    map[int64]struct{}
 	clearedclass    bool
-	grade           map[int64]struct{}
-	removedgrade    map[int64]struct{}
+	grade           *int64
 	clearedgrade    bool
-	rule            map[int64]struct{}
-	removedrule     map[int64]struct{}
+	rule            *int64
 	clearedrule     bool
 	students        map[int64]struct{}
 	removedstudents map[int64]struct{}
@@ -3221,14 +3219,9 @@ func (m *StuLogMutation) ResetClass() {
 	m.removedclass = nil
 }
 
-// AddGradeIDs adds the "grade" edge to the Grade entity by ids.
-func (m *StuLogMutation) AddGradeIDs(ids ...int64) {
-	if m.grade == nil {
-		m.grade = make(map[int64]struct{})
-	}
-	for i := range ids {
-		m.grade[ids[i]] = struct{}{}
-	}
+// SetGradeID sets the "grade" edge to the Grade entity by id.
+func (m *StuLogMutation) SetGradeID(id int64) {
+	m.grade = &id
 }
 
 // ClearGrade clears the "grade" edge to the Grade entity.
@@ -3241,29 +3234,20 @@ func (m *StuLogMutation) GradeCleared() bool {
 	return m.clearedgrade
 }
 
-// RemoveGradeIDs removes the "grade" edge to the Grade entity by IDs.
-func (m *StuLogMutation) RemoveGradeIDs(ids ...int64) {
-	if m.removedgrade == nil {
-		m.removedgrade = make(map[int64]struct{})
-	}
-	for i := range ids {
-		delete(m.grade, ids[i])
-		m.removedgrade[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedGrade returns the removed IDs of the "grade" edge to the Grade entity.
-func (m *StuLogMutation) RemovedGradeIDs() (ids []int64) {
-	for id := range m.removedgrade {
-		ids = append(ids, id)
+// GradeID returns the "grade" edge ID in the mutation.
+func (m *StuLogMutation) GradeID() (id int64, exists bool) {
+	if m.grade != nil {
+		return *m.grade, true
 	}
 	return
 }
 
 // GradeIDs returns the "grade" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// GradeID instead. It exists only for internal usage by the builders.
 func (m *StuLogMutation) GradeIDs() (ids []int64) {
-	for id := range m.grade {
-		ids = append(ids, id)
+	if id := m.grade; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -3272,17 +3256,11 @@ func (m *StuLogMutation) GradeIDs() (ids []int64) {
 func (m *StuLogMutation) ResetGrade() {
 	m.grade = nil
 	m.clearedgrade = false
-	m.removedgrade = nil
 }
 
-// AddRuleIDs adds the "rule" edge to the Rule entity by ids.
-func (m *StuLogMutation) AddRuleIDs(ids ...int64) {
-	if m.rule == nil {
-		m.rule = make(map[int64]struct{})
-	}
-	for i := range ids {
-		m.rule[ids[i]] = struct{}{}
-	}
+// SetRuleID sets the "rule" edge to the Rule entity by id.
+func (m *StuLogMutation) SetRuleID(id int64) {
+	m.rule = &id
 }
 
 // ClearRule clears the "rule" edge to the Rule entity.
@@ -3295,29 +3273,20 @@ func (m *StuLogMutation) RuleCleared() bool {
 	return m.clearedrule
 }
 
-// RemoveRuleIDs removes the "rule" edge to the Rule entity by IDs.
-func (m *StuLogMutation) RemoveRuleIDs(ids ...int64) {
-	if m.removedrule == nil {
-		m.removedrule = make(map[int64]struct{})
-	}
-	for i := range ids {
-		delete(m.rule, ids[i])
-		m.removedrule[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedRule returns the removed IDs of the "rule" edge to the Rule entity.
-func (m *StuLogMutation) RemovedRuleIDs() (ids []int64) {
-	for id := range m.removedrule {
-		ids = append(ids, id)
+// RuleID returns the "rule" edge ID in the mutation.
+func (m *StuLogMutation) RuleID() (id int64, exists bool) {
+	if m.rule != nil {
+		return *m.rule, true
 	}
 	return
 }
 
 // RuleIDs returns the "rule" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// RuleID instead. It exists only for internal usage by the builders.
 func (m *StuLogMutation) RuleIDs() (ids []int64) {
-	for id := range m.rule {
-		ids = append(ids, id)
+	if id := m.rule; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -3326,7 +3295,6 @@ func (m *StuLogMutation) RuleIDs() (ids []int64) {
 func (m *StuLogMutation) ResetRule() {
 	m.rule = nil
 	m.clearedrule = false
-	m.removedrule = nil
 }
 
 // AddStudentIDs adds the "students" edge to the Student entity by ids.
@@ -3666,17 +3634,13 @@ func (m *StuLogMutation) AddedIDs(name string) []ent.Value {
 		}
 		return ids
 	case stulog.EdgeGrade:
-		ids := make([]ent.Value, 0, len(m.grade))
-		for id := range m.grade {
-			ids = append(ids, id)
+		if id := m.grade; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case stulog.EdgeRule:
-		ids := make([]ent.Value, 0, len(m.rule))
-		for id := range m.rule {
-			ids = append(ids, id)
+		if id := m.rule; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case stulog.EdgeStudents:
 		ids := make([]ent.Value, 0, len(m.students))
 		for id := range m.students {
@@ -3699,12 +3663,6 @@ func (m *StuLogMutation) RemovedEdges() []string {
 	if m.removedclass != nil {
 		edges = append(edges, stulog.EdgeClass)
 	}
-	if m.removedgrade != nil {
-		edges = append(edges, stulog.EdgeGrade)
-	}
-	if m.removedrule != nil {
-		edges = append(edges, stulog.EdgeRule)
-	}
 	if m.removedstudents != nil {
 		edges = append(edges, stulog.EdgeStudents)
 	}
@@ -3721,18 +3679,6 @@ func (m *StuLogMutation) RemovedIDs(name string) []ent.Value {
 	case stulog.EdgeClass:
 		ids := make([]ent.Value, 0, len(m.removedclass))
 		for id := range m.removedclass {
-			ids = append(ids, id)
-		}
-		return ids
-	case stulog.EdgeGrade:
-		ids := make([]ent.Value, 0, len(m.removedgrade))
-		for id := range m.removedgrade {
-			ids = append(ids, id)
-		}
-		return ids
-	case stulog.EdgeRule:
-		ids := make([]ent.Value, 0, len(m.removedrule))
-		for id := range m.removedrule {
 			ids = append(ids, id)
 		}
 		return ids
@@ -3795,6 +3741,12 @@ func (m *StuLogMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *StuLogMutation) ClearEdge(name string) error {
 	switch name {
+	case stulog.EdgeGrade:
+		m.ClearGrade()
+		return nil
+	case stulog.EdgeRule:
+		m.ClearRule()
+		return nil
 	}
 	return fmt.Errorf("unknown StuLog unique edge %s", name)
 }

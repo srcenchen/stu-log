@@ -112,6 +112,47 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.base_info.v1.QueryStudentReply'
+    /v1/stu_log:
+        get:
+            tags:
+                - StuLog
+            operationId: StuLog_GetStuLogList
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                    type: string
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: string
+                - name: gradeId
+                  in: query
+                  schema:
+                    type: string
+                - name: ruleId
+                  in: query
+                  schema:
+                    type: string
+                - name: studentId
+                  in: query
+                  schema:
+                    type: string
+                - name: startTime
+                  in: query
+                  schema:
+                    type: string
+                - name: endTime
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.base_info.v1.GetStuLogListReply'
     /v1/stu_log/report:
         post:
             tags:
@@ -130,6 +171,24 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.base_info.v1.ReportStuLogReply'
+    /v1/stu_log/{id}:
+        get:
+            tags:
+                - StuLog
+            operationId: StuLog_GetStuLog
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.base_info.v1.StuLogItem'
 components:
     schemas:
         api.base_info.v1.CreateClassReply:
@@ -176,6 +235,15 @@ components:
                     type: string
                 stuNum:
                     type: string
+        api.base_info.v1.GetStuLogListReply:
+            type: object
+            properties:
+                list:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.base_info.v1.StuLogItem'
+                totalPages:
+                    type: string
         api.base_info.v1.QueryStudentListReply:
             type: object
             properties:
@@ -216,6 +284,43 @@ components:
                     type: array
                     items:
                         type: string
+        api.base_info.v1.StuLogItem:
+            type: object
+            properties:
+                id:
+                    type: string
+                students:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.base_info.v1.StuLogStudentItem'
+                rule:
+                    type: string
+                content:
+                    type: string
+                score:
+                    type: integer
+                    format: int32
+                Grade:
+                    type: string
+                revoked:
+                    type: boolean
+                time:
+                    type: string
+                imageUrls:
+                    type: array
+                    items:
+                        type: string
+        api.base_info.v1.StuLogStudentItem:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                class:
+                    type: string
+                stuNum:
+                    type: string
         api.base_info.v1.StudentItem:
             type: object
             properties:
