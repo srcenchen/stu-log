@@ -50,6 +50,11 @@ service StuLog {
       get: "/v1/stu_log/export",
     };
   };
+  rpc RevokeStuLog (RevokeStuLogRequest) returns (RevokeStuLogReply) {
+    option (google.api.http) = {
+      get: "/v1/stu_log/revoke",
+    };
+  };
 }
 
 message ReportStuLogRequest {
@@ -58,7 +63,7 @@ message ReportStuLogRequest {
   string content = 3;
   int32 score = 4;
   int64 gradeId = 6;
-  int64 dormId = 7;
+  optional int64 dormId = 7;
   repeated int64 imageIds = 5;
 }
 
@@ -79,6 +84,7 @@ message GetStuLogListRequest {
   optional int64 studentId = 5;
   optional int64 startTime = 6;
   optional int64 endTime = 7;
+  optional bool onlyDorm = 9;
 }
 
 message GetStuLogListReply {
@@ -96,4 +102,13 @@ message ExportStuLogRequest {
 
 message ExportStuLogReply {
   string exportPath = 1;
+}
+
+message RevokeStuLogRequest {
+  int64 id = 1;
+  bool revoke = 2;
+}
+
+message RevokeStuLogReply {
+  string message = 1;
 }

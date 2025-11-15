@@ -5,6 +5,7 @@ import (
 	"eGZ-stu-log/internal/biz"
 	"eGZ-stu-log/internal/data"
 	"eGZ-stu-log/internal/data/ent"
+	"eGZ-stu-log/internal/data/ent/dorm"
 	"eGZ-stu-log/internal/data/ent/grade"
 	"eGZ-stu-log/internal/data/ent/rule"
 	"eGZ-stu-log/internal/data/ent/student"
@@ -48,7 +49,7 @@ func toStuLogItem(stuLogInfo *ent.StuLog) *pb.StuLogItem {
 	return &pb.StuLogItem{
 		Id:           stuLogInfo.ID,
 		Content:      stuLogInfo.Content,
-		Time:         stuLogInfo.Time.String(),
+		Time:         stuLogInfo.Time.Format("2006-01-02 15:04:05"),
 		Score:        stuLogInfo.Score,
 		Rule:         stuLogInfo.Edges.Rule.Content,
 		Grade:        stuLogInfo.Edges.Grade.GradeName,
@@ -111,6 +112,9 @@ func (s *StuLogService) GetStuLogList(ctx context.Context, req *pb.GetStuLogList
 	if req.EndTime != nil {
 		dbQuery.Where(stulog.TimeLTE(time.Unix(*req.EndTime, 0)))
 	}
+	if req.OnlyDorm != nil && *req.OnlyDorm {
+		dbQuery.Where(stulog.HasDorm())
+	}
 	total, err := dbQuery.Count(ctx)
 	totalPages := (int64(total) + req.PageSize - 1) / req.PageSize
 	stuLogList, err := dbQuery.Offset(int((req.Page - 1) * req.PageSize)).Limit(int(req.PageSize)).All(ctx)
@@ -171,8 +175,11 @@ func (s *StuLogService) ReportStuLog(ctx context.Context, req *pb.ReportStuLogRe
 		SetScore(req.Score).
 		AddImageIDs(req.ImageIds...).
 		SetRuleID(req.RuleId).
-		SetDormID(req.DormId).
 		AddStudentIDs(req.StudentIds...)
+	if req.DormId != nil {
+		dormInfo, _ := s.data.DB.Dorm.Query().Where(dorm.ID(*req.DormId)).First(ctx)
+		stuLogInfo.SetDorm(dormInfo)
+	}
 	// 根据ids查询classId 塞进去
 	for _, stuId := range req.StudentIds {
 		studentInfo, _ := s.data.DB.Student.Query().WithClass().Where(student.ID(stuId)).First(ctx)
@@ -185,5 +192,37 @@ func (s *StuLogService) ReportStuLog(ctx context.Context, req *pb.ReportStuLogRe
 	}
 	return &pb.ReportStuLogReply{
 		Message: "Success",
+	}, nil
+}
+
+func (s *StuLogService) RevokeStuLog(ctx context.Context, req *pb.RevokeStuLogRequest) (*pb.RevokeStuLogReply, error) {
+	logInfoOrigin, err := s.data.DB.StuLog.Query().Where(stulog.ID(req.Id)).First(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if logInfoOrigin.Revoked == req.Revoke {
+		return &pb.RevokeStuLogReply{
+			Message: "操作失败",
+		}, nil
+	}
+	logInfo, err := s.data.DB.StuLog.UpdateOneID(req.Id).SetRevoked(req.Revoke).Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+	// 通过id查询Student
+	stuLogsInfo, _ := s.data.DB.StuLog.Query().WithStudents(func(sq *ent.StudentQuery) {
+		sq.WithClass()
+	}).Where(stulog.ID(req.Id)).First(ctx)
+	if req.Revoke {
+		for _, studentInfo := range stuLogsInfo.Edges.Students {
+			_, _ = s.data.DB.Student.UpdateOneID(studentInfo.ID).SetScore(studentInfo.Score - logInfo.Score).Save(ctx)
+		}
+	} else {
+		for _, studentInfo := range stuLogsInfo.Edges.Students {
+			_, _ = s.data.DB.Student.UpdateOneID(studentInfo.ID).SetScore(studentInfo.Score + logInfo.Score).Save(ctx)
+		}
+	}
+	return &pb.RevokeStuLogReply{
+		Message: "操作成功",
 	}, nil
 }

@@ -79,10 +79,10 @@ func (uc *ImportUseCase) ImportStudent(ctx http.Context, excelPath string) (err 
 			errCnt++
 		}
 	}
+	_ = os.Remove(excelPath) // 导入结束 删除
 	if errCnt != 0 {
 		return errors.New("部分学生没有导入成功，可能因为导入过了？失败数：" + strconv.Itoa(errCnt))
 	}
-	_ = os.Remove(excelPath) // 导入结束 删除
 	return
 }
 

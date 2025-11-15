@@ -200,6 +200,10 @@ paths:
                   in: query
                   schema:
                     type: string
+                - name: onlyDorm
+                  in: query
+                  schema:
+                    type: boolean
             responses:
                 "200":
                     description: OK
@@ -225,6 +229,27 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.base_info.v1.ReportStuLogReply'
+    /v1/stu_log/revoke:
+        get:
+            tags:
+                - StuLog
+            operationId: StuLog_RevokeStuLog
+            parameters:
+                - name: id
+                  in: query
+                  schema:
+                    type: string
+                - name: revoke
+                  in: query
+                  schema:
+                    type: boolean
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.base_info.v1.RevokeStuLogReply'
 components:
     schemas:
         api.base_info.v1.CreateClassReply:
@@ -327,6 +352,11 @@ components:
                     type: array
                     items:
                         type: string
+        api.base_info.v1.RevokeStuLogReply:
+            type: object
+            properties:
+                message:
+                    type: string
         api.base_info.v1.StuLogItem:
             type: object
             properties:
