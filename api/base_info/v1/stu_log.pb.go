@@ -514,6 +514,126 @@ func (x *GetStuLogListReply) GetTotalPages() int64 {
 	return 0
 }
 
+type ExportStuLogRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GradeId       *int64                 `protobuf:"varint,3,opt,name=gradeId,proto3,oneof" json:"gradeId,omitempty"`
+	RuleId        *int64                 `protobuf:"varint,4,opt,name=ruleId,proto3,oneof" json:"ruleId,omitempty"`
+	StudentId     *int64                 `protobuf:"varint,5,opt,name=studentId,proto3,oneof" json:"studentId,omitempty"`
+	StartTime     *int64                 `protobuf:"varint,6,opt,name=startTime,proto3,oneof" json:"startTime,omitempty"`
+	EndTime       *int64                 `protobuf:"varint,7,opt,name=endTime,proto3,oneof" json:"endTime,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ExportStuLogRequest) Reset() {
+	*x = ExportStuLogRequest{}
+	mi := &file_base_info_v1_stu_log_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ExportStuLogRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ExportStuLogRequest) ProtoMessage() {}
+
+func (x *ExportStuLogRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_base_info_v1_stu_log_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ExportStuLogRequest.ProtoReflect.Descriptor instead.
+func (*ExportStuLogRequest) Descriptor() ([]byte, []int) {
+	return file_base_info_v1_stu_log_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *ExportStuLogRequest) GetGradeId() int64 {
+	if x != nil && x.GradeId != nil {
+		return *x.GradeId
+	}
+	return 0
+}
+
+func (x *ExportStuLogRequest) GetRuleId() int64 {
+	if x != nil && x.RuleId != nil {
+		return *x.RuleId
+	}
+	return 0
+}
+
+func (x *ExportStuLogRequest) GetStudentId() int64 {
+	if x != nil && x.StudentId != nil {
+		return *x.StudentId
+	}
+	return 0
+}
+
+func (x *ExportStuLogRequest) GetStartTime() int64 {
+	if x != nil && x.StartTime != nil {
+		return *x.StartTime
+	}
+	return 0
+}
+
+func (x *ExportStuLogRequest) GetEndTime() int64 {
+	if x != nil && x.EndTime != nil {
+		return *x.EndTime
+	}
+	return 0
+}
+
+type ExportStuLogReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ExportPath    string                 `protobuf:"bytes,1,opt,name=exportPath,proto3" json:"exportPath,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ExportStuLogReply) Reset() {
+	*x = ExportStuLogReply{}
+	mi := &file_base_info_v1_stu_log_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ExportStuLogReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ExportStuLogReply) ProtoMessage() {}
+
+func (x *ExportStuLogReply) ProtoReflect() protoreflect.Message {
+	mi := &file_base_info_v1_stu_log_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ExportStuLogReply.ProtoReflect.Descriptor instead.
+func (*ExportStuLogReply) Descriptor() ([]byte, []int) {
+	return file_base_info_v1_stu_log_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *ExportStuLogReply) GetExportPath() string {
+	if x != nil {
+		return x.ExportPath
+	}
+	return ""
+}
+
 var File_base_info_v1_stu_log_proto protoreflect.FileDescriptor
 
 const file_base_info_v1_stu_log_proto_rawDesc = "" +
@@ -569,11 +689,31 @@ const file_base_info_v1_stu_log_proto_rawDesc = "" +
 	"\x04list\x18\x01 \x03(\v2\x1c.api.base_info.v1.StuLogItemR\x04list\x12\x1e\n" +
 	"\n" +
 	"totalPages\x18\x02 \x01(\x03R\n" +
-	"totalPages2\xe0\x02\n" +
+	"totalPages\"\xf5\x01\n" +
+	"\x13ExportStuLogRequest\x12\x1d\n" +
+	"\agradeId\x18\x03 \x01(\x03H\x00R\agradeId\x88\x01\x01\x12\x1b\n" +
+	"\x06ruleId\x18\x04 \x01(\x03H\x01R\x06ruleId\x88\x01\x01\x12!\n" +
+	"\tstudentId\x18\x05 \x01(\x03H\x02R\tstudentId\x88\x01\x01\x12!\n" +
+	"\tstartTime\x18\x06 \x01(\x03H\x03R\tstartTime\x88\x01\x01\x12\x1d\n" +
+	"\aendTime\x18\a \x01(\x03H\x04R\aendTime\x88\x01\x01B\n" +
+	"\n" +
+	"\b_gradeIdB\t\n" +
+	"\a_ruleIdB\f\n" +
+	"\n" +
+	"_studentIdB\f\n" +
+	"\n" +
+	"_startTimeB\n" +
+	"\n" +
+	"\b_endTime\"3\n" +
+	"\x11ExportStuLogReply\x12\x1e\n" +
+	"\n" +
+	"exportPath\x18\x01 \x01(\tR\n" +
+	"exportPath2\xd3\x03\n" +
 	"\x06StuLog\x12y\n" +
-	"\fReportStuLog\x12%.api.base_info.v1.ReportStuLogRequest\x1a#.api.base_info.v1.ReportStuLogReply\"\x1d\x82\xd3\xe4\x93\x02\x17:\x01*\"\x12/v1/stu_log/report\x12g\n" +
-	"\tGetStuLog\x12\".api.base_info.v1.GetStuLogRequest\x1a\x1c.api.base_info.v1.StuLogItem\"\x18\x82\xd3\xe4\x93\x02\x12\x12\x10/v1/stu_log/{id}\x12r\n" +
-	"\rGetStuLogList\x12&.api.base_info.v1.GetStuLogListRequest\x1a$.api.base_info.v1.GetStuLogListReply\"\x13\x82\xd3\xe4\x93\x02\r\x12\v/v1/stu_logB5\n" +
+	"\fReportStuLog\x12%.api.base_info.v1.ReportStuLogRequest\x1a#.api.base_info.v1.ReportStuLogReply\"\x1d\x82\xd3\xe4\x93\x02\x17:\x01*\"\x12/v1/stu_log/report\x12b\n" +
+	"\tGetStuLog\x12\".api.base_info.v1.GetStuLogRequest\x1a\x1c.api.base_info.v1.StuLogItem\"\x13\x82\xd3\xe4\x93\x02\r\x12\v/v1/stu_log\x12r\n" +
+	"\rGetStuLogList\x12&.api.base_info.v1.GetStuLogListRequest\x1a$.api.base_info.v1.GetStuLogListReply\"\x13\x82\xd3\xe4\x93\x02\r\x12\v/v1/stu_log\x12v\n" +
+	"\fExportStuLog\x12%.api.base_info.v1.ExportStuLogRequest\x1a#.api.base_info.v1.ExportStuLogReply\"\x1a\x82\xd3\xe4\x93\x02\x14\x12\x12/v1/stu_log/exportB5\n" +
 	"\x10api.base_info.v1P\x01Z\x1feGZ-stu-log/api/base_info/v1;v1b\x06proto3"
 
 var (
@@ -588,7 +728,7 @@ func file_base_info_v1_stu_log_proto_rawDescGZIP() []byte {
 	return file_base_info_v1_stu_log_proto_rawDescData
 }
 
-var file_base_info_v1_stu_log_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_base_info_v1_stu_log_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_base_info_v1_stu_log_proto_goTypes = []any{
 	(*StuLogStudentItem)(nil),    // 0: api.base_info.v1.StuLogStudentItem
 	(*StuLogItem)(nil),           // 1: api.base_info.v1.StuLogItem
@@ -597,6 +737,8 @@ var file_base_info_v1_stu_log_proto_goTypes = []any{
 	(*GetStuLogRequest)(nil),     // 4: api.base_info.v1.GetStuLogRequest
 	(*GetStuLogListRequest)(nil), // 5: api.base_info.v1.GetStuLogListRequest
 	(*GetStuLogListReply)(nil),   // 6: api.base_info.v1.GetStuLogListReply
+	(*ExportStuLogRequest)(nil),  // 7: api.base_info.v1.ExportStuLogRequest
+	(*ExportStuLogReply)(nil),    // 8: api.base_info.v1.ExportStuLogReply
 }
 var file_base_info_v1_stu_log_proto_depIdxs = []int32{
 	0, // 0: api.base_info.v1.StuLogItem.students:type_name -> api.base_info.v1.StuLogStudentItem
@@ -604,11 +746,13 @@ var file_base_info_v1_stu_log_proto_depIdxs = []int32{
 	2, // 2: api.base_info.v1.StuLog.ReportStuLog:input_type -> api.base_info.v1.ReportStuLogRequest
 	4, // 3: api.base_info.v1.StuLog.GetStuLog:input_type -> api.base_info.v1.GetStuLogRequest
 	5, // 4: api.base_info.v1.StuLog.GetStuLogList:input_type -> api.base_info.v1.GetStuLogListRequest
-	3, // 5: api.base_info.v1.StuLog.ReportStuLog:output_type -> api.base_info.v1.ReportStuLogReply
-	1, // 6: api.base_info.v1.StuLog.GetStuLog:output_type -> api.base_info.v1.StuLogItem
-	6, // 7: api.base_info.v1.StuLog.GetStuLogList:output_type -> api.base_info.v1.GetStuLogListReply
-	5, // [5:8] is the sub-list for method output_type
-	2, // [2:5] is the sub-list for method input_type
+	7, // 5: api.base_info.v1.StuLog.ExportStuLog:input_type -> api.base_info.v1.ExportStuLogRequest
+	3, // 6: api.base_info.v1.StuLog.ReportStuLog:output_type -> api.base_info.v1.ReportStuLogReply
+	1, // 7: api.base_info.v1.StuLog.GetStuLog:output_type -> api.base_info.v1.StuLogItem
+	6, // 8: api.base_info.v1.StuLog.GetStuLogList:output_type -> api.base_info.v1.GetStuLogListReply
+	8, // 9: api.base_info.v1.StuLog.ExportStuLog:output_type -> api.base_info.v1.ExportStuLogReply
+	6, // [6:10] is the sub-list for method output_type
+	2, // [2:6] is the sub-list for method input_type
 	2, // [2:2] is the sub-list for extension type_name
 	2, // [2:2] is the sub-list for extension extendee
 	0, // [0:2] is the sub-list for field type_name
@@ -620,13 +764,14 @@ func file_base_info_v1_stu_log_proto_init() {
 		return
 	}
 	file_base_info_v1_stu_log_proto_msgTypes[5].OneofWrappers = []any{}
+	file_base_info_v1_stu_log_proto_msgTypes[7].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_base_info_v1_stu_log_proto_rawDesc), len(file_base_info_v1_stu_log_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   7,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

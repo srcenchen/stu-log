@@ -22,6 +22,7 @@ const (
 	StuLog_ReportStuLog_FullMethodName  = "/api.base_info.v1.StuLog/ReportStuLog"
 	StuLog_GetStuLog_FullMethodName     = "/api.base_info.v1.StuLog/GetStuLog"
 	StuLog_GetStuLogList_FullMethodName = "/api.base_info.v1.StuLog/GetStuLogList"
+	StuLog_ExportStuLog_FullMethodName  = "/api.base_info.v1.StuLog/ExportStuLog"
 )
 
 // StuLogClient is the client API for StuLog service.
@@ -31,6 +32,7 @@ type StuLogClient interface {
 	ReportStuLog(ctx context.Context, in *ReportStuLogRequest, opts ...grpc.CallOption) (*ReportStuLogReply, error)
 	GetStuLog(ctx context.Context, in *GetStuLogRequest, opts ...grpc.CallOption) (*StuLogItem, error)
 	GetStuLogList(ctx context.Context, in *GetStuLogListRequest, opts ...grpc.CallOption) (*GetStuLogListReply, error)
+	ExportStuLog(ctx context.Context, in *ExportStuLogRequest, opts ...grpc.CallOption) (*ExportStuLogReply, error)
 }
 
 type stuLogClient struct {
@@ -71,6 +73,16 @@ func (c *stuLogClient) GetStuLogList(ctx context.Context, in *GetStuLogListReque
 	return out, nil
 }
 
+func (c *stuLogClient) ExportStuLog(ctx context.Context, in *ExportStuLogRequest, opts ...grpc.CallOption) (*ExportStuLogReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ExportStuLogReply)
+	err := c.cc.Invoke(ctx, StuLog_ExportStuLog_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // StuLogServer is the server API for StuLog service.
 // All implementations must embed UnimplementedStuLogServer
 // for forward compatibility.
@@ -78,6 +90,7 @@ type StuLogServer interface {
 	ReportStuLog(context.Context, *ReportStuLogRequest) (*ReportStuLogReply, error)
 	GetStuLog(context.Context, *GetStuLogRequest) (*StuLogItem, error)
 	GetStuLogList(context.Context, *GetStuLogListRequest) (*GetStuLogListReply, error)
+	ExportStuLog(context.Context, *ExportStuLogRequest) (*ExportStuLogReply, error)
 	mustEmbedUnimplementedStuLogServer()
 }
 
@@ -96,6 +109,9 @@ func (UnimplementedStuLogServer) GetStuLog(context.Context, *GetStuLogRequest) (
 }
 func (UnimplementedStuLogServer) GetStuLogList(context.Context, *GetStuLogListRequest) (*GetStuLogListReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetStuLogList not implemented")
+}
+func (UnimplementedStuLogServer) ExportStuLog(context.Context, *ExportStuLogRequest) (*ExportStuLogReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ExportStuLog not implemented")
 }
 func (UnimplementedStuLogServer) mustEmbedUnimplementedStuLogServer() {}
 func (UnimplementedStuLogServer) testEmbeddedByValue()                {}
@@ -172,6 +188,24 @@ func _StuLog_GetStuLogList_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _StuLog_ExportStuLog_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ExportStuLogRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StuLogServer).ExportStuLog(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: StuLog_ExportStuLog_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StuLogServer).ExportStuLog(ctx, req.(*ExportStuLogRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // StuLog_ServiceDesc is the grpc.ServiceDesc for StuLog service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -190,6 +224,10 @@ var StuLog_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetStuLogList",
 			Handler:    _StuLog_GetStuLogList_Handler,
+		},
+		{
+			MethodName: "ExportStuLog",
+			Handler:    _StuLog_ExportStuLog_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -35,12 +35,17 @@ service StuLog {
   };
   rpc GetStuLog (GetStuLogRequest) returns (StuLogItem) {
     option (google.api.http) = {
-      get: "/v1/stu_log/{id}",
+      get: "/v1/stu_log",
     };
   };
   rpc GetStuLogList (GetStuLogListRequest) returns (GetStuLogListReply) {
     option (google.api.http) = {
       get: "/v1/stu_log",
+    };
+  };
+  rpc ExportStuLog (ExportStuLogRequest) returns (ExportStuLogReply) {
+    option (google.api.http) = {
+      get: "/v1/stu_log/export",
     };
   };
 }
@@ -75,4 +80,16 @@ message GetStuLogListRequest {
 message GetStuLogListReply {
   repeated StuLogItem list = 1;
   int64 totalPages = 2;
+}
+
+message ExportStuLogRequest {
+  optional int64 gradeId = 3;
+  optional int64 ruleId = 4;
+  optional int64 studentId = 5;
+  optional int64 startTime = 6;
+  optional int64 endTime = 7;
+}
+
+message ExportStuLogReply {
+  string exportPath = 1;
 }

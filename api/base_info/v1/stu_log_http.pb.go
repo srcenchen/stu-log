@@ -19,11 +19,13 @@ var _ = binding.EncodeURL
 
 const _ = http.SupportPackageIsVersion1
 
+const OperationStuLogExportStuLog = "/api.base_info.v1.StuLog/ExportStuLog"
 const OperationStuLogGetStuLog = "/api.base_info.v1.StuLog/GetStuLog"
 const OperationStuLogGetStuLogList = "/api.base_info.v1.StuLog/GetStuLogList"
 const OperationStuLogReportStuLog = "/api.base_info.v1.StuLog/ReportStuLog"
 
 type StuLogHTTPServer interface {
+	ExportStuLog(context.Context, *ExportStuLogRequest) (*ExportStuLogReply, error)
 	GetStuLog(context.Context, *GetStuLogRequest) (*StuLogItem, error)
 	GetStuLogList(context.Context, *GetStuLogListRequest) (*GetStuLogListReply, error)
 	ReportStuLog(context.Context, *ReportStuLogRequest) (*ReportStuLogReply, error)
@@ -32,8 +34,9 @@ type StuLogHTTPServer interface {
 func RegisterStuLogHTTPServer(s *http.Server, srv StuLogHTTPServer) {
 	r := s.Route("/")
 	r.POST("/v1/stu_log/report", _StuLog_ReportStuLog0_HTTP_Handler(srv))
-	r.GET("/v1/stu_log/{id}", _StuLog_GetStuLog0_HTTP_Handler(srv))
+	r.GET("/v1/stu_log", _StuLog_GetStuLog0_HTTP_Handler(srv))
 	r.GET("/v1/stu_log", _StuLog_GetStuLogList0_HTTP_Handler(srv))
+	r.GET("/v1/stu_log/export", _StuLog_ExportStuLog0_HTTP_Handler(srv))
 }
 
 func _StuLog_ReportStuLog0_HTTP_Handler(srv StuLogHTTPServer) func(ctx http.Context) error {
@@ -62,9 +65,6 @@ func _StuLog_GetStuLog0_HTTP_Handler(srv StuLogHTTPServer) func(ctx http.Context
 	return func(ctx http.Context) error {
 		var in GetStuLogRequest
 		if err := ctx.BindQuery(&in); err != nil {
-			return err
-		}
-		if err := ctx.BindVars(&in); err != nil {
 			return err
 		}
 		http.SetOperation(ctx, OperationStuLogGetStuLog)
@@ -99,7 +99,27 @@ func _StuLog_GetStuLogList0_HTTP_Handler(srv StuLogHTTPServer) func(ctx http.Con
 	}
 }
 
+func _StuLog_ExportStuLog0_HTTP_Handler(srv StuLogHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in ExportStuLogRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationStuLogExportStuLog)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.ExportStuLog(ctx, req.(*ExportStuLogRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*ExportStuLogReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type StuLogHTTPClient interface {
+	ExportStuLog(ctx context.Context, req *ExportStuLogRequest, opts ...http.CallOption) (rsp *ExportStuLogReply, err error)
 	GetStuLog(ctx context.Context, req *GetStuLogRequest, opts ...http.CallOption) (rsp *StuLogItem, err error)
 	GetStuLogList(ctx context.Context, req *GetStuLogListRequest, opts ...http.CallOption) (rsp *GetStuLogListReply, err error)
 	ReportStuLog(ctx context.Context, req *ReportStuLogRequest, opts ...http.CallOption) (rsp *ReportStuLogReply, err error)
@@ -113,9 +133,22 @@ func NewStuLogHTTPClient(client *http.Client) StuLogHTTPClient {
 	return &StuLogHTTPClientImpl{client}
 }
 
+func (c *StuLogHTTPClientImpl) ExportStuLog(ctx context.Context, in *ExportStuLogRequest, opts ...http.CallOption) (*ExportStuLogReply, error) {
+	var out ExportStuLogReply
+	pattern := "/v1/stu_log/export"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationStuLogExportStuLog))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
 func (c *StuLogHTTPClientImpl) GetStuLog(ctx context.Context, in *GetStuLogRequest, opts ...http.CallOption) (*StuLogItem, error) {
 	var out StuLogItem
-	pattern := "/v1/stu_log/{id}"
+	pattern := "/v1/stu_log"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationStuLogGetStuLog))
 	opts = append(opts, http.PathTemplate(pattern))

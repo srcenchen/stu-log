@@ -7,13 +7,14 @@ import (
 	"eGZ-stu-log/internal/data/ent/dorm"
 	"eGZ-stu-log/internal/data/ent/grade"
 	"errors"
-	"github.com/go-kratos/kratos/v2/log"
-	"github.com/go-kratos/kratos/v2/transport/http"
-	"github.com/xuri/excelize/v2"
 	_ "image/jpeg"
 	_ "image/png"
 	"os"
 	"strconv"
+
+	"github.com/go-kratos/kratos/v2/log"
+	"github.com/go-kratos/kratos/v2/transport/http"
+	"github.com/xuri/excelize/v2"
 )
 
 type ImportUseCase struct {
@@ -27,24 +28,6 @@ func NewImportUseCase(data *data.Data, logger log.Logger) *ImportUseCase {
 		log:  log.NewHelper(logger),
 	}
 }
-
-// 这里是导出的部分代码
-//func (uc *ImportUseCase) ImportStudent(ctx http.Context, excelPath string) {
-//	f := excelize.NewFile()
-//	defer f.Close()
-//	f.SetRowHeight("Sheet1", 1, 64)
-//	f.SetColWidth("Sheet1", "A", "A", 17)
-//	err := f.AddPicture("Sheet1", "A1", excelPath,
-//		&excelize.GraphicOptions{
-//			AutoFit:         true,
-//			LockAspectRatio: true,
-//			Positioning:     "oneCell", // 设置为 oneCell 表示图片会随着单元格移动而移动
-//		})
-//	if err != nil {
-//		uc.log.Error(err)
-//	}
-//	f.SaveAs("output.xlsx")
-//}
 
 func (uc *ImportUseCase) ImportStudent(ctx http.Context, excelPath string) (err error) {
 	f, err := excelize.OpenFile(excelPath)

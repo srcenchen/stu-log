@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"eGZ-stu-log/internal/biz"
 	"eGZ-stu-log/internal/data"
 	"eGZ-stu-log/internal/data/ent"
 	"eGZ-stu-log/internal/data/ent/grade"
@@ -15,12 +16,14 @@ import (
 
 type StuLogService struct {
 	pb.UnimplementedStuLogServer
-	data *data.Data
+	data      *data.Data
+	exportBiz *biz.ExportStuLogUseCase
 }
 
-func NewStuLogService(data *data.Data) *StuLogService {
+func NewStuLogService(data *data.Data, exportBiz *biz.ExportStuLogUseCase) *StuLogService {
 	return &StuLogService{
-		data: data,
+		data:      data,
+		exportBiz: exportBiz,
 	}
 }
 
@@ -114,6 +117,39 @@ func (s *StuLogService) GetStuLogList(ctx context.Context, req *pb.GetStuLogList
 		TotalPages: totalPages,
 		List:       stuLogListReply,
 	}, nil
+}
+
+// ExportStuLog 导出学生日志
+func (s *StuLogService) ExportStuLog(ctx context.Context, req *pb.ExportStuLogRequest) (*pb.ExportStuLogReply, error) {
+	dbQuery := s.data.DB.StuLog.Query().
+		WithGrade().
+		WithClass().
+		WithImages().
+		WithRule().
+		WithStudents(func(sq *ent.StudentQuery) {
+			sq.WithClass()
+		})
+	if req.GradeId != nil {
+		dbQuery.Where(stulog.HasGradeWith(grade.ID(*req.GradeId)))
+	}
+	if req.RuleId != nil {
+		dbQuery.Where(stulog.HasRuleWith(rule.ID(*req.RuleId)))
+	}
+	if req.StudentId != nil {
+		dbQuery.Where(stulog.HasStudentsWith(student.ID(*req.StudentId)))
+	}
+	if req.StartTime != nil {
+		dbQuery.Where(stulog.TimeGTE(time.Unix(*req.StartTime, 0)))
+	}
+	if req.EndTime != nil {
+		dbQuery.Where(stulog.TimeLTE(time.Unix(*req.EndTime, 0)))
+	}
+	stuLogList, err := dbQuery.All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	outPutPath, err := s.exportBiz.ExportStuLog(ctx, stuLogList)
+	return &pb.ExportStuLogReply{ExportPath: outPutPath}, nil
 }
 
 // ReportStuLog 上报学生日志

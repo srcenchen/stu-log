@@ -153,6 +153,39 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.base_info.v1.GetStuLogListReply'
+    /v1/stu_log/export:
+        get:
+            tags:
+                - StuLog
+            operationId: StuLog_ExportStuLog
+            parameters:
+                - name: gradeId
+                  in: query
+                  schema:
+                    type: string
+                - name: ruleId
+                  in: query
+                  schema:
+                    type: string
+                - name: studentId
+                  in: query
+                  schema:
+                    type: string
+                - name: startTime
+                  in: query
+                  schema:
+                    type: string
+                - name: endTime
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.base_info.v1.ExportStuLogReply'
     /v1/stu_log/report:
         post:
             tags:
@@ -171,24 +204,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.base_info.v1.ReportStuLogReply'
-    /v1/stu_log/{id}:
-        get:
-            tags:
-                - StuLog
-            operationId: StuLog_GetStuLog
-            parameters:
-                - name: id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/api.base_info.v1.StuLogItem'
 components:
     schemas:
         api.base_info.v1.CreateClassReply:
@@ -234,6 +249,11 @@ components:
                 dormPos:
                     type: string
                 stuNum:
+                    type: string
+        api.base_info.v1.ExportStuLogReply:
+            type: object
+            properties:
+                exportPath:
                     type: string
         api.base_info.v1.GetStuLogListReply:
             type: object
