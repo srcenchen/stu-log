@@ -41,16 +41,22 @@ func toStuLogItem(stuLogInfo *ent.StuLog) *pb.StuLogItem {
 			StuNum: studentItem.StuNum,
 		})
 	}
+	dormInfo := &ent.Dorm{}
+	if stuLogInfo.Edges.Dorm != nil {
+		dormInfo = stuLogInfo.Edges.Dorm
+	}
 	return &pb.StuLogItem{
-		Id:        stuLogInfo.ID,
-		Content:   stuLogInfo.Content,
-		Time:      stuLogInfo.Time.String(),
-		Score:     stuLogInfo.Score,
-		Rule:      stuLogInfo.Edges.Rule.Content,
-		Grade:     stuLogInfo.Edges.Grade.GradeName,
-		Revoked:   stuLogInfo.Revoked,
-		ImageUrls: imageUrls,
-		Students:  students,
+		Id:           stuLogInfo.ID,
+		Content:      stuLogInfo.Content,
+		Time:         stuLogInfo.Time.String(),
+		Score:        stuLogInfo.Score,
+		Rule:         stuLogInfo.Edges.Rule.Content,
+		Grade:        stuLogInfo.Edges.Grade.GradeName,
+		Revoked:      stuLogInfo.Revoked,
+		ImageUrls:    imageUrls,
+		DormBuilding: dormInfo.Building,
+		DormNum:      dormInfo.DormNum,
+		Students:     students,
 	}
 }
 
@@ -62,6 +68,7 @@ func (s *StuLogService) GetStuLog(ctx context.Context, req *pb.GetStuLogRequest)
 		WithClass().
 		WithImages().
 		WithRule().
+		WithDorm().
 		WithStudents(func(sq *ent.StudentQuery) {
 			sq.WithClass()
 		}).
@@ -79,6 +86,7 @@ func (s *StuLogService) GetStuLogList(ctx context.Context, req *pb.GetStuLogList
 		WithClass().
 		WithImages().
 		WithRule().
+		WithDorm().
 		WithStudents(func(sq *ent.StudentQuery) {
 			sq.WithClass()
 		})
@@ -126,6 +134,7 @@ func (s *StuLogService) ExportStuLog(ctx context.Context, req *pb.ExportStuLogRe
 		WithClass().
 		WithImages().
 		WithRule().
+		WithDorm().
 		WithStudents(func(sq *ent.StudentQuery) {
 			sq.WithClass()
 		})
@@ -162,6 +171,7 @@ func (s *StuLogService) ReportStuLog(ctx context.Context, req *pb.ReportStuLogRe
 		SetScore(req.Score).
 		AddImageIDs(req.ImageIds...).
 		SetRuleID(req.RuleId).
+		SetDormID(req.DormId).
 		AddStudentIDs(req.StudentIds...)
 	// 根据ids查询classId 塞进去
 	for _, stuId := range req.StudentIds {

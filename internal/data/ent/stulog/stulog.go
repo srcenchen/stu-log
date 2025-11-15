@@ -30,6 +30,8 @@ const (
 	EdgeStudents = "students"
 	// EdgeImages holds the string denoting the images edge name in mutations.
 	EdgeImages = "images"
+	// EdgeDorm holds the string denoting the dorm edge name in mutations.
+	EdgeDorm = "dorm"
 	// Table holds the table name of the stulog in the database.
 	Table = "stu_logs"
 	// ClassTable is the table that holds the class relation/edge. The primary key declared below.
@@ -61,6 +63,13 @@ const (
 	// ImagesInverseTable is the table name for the Image entity.
 	// It exists in this package in order to avoid circular dependency with the "image" package.
 	ImagesInverseTable = "images"
+	// DormTable is the table that holds the dorm relation/edge.
+	DormTable = "stu_logs"
+	// DormInverseTable is the table name for the Dorm entity.
+	// It exists in this package in order to avoid circular dependency with the "dorm" package.
+	DormInverseTable = "dorms"
+	// DormColumn is the table column denoting the dorm relation/edge.
+	DormColumn = "stu_log_dorm"
 )
 
 // Columns holds all SQL columns for stulog fields.
@@ -77,6 +86,7 @@ var Columns = []string{
 var ForeignKeys = []string{
 	"stu_log_grade",
 	"stu_log_rule",
+	"stu_log_dorm",
 }
 
 var (
@@ -194,6 +204,13 @@ func ByImages(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newImagesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByDormField orders the results by dorm field.
+func ByDormField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newDormStep(), sql.OrderByField(field, opts...))
+	}
+}
 func newClassStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -227,5 +244,12 @@ func newImagesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ImagesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, false, ImagesTable, ImagesPrimaryKey...),
+	)
+}
+func newDormStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(DormInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, DormTable, DormColumn),
 	)
 }

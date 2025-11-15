@@ -7,6 +7,7 @@ import (
 	"eGZ-stu-log/internal/data/ent/dorm"
 	"eGZ-stu-log/internal/data/ent/grade"
 	"eGZ-stu-log/internal/data/ent/student"
+	"eGZ-stu-log/internal/data/ent/stulog"
 	"errors"
 	"fmt"
 
@@ -69,6 +70,21 @@ func (_c *DormCreate) SetGradeID(id int64) *DormCreate {
 // SetGrade sets the "grade" edge to the Grade entity.
 func (_c *DormCreate) SetGrade(v *Grade) *DormCreate {
 	return _c.SetGradeID(v.ID)
+}
+
+// AddStuLogIDs adds the "stuLogs" edge to the StuLog entity by IDs.
+func (_c *DormCreate) AddStuLogIDs(ids ...int64) *DormCreate {
+	_c.mutation.AddStuLogIDs(ids...)
+	return _c
+}
+
+// AddStuLogs adds the "stuLogs" edges to the StuLog entity.
+func (_c *DormCreate) AddStuLogs(v ...*StuLog) *DormCreate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddStuLogIDs(ids...)
 }
 
 // Mutation returns the DormMutation object of the builder.
@@ -192,6 +208,22 @@ func (_c *DormCreate) createSpec() (*Dorm, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.dorm_grade = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.StuLogsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   dorm.StuLogsTable,
+			Columns: []string{dorm.StuLogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(stulog.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

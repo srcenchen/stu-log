@@ -6,6 +6,7 @@ import (
 	"context"
 	"database/sql/driver"
 	"eGZ-stu-log/internal/data/ent/class"
+	"eGZ-stu-log/internal/data/ent/dorm"
 	"eGZ-stu-log/internal/data/ent/grade"
 	"eGZ-stu-log/internal/data/ent/image"
 	"eGZ-stu-log/internal/data/ent/predicate"
@@ -33,6 +34,7 @@ type StuLogQuery struct {
 	withRule     *RuleQuery
 	withStudents *StudentQuery
 	withImages   *ImageQuery
+	withDorm     *DormQuery
 	withFKs      bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -173,6 +175,28 @@ func (_q *StuLogQuery) QueryImages() *ImageQuery {
 			sqlgraph.From(stulog.Table, stulog.FieldID, selector),
 			sqlgraph.To(image.Table, image.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, stulog.ImagesTable, stulog.ImagesPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryDorm chains the current query on the "dorm" edge.
+func (_q *StuLogQuery) QueryDorm() *DormQuery {
+	query := (&DormClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(stulog.Table, stulog.FieldID, selector),
+			sqlgraph.To(dorm.Table, dorm.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, stulog.DormTable, stulog.DormColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -377,6 +401,7 @@ func (_q *StuLogQuery) Clone() *StuLogQuery {
 		withRule:     _q.withRule.Clone(),
 		withStudents: _q.withStudents.Clone(),
 		withImages:   _q.withImages.Clone(),
+		withDorm:     _q.withDorm.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -435,6 +460,17 @@ func (_q *StuLogQuery) WithImages(opts ...func(*ImageQuery)) *StuLogQuery {
 		opt(query)
 	}
 	_q.withImages = query
+	return _q
+}
+
+// WithDorm tells the query-builder to eager-load the nodes that are connected to
+// the "dorm" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *StuLogQuery) WithDorm(opts ...func(*DormQuery)) *StuLogQuery {
+	query := (&DormClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withDorm = query
 	return _q
 }
 
@@ -517,15 +553,16 @@ func (_q *StuLogQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*StuLo
 		nodes       = []*StuLog{}
 		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
-		loadedTypes = [5]bool{
+		loadedTypes = [6]bool{
 			_q.withClass != nil,
 			_q.withGrade != nil,
 			_q.withRule != nil,
 			_q.withStudents != nil,
 			_q.withImages != nil,
+			_q.withDorm != nil,
 		}
 	)
-	if _q.withGrade != nil || _q.withRule != nil {
+	if _q.withGrade != nil || _q.withRule != nil || _q.withDorm != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -579,6 +616,12 @@ func (_q *StuLogQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*StuLo
 		if err := _q.loadImages(ctx, query, nodes,
 			func(n *StuLog) { n.Edges.Images = []*Image{} },
 			func(n *StuLog, e *Image) { n.Edges.Images = append(n.Edges.Images, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withDorm; query != nil {
+		if err := _q.loadDorm(ctx, query, nodes, nil,
+			func(n *StuLog, e *Dorm) { n.Edges.Dorm = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -828,6 +871,38 @@ func (_q *StuLogQuery) loadImages(ctx context.Context, query *ImageQuery, nodes 
 		}
 		for kn := range nodes {
 			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (_q *StuLogQuery) loadDorm(ctx context.Context, query *DormQuery, nodes []*StuLog, init func(*StuLog), assign func(*StuLog, *Dorm)) error {
+	ids := make([]int64, 0, len(nodes))
+	nodeids := make(map[int64][]*StuLog)
+	for i := range nodes {
+		if nodes[i].stu_log_dorm == nil {
+			continue
+		}
+		fk := *nodes[i].stu_log_dorm
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(dorm.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "stu_log_dorm" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
 		}
 	}
 	return nil

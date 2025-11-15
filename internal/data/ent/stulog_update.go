@@ -5,6 +5,7 @@ package ent
 import (
 	"context"
 	"eGZ-stu-log/internal/data/ent/class"
+	"eGZ-stu-log/internal/data/ent/dorm"
 	"eGZ-stu-log/internal/data/ent/grade"
 	"eGZ-stu-log/internal/data/ent/image"
 	"eGZ-stu-log/internal/data/ent/predicate"
@@ -163,6 +164,25 @@ func (_u *StuLogUpdate) AddImages(v ...*Image) *StuLogUpdate {
 	return _u.AddImageIDs(ids...)
 }
 
+// SetDormID sets the "dorm" edge to the Dorm entity by ID.
+func (_u *StuLogUpdate) SetDormID(id int64) *StuLogUpdate {
+	_u.mutation.SetDormID(id)
+	return _u
+}
+
+// SetNillableDormID sets the "dorm" edge to the Dorm entity by ID if the given value is not nil.
+func (_u *StuLogUpdate) SetNillableDormID(id *int64) *StuLogUpdate {
+	if id != nil {
+		_u = _u.SetDormID(*id)
+	}
+	return _u
+}
+
+// SetDorm sets the "dorm" edge to the Dorm entity.
+func (_u *StuLogUpdate) SetDorm(v *Dorm) *StuLogUpdate {
+	return _u.SetDormID(v.ID)
+}
+
 // Mutation returns the StuLogMutation object of the builder.
 func (_u *StuLogUpdate) Mutation() *StuLogMutation {
 	return _u.mutation
@@ -241,6 +261,12 @@ func (_u *StuLogUpdate) RemoveImages(v ...*Image) *StuLogUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveImageIDs(ids...)
+}
+
+// ClearDorm clears the "dorm" edge to the Dorm entity.
+func (_u *StuLogUpdate) ClearDorm() *StuLogUpdate {
+	_u.mutation.ClearDorm()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -501,6 +527,35 @@ func (_u *StuLogUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.DormCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   stulog.DormTable,
+			Columns: []string{stulog.DormColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dorm.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.DormIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   stulog.DormTable,
+			Columns: []string{stulog.DormColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dorm.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{stulog.Label}
@@ -651,6 +706,25 @@ func (_u *StuLogUpdateOne) AddImages(v ...*Image) *StuLogUpdateOne {
 	return _u.AddImageIDs(ids...)
 }
 
+// SetDormID sets the "dorm" edge to the Dorm entity by ID.
+func (_u *StuLogUpdateOne) SetDormID(id int64) *StuLogUpdateOne {
+	_u.mutation.SetDormID(id)
+	return _u
+}
+
+// SetNillableDormID sets the "dorm" edge to the Dorm entity by ID if the given value is not nil.
+func (_u *StuLogUpdateOne) SetNillableDormID(id *int64) *StuLogUpdateOne {
+	if id != nil {
+		_u = _u.SetDormID(*id)
+	}
+	return _u
+}
+
+// SetDorm sets the "dorm" edge to the Dorm entity.
+func (_u *StuLogUpdateOne) SetDorm(v *Dorm) *StuLogUpdateOne {
+	return _u.SetDormID(v.ID)
+}
+
 // Mutation returns the StuLogMutation object of the builder.
 func (_u *StuLogUpdateOne) Mutation() *StuLogMutation {
 	return _u.mutation
@@ -729,6 +803,12 @@ func (_u *StuLogUpdateOne) RemoveImages(v ...*Image) *StuLogUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveImageIDs(ids...)
+}
+
+// ClearDorm clears the "dorm" edge to the Dorm entity.
+func (_u *StuLogUpdateOne) ClearDorm() *StuLogUpdateOne {
+	_u.mutation.ClearDorm()
+	return _u
 }
 
 // Where appends a list predicates to the StuLogUpdate builder.
@@ -1012,6 +1092,35 @@ func (_u *StuLogUpdateOne) sqlSave(ctx context.Context) (_node *StuLog, err erro
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(image.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.DormCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   stulog.DormTable,
+			Columns: []string{stulog.DormColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dorm.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.DormIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   stulog.DormTable,
+			Columns: []string{stulog.DormColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dorm.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {

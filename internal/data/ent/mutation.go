@@ -622,6 +622,9 @@ type DormMutation struct {
 	clearedstudent bool
 	grade          *int64
 	clearedgrade   bool
+	stuLogs        map[int64]struct{}
+	removedstuLogs map[int64]struct{}
+	clearedstuLogs bool
 	done           bool
 	oldValue       func(context.Context) (*Dorm, error)
 	predicates     []predicate.Dorm
@@ -932,6 +935,60 @@ func (m *DormMutation) ResetGrade() {
 	m.clearedgrade = false
 }
 
+// AddStuLogIDs adds the "stuLogs" edge to the StuLog entity by ids.
+func (m *DormMutation) AddStuLogIDs(ids ...int64) {
+	if m.stuLogs == nil {
+		m.stuLogs = make(map[int64]struct{})
+	}
+	for i := range ids {
+		m.stuLogs[ids[i]] = struct{}{}
+	}
+}
+
+// ClearStuLogs clears the "stuLogs" edge to the StuLog entity.
+func (m *DormMutation) ClearStuLogs() {
+	m.clearedstuLogs = true
+}
+
+// StuLogsCleared reports if the "stuLogs" edge to the StuLog entity was cleared.
+func (m *DormMutation) StuLogsCleared() bool {
+	return m.clearedstuLogs
+}
+
+// RemoveStuLogIDs removes the "stuLogs" edge to the StuLog entity by IDs.
+func (m *DormMutation) RemoveStuLogIDs(ids ...int64) {
+	if m.removedstuLogs == nil {
+		m.removedstuLogs = make(map[int64]struct{})
+	}
+	for i := range ids {
+		delete(m.stuLogs, ids[i])
+		m.removedstuLogs[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedStuLogs returns the removed IDs of the "stuLogs" edge to the StuLog entity.
+func (m *DormMutation) RemovedStuLogsIDs() (ids []int64) {
+	for id := range m.removedstuLogs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// StuLogsIDs returns the "stuLogs" edge IDs in the mutation.
+func (m *DormMutation) StuLogsIDs() (ids []int64) {
+	for id := range m.stuLogs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetStuLogs resets all changes to the "stuLogs" edge.
+func (m *DormMutation) ResetStuLogs() {
+	m.stuLogs = nil
+	m.clearedstuLogs = false
+	m.removedstuLogs = nil
+}
+
 // Where appends a list predicates to the DormMutation builder.
 func (m *DormMutation) Where(ps ...predicate.Dorm) {
 	m.predicates = append(m.predicates, ps...)
@@ -1099,12 +1156,15 @@ func (m *DormMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *DormMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.student != nil {
 		edges = append(edges, dorm.EdgeStudent)
 	}
 	if m.grade != nil {
 		edges = append(edges, dorm.EdgeGrade)
+	}
+	if m.stuLogs != nil {
+		edges = append(edges, dorm.EdgeStuLogs)
 	}
 	return edges
 }
@@ -1123,15 +1183,24 @@ func (m *DormMutation) AddedIDs(name string) []ent.Value {
 		if id := m.grade; id != nil {
 			return []ent.Value{*id}
 		}
+	case dorm.EdgeStuLogs:
+		ids := make([]ent.Value, 0, len(m.stuLogs))
+		for id := range m.stuLogs {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *DormMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.removedstudent != nil {
 		edges = append(edges, dorm.EdgeStudent)
+	}
+	if m.removedstuLogs != nil {
+		edges = append(edges, dorm.EdgeStuLogs)
 	}
 	return edges
 }
@@ -1146,18 +1215,27 @@ func (m *DormMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case dorm.EdgeStuLogs:
+		ids := make([]ent.Value, 0, len(m.removedstuLogs))
+		for id := range m.removedstuLogs {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *DormMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.clearedstudent {
 		edges = append(edges, dorm.EdgeStudent)
 	}
 	if m.clearedgrade {
 		edges = append(edges, dorm.EdgeGrade)
+	}
+	if m.clearedstuLogs {
+		edges = append(edges, dorm.EdgeStuLogs)
 	}
 	return edges
 }
@@ -1170,6 +1248,8 @@ func (m *DormMutation) EdgeCleared(name string) bool {
 		return m.clearedstudent
 	case dorm.EdgeGrade:
 		return m.clearedgrade
+	case dorm.EdgeStuLogs:
+		return m.clearedstuLogs
 	}
 	return false
 }
@@ -1194,6 +1274,9 @@ func (m *DormMutation) ResetEdge(name string) error {
 		return nil
 	case dorm.EdgeGrade:
 		m.ResetGrade()
+		return nil
+	case dorm.EdgeStuLogs:
+		m.ResetStuLogs()
 		return nil
 	}
 	return fmt.Errorf("unknown Dorm edge %s", name)
@@ -2892,6 +2975,8 @@ type StuLogMutation struct {
 	images          map[int64]struct{}
 	removedimages   map[int64]struct{}
 	clearedimages   bool
+	dorm            *int64
+	cleareddorm     bool
 	done            bool
 	oldValue        func(context.Context) (*StuLog, error)
 	predicates      []predicate.StuLog
@@ -3405,6 +3490,45 @@ func (m *StuLogMutation) ResetImages() {
 	m.removedimages = nil
 }
 
+// SetDormID sets the "dorm" edge to the Dorm entity by id.
+func (m *StuLogMutation) SetDormID(id int64) {
+	m.dorm = &id
+}
+
+// ClearDorm clears the "dorm" edge to the Dorm entity.
+func (m *StuLogMutation) ClearDorm() {
+	m.cleareddorm = true
+}
+
+// DormCleared reports if the "dorm" edge to the Dorm entity was cleared.
+func (m *StuLogMutation) DormCleared() bool {
+	return m.cleareddorm
+}
+
+// DormID returns the "dorm" edge ID in the mutation.
+func (m *StuLogMutation) DormID() (id int64, exists bool) {
+	if m.dorm != nil {
+		return *m.dorm, true
+	}
+	return
+}
+
+// DormIDs returns the "dorm" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// DormID instead. It exists only for internal usage by the builders.
+func (m *StuLogMutation) DormIDs() (ids []int64) {
+	if id := m.dorm; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetDorm resets all changes to the "dorm" edge.
+func (m *StuLogMutation) ResetDorm() {
+	m.dorm = nil
+	m.cleareddorm = false
+}
+
 // Where appends a list predicates to the StuLogMutation builder.
 func (m *StuLogMutation) Where(ps ...predicate.StuLog) {
 	m.predicates = append(m.predicates, ps...)
@@ -3604,7 +3728,7 @@ func (m *StuLogMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *StuLogMutation) AddedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.class != nil {
 		edges = append(edges, stulog.EdgeClass)
 	}
@@ -3619,6 +3743,9 @@ func (m *StuLogMutation) AddedEdges() []string {
 	}
 	if m.images != nil {
 		edges = append(edges, stulog.EdgeImages)
+	}
+	if m.dorm != nil {
+		edges = append(edges, stulog.EdgeDorm)
 	}
 	return edges
 }
@@ -3653,13 +3780,17 @@ func (m *StuLogMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case stulog.EdgeDorm:
+		if id := m.dorm; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *StuLogMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.removedclass != nil {
 		edges = append(edges, stulog.EdgeClass)
 	}
@@ -3700,7 +3831,7 @@ func (m *StuLogMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *StuLogMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.clearedclass {
 		edges = append(edges, stulog.EdgeClass)
 	}
@@ -3715,6 +3846,9 @@ func (m *StuLogMutation) ClearedEdges() []string {
 	}
 	if m.clearedimages {
 		edges = append(edges, stulog.EdgeImages)
+	}
+	if m.cleareddorm {
+		edges = append(edges, stulog.EdgeDorm)
 	}
 	return edges
 }
@@ -3733,6 +3867,8 @@ func (m *StuLogMutation) EdgeCleared(name string) bool {
 		return m.clearedstudents
 	case stulog.EdgeImages:
 		return m.clearedimages
+	case stulog.EdgeDorm:
+		return m.cleareddorm
 	}
 	return false
 }
@@ -3746,6 +3882,9 @@ func (m *StuLogMutation) ClearEdge(name string) error {
 		return nil
 	case stulog.EdgeRule:
 		m.ClearRule()
+		return nil
+	case stulog.EdgeDorm:
+		m.ClearDorm()
 		return nil
 	}
 	return fmt.Errorf("unknown StuLog unique edge %s", name)
@@ -3769,6 +3908,9 @@ func (m *StuLogMutation) ResetEdge(name string) error {
 		return nil
 	case stulog.EdgeImages:
 		m.ResetImages()
+		return nil
+	case stulog.EdgeDorm:
+		m.ResetDorm()
 		return nil
 	}
 	return fmt.Errorf("unknown StuLog edge %s", name)

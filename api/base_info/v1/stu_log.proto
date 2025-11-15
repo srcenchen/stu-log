@@ -23,6 +23,8 @@ message StuLogItem {
   string Grade = 6;
   bool revoked = 8;
   string time = 9;
+  string dormBuilding = 10;
+  string dormNum = 11;
   repeated string imageUrls = 7;
 }
 
@@ -40,7 +42,7 @@ service StuLog {
   };
   rpc GetStuLogList (GetStuLogListRequest) returns (GetStuLogListReply) {
     option (google.api.http) = {
-      get: "/v1/stu_log",
+      get: "/v1/stu_log/list",
     };
   };
   rpc ExportStuLog (ExportStuLogRequest) returns (ExportStuLogReply) {
@@ -56,6 +58,7 @@ message ReportStuLogRequest {
   string content = 3;
   int32 score = 4;
   int64 gradeId = 6;
+  int64 dormId = 7;
   repeated int64 imageIds = 5;
 }
 
@@ -70,6 +73,7 @@ message GetStuLogRequest {
 message GetStuLogListRequest {
   int64 page = 1;
   int64 pageSize = 2;
+  optional int64 dormId = 8;
   optional int64 gradeId = 3;
   optional int64 ruleId = 4;
   optional int64 studentId = 5;

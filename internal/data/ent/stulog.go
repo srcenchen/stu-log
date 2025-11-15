@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"eGZ-stu-log/internal/data/ent/dorm"
 	"eGZ-stu-log/internal/data/ent/grade"
 	"eGZ-stu-log/internal/data/ent/rule"
 	"eGZ-stu-log/internal/data/ent/stulog"
@@ -32,6 +33,7 @@ type StuLog struct {
 	Edges         StuLogEdges `json:"edges"`
 	stu_log_grade *int64
 	stu_log_rule  *int64
+	stu_log_dorm  *int64
 	selectValues  sql.SelectValues
 }
 
@@ -47,9 +49,11 @@ type StuLogEdges struct {
 	Students []*Student `json:"students,omitempty"`
 	// Images holds the value of the images edge.
 	Images []*Image `json:"images,omitempty"`
+	// Dorm holds the value of the dorm edge.
+	Dorm *Dorm `json:"dorm,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [6]bool
 }
 
 // ClassOrErr returns the Class value or an error if the edge
@@ -101,6 +105,17 @@ func (e StuLogEdges) ImagesOrErr() ([]*Image, error) {
 	return nil, &NotLoadedError{edge: "images"}
 }
 
+// DormOrErr returns the Dorm value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e StuLogEdges) DormOrErr() (*Dorm, error) {
+	if e.Dorm != nil {
+		return e.Dorm, nil
+	} else if e.loadedTypes[5] {
+		return nil, &NotFoundError{label: dorm.Label}
+	}
+	return nil, &NotLoadedError{edge: "dorm"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*StuLog) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -117,6 +132,8 @@ func (*StuLog) scanValues(columns []string) ([]any, error) {
 		case stulog.ForeignKeys[0]: // stu_log_grade
 			values[i] = new(sql.NullInt64)
 		case stulog.ForeignKeys[1]: // stu_log_rule
+			values[i] = new(sql.NullInt64)
+		case stulog.ForeignKeys[2]: // stu_log_dorm
 			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -177,6 +194,13 @@ func (_m *StuLog) assignValues(columns []string, values []any) error {
 				_m.stu_log_rule = new(int64)
 				*_m.stu_log_rule = int64(value.Int64)
 			}
+		case stulog.ForeignKeys[2]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field stu_log_dorm", value)
+			} else if value.Valid {
+				_m.stu_log_dorm = new(int64)
+				*_m.stu_log_dorm = int64(value.Int64)
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -213,6 +237,11 @@ func (_m *StuLog) QueryStudents() *StudentQuery {
 // QueryImages queries the "images" edge of the StuLog entity.
 func (_m *StuLog) QueryImages() *ImageQuery {
 	return NewStuLogClient(_m.config).QueryImages(_m)
+}
+
+// QueryDorm queries the "dorm" edge of the StuLog entity.
+func (_m *StuLog) QueryDorm() *DormQuery {
+	return NewStuLogClient(_m.config).QueryDorm(_m)
 }
 
 // Update returns a builder for updating this StuLog.

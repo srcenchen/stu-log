@@ -116,33 +116,9 @@ paths:
         get:
             tags:
                 - StuLog
-            operationId: StuLog_GetStuLogList
+            operationId: StuLog_GetStuLog
             parameters:
-                - name: page
-                  in: query
-                  schema:
-                    type: string
-                - name: pageSize
-                  in: query
-                  schema:
-                    type: string
-                - name: gradeId
-                  in: query
-                  schema:
-                    type: string
-                - name: ruleId
-                  in: query
-                  schema:
-                    type: string
-                - name: studentId
-                  in: query
-                  schema:
-                    type: string
-                - name: startTime
-                  in: query
-                  schema:
-                    type: string
-                - name: endTime
+                - name: id
                   in: query
                   schema:
                     type: string
@@ -152,7 +128,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/api.base_info.v1.GetStuLogListReply'
+                                $ref: '#/components/schemas/api.base_info.v1.StuLogItem'
     /v1/stu_log/export:
         get:
             tags:
@@ -186,6 +162,51 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.base_info.v1.ExportStuLogReply'
+    /v1/stu_log/list:
+        get:
+            tags:
+                - StuLog
+            operationId: StuLog_GetStuLogList
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                    type: string
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: string
+                - name: dormId
+                  in: query
+                  schema:
+                    type: string
+                - name: gradeId
+                  in: query
+                  schema:
+                    type: string
+                - name: ruleId
+                  in: query
+                  schema:
+                    type: string
+                - name: studentId
+                  in: query
+                  schema:
+                    type: string
+                - name: startTime
+                  in: query
+                  schema:
+                    type: string
+                - name: endTime
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.base_info.v1.GetStuLogListReply'
     /v1/stu_log/report:
         post:
             tags:
@@ -300,6 +321,8 @@ components:
                     format: int32
                 gradeId:
                     type: string
+                dormId:
+                    type: string
                 imageIds:
                     type: array
                     items:
@@ -325,6 +348,10 @@ components:
                 revoked:
                     type: boolean
                 time:
+                    type: string
+                dormBuilding:
+                    type: string
+                dormNum:
                     type: string
                 imageUrls:
                     type: array

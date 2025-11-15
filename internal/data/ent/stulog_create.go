@@ -5,6 +5,7 @@ package ent
 import (
 	"context"
 	"eGZ-stu-log/internal/data/ent/class"
+	"eGZ-stu-log/internal/data/ent/dorm"
 	"eGZ-stu-log/internal/data/ent/grade"
 	"eGZ-stu-log/internal/data/ent/image"
 	"eGZ-stu-log/internal/data/ent/rule"
@@ -128,6 +129,25 @@ func (_c *StuLogCreate) AddImages(v ...*Image) *StuLogCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddImageIDs(ids...)
+}
+
+// SetDormID sets the "dorm" edge to the Dorm entity by ID.
+func (_c *StuLogCreate) SetDormID(id int64) *StuLogCreate {
+	_c.mutation.SetDormID(id)
+	return _c
+}
+
+// SetNillableDormID sets the "dorm" edge to the Dorm entity by ID if the given value is not nil.
+func (_c *StuLogCreate) SetNillableDormID(id *int64) *StuLogCreate {
+	if id != nil {
+		_c = _c.SetDormID(*id)
+	}
+	return _c
+}
+
+// SetDorm sets the "dorm" edge to the Dorm entity.
+func (_c *StuLogCreate) SetDorm(v *Dorm) *StuLogCreate {
+	return _c.SetDormID(v.ID)
 }
 
 // Mutation returns the StuLogMutation object of the builder.
@@ -319,6 +339,23 @@ func (_c *StuLogCreate) createSpec() (*StuLog, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.DormIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   stulog.DormTable,
+			Columns: []string{stulog.DormColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dorm.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.stu_log_dorm = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

@@ -30,5 +30,6 @@ func (StuLog) Edges() []ent.Edge {
 		edge.To("rule", Rule.Type).Unique().Required(),
 		edge.To("students", Student.Type),
 		edge.To("images", Image.Type),
+		edge.To("dorm", Dorm.Type).Unique(),
 	}
 }

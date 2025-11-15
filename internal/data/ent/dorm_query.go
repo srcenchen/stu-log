@@ -9,6 +9,7 @@ import (
 	"eGZ-stu-log/internal/data/ent/grade"
 	"eGZ-stu-log/internal/data/ent/predicate"
 	"eGZ-stu-log/internal/data/ent/student"
+	"eGZ-stu-log/internal/data/ent/stulog"
 	"fmt"
 	"math"
 
@@ -27,6 +28,7 @@ type DormQuery struct {
 	predicates  []predicate.Dorm
 	withStudent *StudentQuery
 	withGrade   *GradeQuery
+	withStuLogs *StuLogQuery
 	withFKs     bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -101,6 +103,28 @@ func (_q *DormQuery) QueryGrade() *GradeQuery {
 			sqlgraph.From(dorm.Table, dorm.FieldID, selector),
 			sqlgraph.To(grade.Table, grade.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, dorm.GradeTable, dorm.GradeColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryStuLogs chains the current query on the "stuLogs" edge.
+func (_q *DormQuery) QueryStuLogs() *StuLogQuery {
+	query := (&StuLogClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dorm.Table, dorm.FieldID, selector),
+			sqlgraph.To(stulog.Table, stulog.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, dorm.StuLogsTable, dorm.StuLogsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -302,6 +326,7 @@ func (_q *DormQuery) Clone() *DormQuery {
 		predicates:  append([]predicate.Dorm{}, _q.predicates...),
 		withStudent: _q.withStudent.Clone(),
 		withGrade:   _q.withGrade.Clone(),
+		withStuLogs: _q.withStuLogs.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -327,6 +352,17 @@ func (_q *DormQuery) WithGrade(opts ...func(*GradeQuery)) *DormQuery {
 		opt(query)
 	}
 	_q.withGrade = query
+	return _q
+}
+
+// WithStuLogs tells the query-builder to eager-load the nodes that are connected to
+// the "stuLogs" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *DormQuery) WithStuLogs(opts ...func(*StuLogQuery)) *DormQuery {
+	query := (&StuLogClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withStuLogs = query
 	return _q
 }
 
@@ -409,9 +445,10 @@ func (_q *DormQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Dorm, e
 		nodes       = []*Dorm{}
 		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			_q.withStudent != nil,
 			_q.withGrade != nil,
+			_q.withStuLogs != nil,
 		}
 	)
 	if _q.withGrade != nil {
@@ -448,6 +485,13 @@ func (_q *DormQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Dorm, e
 	if query := _q.withGrade; query != nil {
 		if err := _q.loadGrade(ctx, query, nodes, nil,
 			func(n *Dorm, e *Grade) { n.Edges.Grade = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withStuLogs; query != nil {
+		if err := _q.loadStuLogs(ctx, query, nodes,
+			func(n *Dorm) { n.Edges.StuLogs = []*StuLog{} },
+			func(n *Dorm, e *StuLog) { n.Edges.StuLogs = append(n.Edges.StuLogs, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -514,6 +558,37 @@ func (_q *DormQuery) loadGrade(ctx context.Context, query *GradeQuery, nodes []*
 		for i := range nodes {
 			assign(nodes[i], n)
 		}
+	}
+	return nil
+}
+func (_q *DormQuery) loadStuLogs(ctx context.Context, query *StuLogQuery, nodes []*Dorm, init func(*Dorm), assign func(*Dorm, *StuLog)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int64]*Dorm)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.StuLog(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(dorm.StuLogsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.stu_log_dorm
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "stu_log_dorm" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "stu_log_dorm" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

@@ -583,6 +583,22 @@ func (c *DormClient) QueryGrade(_m *Dorm) *GradeQuery {
 	return query
 }
 
+// QueryStuLogs queries the stuLogs edge of a Dorm.
+func (c *DormClient) QueryStuLogs(_m *Dorm) *StuLogQuery {
+	query := (&StuLogClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dorm.Table, dorm.FieldID, id),
+			sqlgraph.To(stulog.Table, stulog.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, dorm.StuLogsTable, dorm.StuLogsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *DormClient) Hooks() []Hook {
 	return c.hooks.Dorm
@@ -1284,6 +1300,22 @@ func (c *StuLogClient) QueryImages(_m *StuLog) *ImageQuery {
 			sqlgraph.From(stulog.Table, stulog.FieldID, id),
 			sqlgraph.To(image.Table, image.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, stulog.ImagesTable, stulog.ImagesPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDorm queries the dorm edge of a StuLog.
+func (c *StuLogClient) QueryDorm(_m *StuLog) *DormQuery {
+	query := (&DormClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(stulog.Table, stulog.FieldID, id),
+			sqlgraph.To(dorm.Table, dorm.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, stulog.DormTable, stulog.DormColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil

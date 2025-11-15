@@ -310,6 +310,29 @@ func HasGradeWith(preds ...predicate.Grade) predicate.Dorm {
 	})
 }
 
+// HasStuLogs applies the HasEdge predicate on the "stuLogs" edge.
+func HasStuLogs() predicate.Dorm {
+	return predicate.Dorm(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, StuLogsTable, StuLogsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasStuLogsWith applies the HasEdge predicate on the "stuLogs" edge with a given conditions (other predicates).
+func HasStuLogsWith(preds ...predicate.StuLog) predicate.Dorm {
+	return predicate.Dorm(func(s *sql.Selector) {
+		step := newStuLogsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Dorm) predicate.Dorm {
 	return predicate.Dorm(sql.AndPredicates(predicates...))

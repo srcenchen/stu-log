@@ -94,6 +94,7 @@ var (
 		{Name: "time", Type: field.TypeTime},
 		{Name: "stu_log_grade", Type: field.TypeInt64},
 		{Name: "stu_log_rule", Type: field.TypeInt64},
+		{Name: "stu_log_dorm", Type: field.TypeInt64, Nullable: true},
 	}
 	// StuLogsTable holds the schema information for the "stu_logs" table.
 	StuLogsTable = &schema.Table{
@@ -112,6 +113,12 @@ var (
 				Columns:    []*schema.Column{StuLogsColumns[6]},
 				RefColumns: []*schema.Column{RulesColumns[0]},
 				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "stu_logs_dorms_dorm",
+				Columns:    []*schema.Column{StuLogsColumns[7]},
+				RefColumns: []*schema.Column{DormsColumns[0]},
+				OnDelete:   schema.SetNull,
 			},
 		},
 	}
@@ -259,6 +266,7 @@ func init() {
 	DormsTable.ForeignKeys[0].RefTable = GradesTable
 	StuLogsTable.ForeignKeys[0].RefTable = GradesTable
 	StuLogsTable.ForeignKeys[1].RefTable = RulesTable
+	StuLogsTable.ForeignKeys[2].RefTable = DormsTable
 	StudentsTable.ForeignKeys[0].RefTable = GradesTable
 	StudentsTable.ForeignKeys[1].RefTable = ClassesTable
 	StudentsTable.ForeignKeys[2].RefTable = DormsTable

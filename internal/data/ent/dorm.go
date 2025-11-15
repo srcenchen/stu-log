@@ -36,9 +36,11 @@ type DormEdges struct {
 	Student []*Student `json:"student,omitempty"`
 	// Grade holds the value of the grade edge.
 	Grade *Grade `json:"grade,omitempty"`
+	// StuLogs holds the value of the stuLogs edge.
+	StuLogs []*StuLog `json:"stuLogs,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // StudentOrErr returns the Student value or an error if the edge
@@ -59,6 +61,15 @@ func (e DormEdges) GradeOrErr() (*Grade, error) {
 		return nil, &NotFoundError{label: grade.Label}
 	}
 	return nil, &NotLoadedError{edge: "grade"}
+}
+
+// StuLogsOrErr returns the StuLogs value or an error if the edge
+// was not loaded in eager-loading.
+func (e DormEdges) StuLogsOrErr() ([]*StuLog, error) {
+	if e.loadedTypes[2] {
+		return e.StuLogs, nil
+	}
+	return nil, &NotLoadedError{edge: "stuLogs"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -139,6 +150,11 @@ func (_m *Dorm) QueryStudent() *StudentQuery {
 // QueryGrade queries the "grade" edge of the Dorm entity.
 func (_m *Dorm) QueryGrade() *GradeQuery {
 	return NewDormClient(_m.config).QueryGrade(_m)
+}
+
+// QueryStuLogs queries the "stuLogs" edge of the Dorm entity.
+func (_m *Dorm) QueryStuLogs() *StuLogQuery {
+	return NewDormClient(_m.config).QueryStuLogs(_m)
 }
 
 // Update returns a builder for updating this Dorm.

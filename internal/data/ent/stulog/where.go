@@ -345,6 +345,29 @@ func HasImagesWith(preds ...predicate.Image) predicate.StuLog {
 	})
 }
 
+// HasDorm applies the HasEdge predicate on the "dorm" edge.
+func HasDorm() predicate.StuLog {
+	return predicate.StuLog(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, DormTable, DormColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasDormWith applies the HasEdge predicate on the "dorm" edge with a given conditions (other predicates).
+func HasDormWith(preds ...predicate.Dorm) predicate.StuLog {
+	return predicate.StuLog(func(s *sql.Selector) {
+		step := newDormStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.StuLog) predicate.StuLog {
 	return predicate.StuLog(sql.AndPredicates(predicates...))

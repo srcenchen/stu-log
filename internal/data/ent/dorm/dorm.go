@@ -22,6 +22,8 @@ const (
 	EdgeStudent = "student"
 	// EdgeGrade holds the string denoting the grade edge name in mutations.
 	EdgeGrade = "grade"
+	// EdgeStuLogs holds the string denoting the stulogs edge name in mutations.
+	EdgeStuLogs = "stuLogs"
 	// Table holds the table name of the dorm in the database.
 	Table = "dorms"
 	// StudentTable is the table that holds the student relation/edge.
@@ -38,6 +40,13 @@ const (
 	GradeInverseTable = "grades"
 	// GradeColumn is the table column denoting the grade relation/edge.
 	GradeColumn = "dorm_grade"
+	// StuLogsTable is the table that holds the stuLogs relation/edge.
+	StuLogsTable = "stu_logs"
+	// StuLogsInverseTable is the table name for the StuLog entity.
+	// It exists in this package in order to avoid circular dependency with the "stulog" package.
+	StuLogsInverseTable = "stu_logs"
+	// StuLogsColumn is the table column denoting the stuLogs relation/edge.
+	StuLogsColumn = "stu_log_dorm"
 )
 
 // Columns holds all SQL columns for dorm fields.
@@ -112,6 +121,20 @@ func ByGradeField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newGradeStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByStuLogsCount orders the results by stuLogs count.
+func ByStuLogsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newStuLogsStep(), opts...)
+	}
+}
+
+// ByStuLogs orders the results by stuLogs terms.
+func ByStuLogs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newStuLogsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newStudentStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -124,5 +147,12 @@ func newGradeStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(GradeInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, GradeTable, GradeColumn),
+	)
+}
+func newStuLogsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(StuLogsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, StuLogsTable, StuLogsColumn),
 	)
 }
