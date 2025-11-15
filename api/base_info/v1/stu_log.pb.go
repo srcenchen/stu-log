@@ -97,7 +97,7 @@ type StuLogItem struct {
 	Rule          string                 `protobuf:"bytes,3,opt,name=rule,proto3" json:"rule,omitempty"`
 	Content       string                 `protobuf:"bytes,4,opt,name=content,proto3" json:"content,omitempty"`
 	Score         int32                  `protobuf:"varint,5,opt,name=score,proto3" json:"score,omitempty"`
-	Grade         string                 `protobuf:"bytes,6,opt,name=Grade,proto3" json:"Grade,omitempty"`
+	Grade         string                 `protobuf:"bytes,6,opt,name=grade,proto3" json:"grade,omitempty"`
 	Revoked       bool                   `protobuf:"varint,8,opt,name=revoked,proto3" json:"revoked,omitempty"`
 	Time          string                 `protobuf:"bytes,9,opt,name=time,proto3" json:"time,omitempty"`
 	DormBuilding  string                 `protobuf:"bytes,10,opt,name=dormBuilding,proto3" json:"dormBuilding,omitempty"`
@@ -505,7 +505,7 @@ func (x *GetStuLogListRequest) GetOnlyDorm() bool {
 type GetStuLogListReply struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	List          []*StuLogItem          `protobuf:"bytes,1,rep,name=list,proto3" json:"list,omitempty"`
-	TotalPages    int64                  `protobuf:"varint,2,opt,name=totalPages,proto3" json:"totalPages,omitempty"`
+	Total         int64                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -547,9 +547,9 @@ func (x *GetStuLogListReply) GetList() []*StuLogItem {
 	return nil
 }
 
-func (x *GetStuLogListReply) GetTotalPages() int64 {
+func (x *GetStuLogListReply) GetTotal() int64 {
 	if x != nil {
-		return x.TotalPages
+		return x.Total
 	}
 	return 0
 }
@@ -787,7 +787,7 @@ const file_base_info_v1_stu_log_proto_rawDesc = "" +
 	"\x04rule\x18\x03 \x01(\tR\x04rule\x12\x18\n" +
 	"\acontent\x18\x04 \x01(\tR\acontent\x12\x14\n" +
 	"\x05score\x18\x05 \x01(\x05R\x05score\x12\x14\n" +
-	"\x05Grade\x18\x06 \x01(\tR\x05Grade\x12\x18\n" +
+	"\x05grade\x18\x06 \x01(\tR\x05grade\x12\x18\n" +
 	"\arevoked\x18\b \x01(\bR\arevoked\x12\x12\n" +
 	"\x04time\x18\t \x01(\tR\x04time\x12\"\n" +
 	"\fdormBuilding\x18\n" +
@@ -829,12 +829,10 @@ const file_base_info_v1_stu_log_proto_rawDesc = "" +
 	"_startTimeB\n" +
 	"\n" +
 	"\b_endTimeB\v\n" +
-	"\t_onlyDorm\"f\n" +
+	"\t_onlyDorm\"\\\n" +
 	"\x12GetStuLogListReply\x120\n" +
-	"\x04list\x18\x01 \x03(\v2\x1c.api.base_info.v1.StuLogItemR\x04list\x12\x1e\n" +
-	"\n" +
-	"totalPages\x18\x02 \x01(\x03R\n" +
-	"totalPages\"\xf5\x01\n" +
+	"\x04list\x18\x01 \x03(\v2\x1c.api.base_info.v1.StuLogItemR\x04list\x12\x14\n" +
+	"\x05total\x18\x02 \x01(\x03R\x05total\"\xf5\x01\n" +
 	"\x13ExportStuLogRequest\x12\x1d\n" +
 	"\agradeId\x18\x03 \x01(\x03H\x00R\agradeId\x88\x01\x01\x12\x1b\n" +
 	"\x06ruleId\x18\x04 \x01(\x03H\x01R\x06ruleId\x88\x01\x01\x12!\n" +

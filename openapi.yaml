@@ -308,7 +308,7 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.base_info.v1.StuLogItem'
-                totalPages:
+                total:
                     type: string
         api.base_info.v1.QueryStudentListReply:
             type: object
@@ -373,7 +373,7 @@ components:
                 score:
                     type: integer
                     format: int32
-                Grade:
+                grade:
                     type: string
                 revoked:
                     type: boolean

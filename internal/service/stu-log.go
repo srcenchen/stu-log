@@ -116,7 +116,6 @@ func (s *StuLogService) GetStuLogList(ctx context.Context, req *pb.GetStuLogList
 		dbQuery.Where(stulog.HasDorm())
 	}
 	total, err := dbQuery.Count(ctx)
-	totalPages := (int64(total) + req.PageSize - 1) / req.PageSize
 	stuLogList, err := dbQuery.Offset(int((req.Page - 1) * req.PageSize)).Limit(int(req.PageSize)).All(ctx)
 	if err != nil {
 		return nil, err
@@ -126,8 +125,8 @@ func (s *StuLogService) GetStuLogList(ctx context.Context, req *pb.GetStuLogList
 		stuLogListReply = append(stuLogListReply, toStuLogItem(stuLogInfo))
 	}
 	return &pb.GetStuLogListReply{
-		TotalPages: totalPages,
-		List:       stuLogListReply,
+		Total: int64(total),
+		List:  stuLogListReply,
 	}, nil
 }
 

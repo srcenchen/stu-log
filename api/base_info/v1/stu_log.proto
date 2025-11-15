@@ -20,7 +20,7 @@ message StuLogItem {
   string rule = 3;
   string content = 4;
   int32 score = 5;
-  string Grade = 6;
+  string grade = 6;
   bool revoked = 8;
   string time = 9;
   string dormBuilding = 10;
@@ -89,7 +89,7 @@ message GetStuLogListRequest {
 
 message GetStuLogListReply {
   repeated StuLogItem list = 1;
-  int64 totalPages = 2;
+  int64 total = 2;
 }
 
 message ExportStuLogRequest {
