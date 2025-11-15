@@ -7,6 +7,7 @@ import (
 	"fmt"
 	_ "image/jpeg"
 	_ "image/png"
+	"os"
 	"strings"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -26,6 +27,7 @@ func NewExportStuLogUseCase(data *data.Data, logger log.Logger) *ExportStuLogUse
 }
 
 func (s *ExportStuLogUseCase) ExportStuLog(ctx context.Context, stuLogs []*ent.StuLog) (string, error) {
+	_ = os.MkdirAll("./resource/upload/tmp/", 0775)
 	// 创建新的 Excel 文件
 	f := excelize.NewFile()
 	defer func() {
@@ -40,7 +42,7 @@ func (s *ExportStuLogUseCase) ExportStuLog(ctx context.Context, stuLogs []*ent.S
 		fmt.Println("Error creating sheet:", err)
 		return "", err
 	} // 设置表头（第一行）
-	headers := []string{"事件", "学生", "条例", "备注", "年级", "班级", "分数", "上报时间", "宿舍楼", "宿舍号", "已撤销"}
+	headers := []string{"事件", "学生", "条例", "备注", "年级", "班级", "分数", "上报时间", "宿舍楼", "宿舍号", "状态"}
 	for i, header := range headers {
 		cell := fmt.Sprintf("%c%d", 'A'+i, 1)
 		_ = f.SetCellValue("Sheet1", cell, header)
@@ -123,16 +125,21 @@ func (s *ExportStuLogUseCase) ExportStuLog(ctx context.Context, stuLogs []*ent.S
 		for _, image := range log.Edges.Images {
 			imageArray = append(imageArray, image.ImageUrl)
 		}
-		row := i + 2                                                                                  // 第二行开始写数据
-		_ = f.SetCellValue("Sheet1", fmt.Sprintf("A%d", row), i+1)                                    // 事件编号
-		_ = f.SetCellValue("Sheet1", fmt.Sprintf("B%d", row), strings.Join(studentArray, " "))        // 学生
-		_ = f.SetCellValue("Sheet1", fmt.Sprintf("C%d", row), log.Edges.Rule.Content)                 // 条例
-		_ = f.SetCellValue("Sheet1", fmt.Sprintf("D%d", row), log.Content)                            // 备注
-		_ = f.SetCellValue("Sheet1", fmt.Sprintf("E%d", row), log.Edges.Grade.GradeName)              // 年级
-		_ = f.SetCellValue("Sheet1", fmt.Sprintf("F%d", row), strings.Join(classArray, " "))          // 班级
-		_ = f.SetCellValue("Sheet1", fmt.Sprintf("G%d", row), log.Score)                              // 分数
-		_ = f.SetCellValue("Sheet1", fmt.Sprintf("H%d", row), log.Time.Format("2006-01-02 15:04:05")) // 上报时间
-		_ = f.SetCellValue("Sheet1", fmt.Sprintf("K%d", row), log.Revoked)                            // 撤销
+		// 撤销状态
+		state := "尚未撤销"
+		if log.Revoked {
+			state = "已撤销"
+		}
+		row := i + 2                                                                                           // 第二行开始写数据
+		_ = f.SetCellValue("Sheet1", fmt.Sprintf("A%d", row), i+1)                                             // 事件编号
+		_ = f.SetCellValue("Sheet1", fmt.Sprintf("B%d", row), strings.Join(studentArray, " "))                 // 学生
+		_ = f.SetCellValue("Sheet1", fmt.Sprintf("C%d", row), log.Edges.Rule.Content+"-"+log.Edges.Rule.Group) // 条例
+		_ = f.SetCellValue("Sheet1", fmt.Sprintf("D%d", row), log.Content)                                     // 备注
+		_ = f.SetCellValue("Sheet1", fmt.Sprintf("E%d", row), log.Edges.Grade.GradeName)                       // 年级
+		_ = f.SetCellValue("Sheet1", fmt.Sprintf("F%d", row), strings.Join(classArray, " "))                   // 班级
+		_ = f.SetCellValue("Sheet1", fmt.Sprintf("G%d", row), log.Score)                                       // 分数
+		_ = f.SetCellValue("Sheet1", fmt.Sprintf("H%d", row), log.Time.Format("2006-01-02 15:04:05"))          // 上报时间
+		_ = f.SetCellValue("Sheet1", fmt.Sprintf("K%d", row), state)                                           // 撤销
 		if log.Edges.Dorm != nil {
 			_ = f.SetCellValue("Sheet1", fmt.Sprintf("I%d", row), log.Edges.Dorm.Building) // 宿舍（楼栋）
 			_ = f.SetCellValue("Sheet1", fmt.Sprintf("J%d", row), log.Edges.Dorm.DormNum)  // 宿舍（房间号）
@@ -157,5 +164,5 @@ func (s *ExportStuLogUseCase) ExportStuLog(ctx context.Context, stuLogs []*ent.S
 		fmt.Println("Error saving file:", err)
 		return "", err
 	}
-	return "/resource/upload/temp/export.xlsx", err
+	return "/resource/upload/tmp/export.xlsx", err
 }

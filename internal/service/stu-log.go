@@ -51,7 +51,7 @@ func toStuLogItem(stuLogInfo *ent.StuLog) *pb.StuLogItem {
 		Content:      stuLogInfo.Content,
 		Time:         stuLogInfo.Time.Format("2006-01-02 15:04:05"),
 		Score:        stuLogInfo.Score,
-		Rule:         stuLogInfo.Edges.Rule.Content,
+		Rule:         stuLogInfo.Edges.Rule.Content + "-" + stuLogInfo.Edges.Rule.Group,
 		Grade:        stuLogInfo.Edges.Grade.GradeName,
 		Revoked:      stuLogInfo.Revoked,
 		ImageUrls:    imageUrls,
@@ -116,7 +116,7 @@ func (s *StuLogService) GetStuLogList(ctx context.Context, req *pb.GetStuLogList
 		dbQuery.Where(stulog.HasDorm())
 	}
 	total, err := dbQuery.Count(ctx)
-	stuLogList, err := dbQuery.Offset(int((req.Page - 1) * req.PageSize)).Limit(int(req.PageSize)).All(ctx)
+	stuLogList, err := dbQuery.Order(ent.Desc("time")).Offset(int((req.Page - 1) * req.PageSize)).Limit(int(req.PageSize)).All(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -156,7 +156,7 @@ func (s *StuLogService) ExportStuLog(ctx context.Context, req *pb.ExportStuLogRe
 	if req.EndTime != nil {
 		dbQuery.Where(stulog.TimeLTE(time.Unix(*req.EndTime, 0)))
 	}
-	stuLogList, err := dbQuery.All(ctx)
+	stuLogList, err := dbQuery.Order(ent.Desc("time")).All(ctx)
 	if err != nil {
 		return nil, err
 	}
