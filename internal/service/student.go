@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	pb "eGZ-stu-log/api/base_info/v1"
+	"eGZ-stu-log/internal/biz"
 	"eGZ-stu-log/internal/data"
 	"eGZ-stu-log/internal/data/ent"
 	"eGZ-stu-log/internal/data/ent/class"
@@ -12,12 +13,14 @@ import (
 
 type StudentService struct {
 	pb.UnimplementedStudentServer
-	data *data.Data
+	data      *data.Data
+	exportBiz *biz.ExportStuLogUseCase
 }
 
-func NewStudentService(data *data.Data) *StudentService {
+func NewStudentService(data *data.Data, exportBiz *biz.ExportStuLogUseCase) *StudentService {
 	return &StudentService{
-		data: data,
+		data:      data,
+		exportBiz: exportBiz,
 	}
 }
 
@@ -68,15 +71,17 @@ func (s *StudentService) QueryStudent(ctx context.Context, req *pb.QueryStudentR
 }
 func (s *StudentService) QueryStudentList(ctx context.Context, req *pb.QueryStudentListRequest) (*pb.QueryStudentListReply, error) {
 	dbQuery := s.data.DB.Student.Query().WithDorm().WithGrade().WithClass()
-	if req.GradeId != nil {
+	if req.GradeId != nil && *req.GradeId != -1 {
 		dbQuery.Where(student.HasGradeWith(grade.ID(*req.GradeId)))
 	}
 	if req.ClassId != nil {
 		dbQuery.Where(student.HasClassWith(class.ID(*req.ClassId)))
 	}
+	if req.Search != nil && *req.Search != "" {
+		dbQuery.Where(student.Or(student.NameContains(*req.Search), student.StuNumContains(*req.Search)))
+	}
 	total, err := dbQuery.Count(ctx)
-	totalPages := (int32(total) + req.PageSize - 1) / req.PageSize
-	studentList, err := dbQuery.Offset(int((req.Page - 1) * req.PageSize)).Limit(int(req.PageSize)).All(ctx)
+	studentList, err := dbQuery.Order(ent.Asc("score")).Offset(int((req.Page - 1) * req.PageSize)).Limit(int(req.PageSize)).All(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +109,23 @@ func (s *StudentService) QueryStudentList(ctx context.Context, req *pb.QueryStud
 		})
 	}
 	return &pb.QueryStudentListReply{
-		Students:   studentListReply,
-		TotalPages: totalPages,
+		Students: studentListReply,
+		Total:    int32(total),
 	}, nil
+}
+
+// ExportStudent 导出
+func (s *StudentService) ExportStudent(ctx context.Context, req *pb.ExportStuRequest) (*pb.ExportStuReply, error) {
+	dbQuery := s.data.DB.Student.Query().
+		WithGrade().
+		WithClass().WithDorm()
+	if req.GradeId != nil && *req.GradeId != -1 {
+		dbQuery.Where(student.HasGradeWith(grade.ID(*req.GradeId)))
+	}
+	stuLogList, err := dbQuery.Order(ent.Asc("score")).All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	outPutPath, err := s.exportBiz.ExportStudent(ctx, stuLogList)
+	return &pb.ExportStuReply{ExportPath: outPutPath}, nil
 }

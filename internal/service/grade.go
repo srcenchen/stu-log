@@ -26,3 +26,21 @@ func (s *GradeService) CreateGrade(ctx context.Context, req *pb.CreateGradeReque
 		Message: "年级创建成功",
 	}, nil
 }
+
+// GetGrades 获取全部年级信息
+func (s *GradeService) GetGrades(ctx context.Context, req *pb.GetGradesRequest) (*pb.GetGradesReply, error) {
+	gradeInfos, err := s.data.DB.Grade.Query().All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var gradeList []*pb.GradeItem
+	for _, gradeInfo := range gradeInfos {
+		gradeList = append(gradeList, &pb.GradeItem{
+			GradeName: gradeInfo.GradeName,
+			Id:        gradeInfo.ID,
+		})
+	}
+	return &pb.GetGradesReply{
+		List: gradeList,
+	}, nil
+}

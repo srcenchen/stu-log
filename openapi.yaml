@@ -46,6 +46,60 @@ paths:
         get:
             tags:
                 - Student
+            description: 学生查询
+            operationId: Student_QueryStudent
+            parameters:
+                - name: id
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.base_info.v1.QueryStudentReply'
+    /v1/base_info/student/create:
+        post:
+            tags:
+                - Student
+            description: 学生创建
+            operationId: Student_CreateStudent
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/api.base_info.v1.CreateStudentRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.base_info.v1.CreateStudentReply'
+    /v1/base_info/student/export:
+        get:
+            tags:
+                - Student
+            operationId: Student_ExportStudent
+            parameters:
+                - name: gradeId
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.base_info.v1.ExportStuReply'
+    /v1/base_info/student/list:
+        get:
+            tags:
+                - Student
             description: 学生列表查询
             operationId: Student_QueryStudentList
             parameters:
@@ -67,42 +121,8 @@ paths:
                   in: query
                   schema:
                     type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/api.base_info.v1.QueryStudentListReply'
-    /v1/base_info/student/create:
-        post:
-            tags:
-                - Student
-            description: 学生创建
-            operationId: Student_CreateStudent
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/api.base_info.v1.CreateStudentRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/api.base_info.v1.CreateStudentReply'
-    /v1/base_info/student/{id}:
-        get:
-            tags:
-                - Student
-            description: 学生查询
-            operationId: Student_QueryStudent
-            parameters:
-                - name: id
-                  in: path
-                  required: true
+                - name: search
+                  in: query
                   schema:
                     type: string
             responses:
@@ -111,7 +131,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/api.base_info.v1.QueryStudentReply'
+                                $ref: '#/components/schemas/api.base_info.v1.QueryStudentListReply'
     /v1/stu_log:
         get:
             tags:
@@ -250,6 +270,30 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.base_info.v1.RevokeStuLogReply'
+    /v1/stu_log/rule:
+        get:
+            tags:
+                - StuLog
+            operationId: StuLog_GetRuleList
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.base_info.v1.GetRuleReply'
+    v1/base_info/grade/list:
+        get:
+            tags:
+                - Grade
+            operationId: Grade_GetGrades
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.base_info.v1.GetGradesReply'
 components:
     schemas:
         api.base_info.v1.CreateClassReply:
@@ -301,6 +345,25 @@ components:
             properties:
                 exportPath:
                     type: string
+        api.base_info.v1.ExportStuReply:
+            type: object
+            properties:
+                exportPath:
+                    type: string
+        api.base_info.v1.GetGradesReply:
+            type: object
+            properties:
+                list:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.base_info.v1.GradeItem'
+        api.base_info.v1.GetRuleReply:
+            type: object
+            properties:
+                list:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.base_info.v1.RuleItem'
         api.base_info.v1.GetStuLogListReply:
             type: object
             properties:
@@ -310,6 +373,13 @@ components:
                         $ref: '#/components/schemas/api.base_info.v1.StuLogItem'
                 total:
                     type: string
+        api.base_info.v1.GradeItem:
+            type: object
+            properties:
+                id:
+                    type: string
+                gradeName:
+                    type: string
         api.base_info.v1.QueryStudentListReply:
             type: object
             properties:
@@ -317,7 +387,7 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/api.base_info.v1.StudentItem'
-                totalPages:
+                total:
                     type: integer
                     format: int32
         api.base_info.v1.QueryStudentReply:
@@ -356,6 +426,18 @@ components:
             type: object
             properties:
                 message:
+                    type: string
+        api.base_info.v1.RuleItem:
+            type: object
+            properties:
+                group:
+                    type: string
+                rule:
+                    type: string
+                score:
+                    type: integer
+                    format: int32
+                id:
                     type: string
         api.base_info.v1.StuLogItem:
             type: object

@@ -95,9 +95,9 @@ func (s *StuLogService) GetStuLogList(ctx context.Context, req *pb.GetStuLogList
 		req.Page = 1
 	}
 	if req.PageSize == 0 {
-		req.PageSize = 10
+		req.PageSize = 99999
 	}
-	if req.GradeId != nil {
+	if req.GradeId != nil && *req.GradeId != -1 {
 		dbQuery.Where(stulog.HasGradeWith(grade.ID(*req.GradeId)))
 	}
 	if req.RuleId != nil {
@@ -141,7 +141,7 @@ func (s *StuLogService) ExportStuLog(ctx context.Context, req *pb.ExportStuLogRe
 		WithStudents(func(sq *ent.StudentQuery) {
 			sq.WithClass()
 		})
-	if req.GradeId != nil {
+	if req.GradeId != nil && *req.GradeId != -1 {
 		dbQuery.Where(stulog.HasGradeWith(grade.ID(*req.GradeId)))
 	}
 	if req.RuleId != nil {
@@ -224,4 +224,22 @@ func (s *StuLogService) RevokeStuLog(ctx context.Context, req *pb.RevokeStuLogRe
 	return &pb.RevokeStuLogReply{
 		Message: "操作成功",
 	}, nil
+}
+
+func (s *StuLogService) GetRuleList(ctx context.Context, req *pb.GetRuleRequest) (*pb.GetRuleReply, error) {
+	ruleList, err := s.data.DB.Rule.Query().All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var ruleInfo []*pb.RuleItem
+	for _, rule := range ruleList {
+		ruleInfo = append(ruleInfo, &pb.RuleItem{
+			Id:    rule.ID,
+			Group: rule.Group,
+			Rule:  rule.Content,
+			Score: rule.Score,
+		})
+	}
+	return &pb.GetRuleReply{List: ruleInfo}, nil
+
 }

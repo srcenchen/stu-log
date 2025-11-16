@@ -55,6 +55,11 @@ service StuLog {
       get: "/v1/stu_log/revoke",
     };
   };
+  rpc GetRuleList (GetRuleRequest) returns (GetRuleReply) {
+    option (google.api.http) = {
+      get: "/v1/stu_log/rule",
+    };
+  };
 }
 
 message ReportStuLogRequest {
@@ -111,4 +116,18 @@ message RevokeStuLogRequest {
 
 message RevokeStuLogReply {
   string message = 1;
+}
+
+message RuleItem {
+  string group = 1;
+  string rule = 2;
+  int32 score = 3;
+  int64 id = 4;
+}
+
+message GetRuleRequest {
+}
+
+message GetRuleReply {
+  repeated RuleItem list = 1;
 }

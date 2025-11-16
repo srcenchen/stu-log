@@ -34,13 +34,18 @@ service Student {
   // 学生查询
   rpc QueryStudent (QueryStudentRequest) returns (QueryStudentReply) {
     option (google.api.http) = {
-      get: "/v1/base_info/student/{id}",
+      get: "/v1/base_info/student",
     };
   };
   // 学生列表查询
   rpc QueryStudentList (QueryStudentListRequest) returns (QueryStudentListReply) {
     option (google.api.http) = {
-      get: "/v1/base_info/student",
+      get: "/v1/base_info/student/list",
+    };
+  };
+  rpc ExportStudent (ExportStuRequest) returns (ExportStuReply) {
+    option (google.api.http) = {
+      get: "/v1/base_info/student/export",
     };
   };
 }
@@ -68,8 +73,18 @@ message QueryStudentListRequest {
   int32 pageSize = 2;
   optional int64 gradeId = 3;
   optional int64 classId = 4;
+  optional string search = 5;
 }
 message QueryStudentListReply {
   repeated StudentItem students = 1;
-  int32 totalPages = 2;
+  int32 total = 2;
 }
+
+message ExportStuRequest {
+  optional int64 gradeId = 1;
+}
+
+message ExportStuReply {
+  string exportPath = 1;
+}
+

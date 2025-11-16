@@ -4,12 +4,13 @@ import (
 	"eGZ-stu-log/internal/biz"
 	"eGZ-stu-log/internal/data"
 	"fmt"
-	"github.com/go-kratos/kratos/v2/transport/http"
 	"io"
 	"mime/multipart"
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/go-kratos/kratos/v2/transport/http"
 )
 
 type UploadService struct {
@@ -26,6 +27,7 @@ func NewUploadService(importBiz *biz.ImportUseCase, data *data.Data) *UploadServ
 func (u *UploadService) UploadHandler(ctx http.Context) error {
 	var err error
 	var savedPath string
+	fmt.Println("here")
 	resp := map[string]interface{}{
 		"code":    200,
 		"message": "上传成功",

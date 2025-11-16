@@ -14,6 +14,11 @@ service Grade {
 			body: "*"
 		};
 	}
+  rpc GetGrades (GetGradesRequest) returns (GetGradesReply) {
+    option (google.api.http) = {
+      get: "v1/base_info/grade/list",
+    };
+  }
 }
 
 message CreateGradeRequest {
@@ -21,4 +26,12 @@ message CreateGradeRequest {
 }
 message CreateGradeReply {
 	string message = 1;
+}
+message gradeItem {
+  int64 id = 1;
+  string gradeName = 2;
+}
+message GetGradesRequest {}
+message GetGradesReply {
+   repeated gradeItem list = 1;
 }

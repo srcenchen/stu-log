@@ -8,7 +8,7 @@ server:
 data:
   database:
     driver: mysql
-    source: kratos_test:kratos_test@tcp(frp2.kkszxc.top:32793)/kratos_test?parseTime=True&loc=Local
+    source: kratos_test:kratos_test@tcp(10.1.144.240:3306)/kratos_test?parseTime=True&loc=Local
     #source: root:root@tcp(127.0.0.1:3306)/kratos_test?parseTime=True&loc=Local
   redis:
     addr: 127.0.0.1:6379

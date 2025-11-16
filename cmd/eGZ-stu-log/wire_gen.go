@@ -30,12 +30,12 @@ func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*
 	if err != nil {
 		return nil, nil, err
 	}
-	studentService := service.NewStudentService(dataData)
+	exportStuLogUseCase := biz.NewExportStuLogUseCase(dataData, logger)
+	studentService := service.NewStudentService(dataData, exportStuLogUseCase)
 	classService := service.NewClassService(dataData)
 	gradeService := service.NewGradeService(dataData)
 	importUseCase := biz.NewImportUseCase(dataData, logger)
 	uploadService := service.NewUploadService(importUseCase, dataData)
-	exportStuLogUseCase := biz.NewExportStuLogUseCase(dataData, logger)
 	stuLogService := service.NewStuLogService(dataData, exportStuLogUseCase)
 	httpServer := server.NewHTTPServer(confServer, studentService, classService, gradeService, uploadService, stuLogService, logger)
 	app := newApp(logger, grpcServer, httpServer)
