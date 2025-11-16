@@ -25,53 +25,75 @@ func NewUploadService(importBiz *biz.ImportUseCase, data *data.Data) *UploadServ
 	}
 }
 func (u *UploadService) UploadHandler(ctx http.Context) error {
-	var err error
-	var savedPath string
-	fmt.Println("here")
+	req := ctx.Request()
+	mode := req.URL.Query().Get("mode")
+
+	// 解析 multipart 表单
+	err := req.ParseMultipartForm(32 << 20) // 32MB
+	if err != nil {
+		return ctx.String(400, "ParseMultipartFormError")
+	}
+
+	files := req.MultipartForm.File["file"]
+	if len(files) == 0 {
+		return ctx.String(400, "NoFileInput")
+	}
+
 	resp := map[string]interface{}{
 		"code":    200,
 		"message": "上传成功",
 	}
-	req := ctx.Request()
-	mode := req.URL.Query().Get("mode")
 
-	// 保存文件
-	file, handler, err := req.FormFile("file")
-	if err != nil {
-		return ctx.String(400, "NoFileInput")
+	var savedPaths []string
+	var imageIDs []int64
+
+	for _, handler := range files {
+		file, err := handler.Open()
+		if err != nil {
+			return ctx.String(500, "FileOpenError")
+		}
+		defer file.Close()
+
+		var savedPath string
+
+		switch mode {
+		case "importStudent":
+			// 多文件导入学生，依次处理
+			savedPath, _ = saveFile(file, handler, "resource/upload/tmp")
+			err = u.importBiz.ImportStudent(ctx, savedPath)
+			if err != nil {
+				resp["code"] = 400
+				resp["message"] = err.Error()
+			}
+
+		case "image":
+			// 多图片保存并写入数据库
+			savedPath, _ = saveFile(file, handler, "resource/upload/images")
+			imageData, _ := u.data.DB.Image.Create().SetImageUrl(savedPath).Save(ctx)
+			imageIDs = append(imageIDs, imageData.ID)
+
+		case "importRule":
+			savedPath, _ = saveFile(file, handler, "resource/upload/tmp")
+			err = u.importBiz.ImportRule(ctx, savedPath)
+			if err != nil {
+				resp["code"] = 400
+				resp["message"] = err.Error()
+			}
+
+		default:
+			resp["code"] = 400
+			resp["message"] = "mode参数错误"
+			return ctx.JSON(400, resp)
+		}
+
+		savedPaths = append(savedPaths, savedPath)
 	}
 
-	defer file.Close()
-	switch mode {
-	case "importStudent":
-		savedPath, _ = saveFile(file, handler, "resource/upload/tmp")
-		err = u.importBiz.ImportStudent(ctx, savedPath)
-		if err == nil {
-			resp["code"] = 200
-			resp["message"] = "导入成功！"
-		} else {
-			resp["code"] = 400
-			resp["message"] = err.Error()
-		}
-	case "image":
-		savedPath, _ = saveFile(file, handler, "resource/upload/images")
-		imageData, _ := u.data.DB.Image.Create().SetImageUrl(savedPath).Save(ctx)
-		resp["imageId"] = imageData.ID
-	case "importRule":
-		savedPath, _ = saveFile(file, handler, "resource/upload/tmp")
-		err = u.importBiz.ImportRule(ctx, savedPath)
-		if err == nil {
-			resp["code"] = 200
-			resp["message"] = "导入成功！"
-		} else {
-			resp["code"] = 400
-			resp["message"] = err.Error()
-		}
-	default:
-		resp["code"] = 400
-		resp["message"] = "mode参数错误"
-		return ctx.JSON(400, resp)
+	resp["paths"] = savedPaths
+	if mode == "image" {
+		resp["imageIds"] = imageIDs // 多个图片
 	}
+
 	return ctx.JSON(200, resp)
 }
 

@@ -243,3 +243,22 @@ func (s *StuLogService) GetRuleList(ctx context.Context, req *pb.GetRuleRequest)
 	return &pb.GetRuleReply{List: ruleInfo}, nil
 
 }
+
+func (s *StuLogService) GetDormList(ctx context.Context, req *pb.GetDormRequest) (*pb.GetDormReply, error) {
+	dormList, err := s.data.DB.Dorm.Query().WithGrade().All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var dormInfo []*pb.DormItem
+	for _, dormIt := range dormList {
+		dormInfo = append(dormInfo, &pb.DormItem{
+			Id:           dormIt.ID,
+			DormBuilding: dormIt.Building,
+			DormNum:      dormIt.DormNum,
+			GradeName:    dormIt.Edges.Grade.GradeName,
+			Sex:          dormIt.Sex,
+		})
+	}
+	return &pb.GetDormReply{List: dormInfo}, nil
+
+}

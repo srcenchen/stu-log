@@ -7,6 +7,7 @@ import (
 	"eGZ-stu-log/internal/data"
 	"eGZ-stu-log/internal/data/ent"
 	"eGZ-stu-log/internal/data/ent/class"
+	"eGZ-stu-log/internal/data/ent/dorm"
 	"eGZ-stu-log/internal/data/ent/grade"
 	"eGZ-stu-log/internal/data/ent/student"
 )
@@ -79,6 +80,9 @@ func (s *StudentService) QueryStudentList(ctx context.Context, req *pb.QueryStud
 	}
 	if req.Search != nil && *req.Search != "" {
 		dbQuery.Where(student.Or(student.NameContains(*req.Search), student.StuNumContains(*req.Search)))
+	}
+	if req.DormId != nil {
+		dbQuery.Where(student.HasDormWith(dorm.ID(*req.DormId)))
 	}
 	total, err := dbQuery.Count(ctx)
 	studentList, err := dbQuery.Order(ent.Asc("score")).Offset(int((req.Page - 1) * req.PageSize)).Limit(int(req.PageSize)).All(ctx)

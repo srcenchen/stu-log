@@ -144,16 +144,17 @@ func (s *ExportStuLogUseCase) ExportStuLog(ctx context.Context, stuLogs []*ent.S
 			_ = f.SetCellValue("Sheet1", fmt.Sprintf("I%d", row), log.Edges.Dorm.Building) // 宿舍（楼栋）
 			_ = f.SetCellValue("Sheet1", fmt.Sprintf("J%d", row), log.Edges.Dorm.DormNum)  // 宿舍（房间号）
 		}
-		for index, image := range imageArray {
-			// 添加图片
-			err := f.AddPicture("Sheet1", fmt.Sprintf("%c%d", 'L'+index, row), image, &excelize.GraphicOptions{
-				LockAspectRatio: true,
-				AutoFit:         true,
-			})
-			if err != nil {
-				fmt.Println("Error adding image:", err)
-			}
-		}
+		// 性能问题，暂时不处理图片
+		//for index, image := range imageArray {
+		//	// 添加图片
+		//	err := f.AddPicture("Sheet1", fmt.Sprintf("%c%d", 'L'+index, row), image, &excelize.GraphicOptions{
+		//		LockAspectRatio: true,
+		//		AutoFit:         true,
+		//	})
+		//	if err != nil {
+		//		fmt.Println("Error adding image:", err)
+		//	}
+		//}
 	}
 	// 设置默认工作表
 	f.SetActiveSheet(index)

@@ -1,0 +1,1 @@
+import{_ as r}from"./_plugin-vue_export-helper-DlAUqK2U.js";import{f as o}from"./VBtn-CDZ_V-wf.js";import{P as e,Q as a,S as s,_ as n}from"./index-DPNrr0xu.js";const f={};function c(_,t){return s(),e(o,null,{default:a(()=>[...t[0]||(t[0]=[n("123",-1)])]),_:1})}const l=r(f,[["render",c]]);export{l as default};

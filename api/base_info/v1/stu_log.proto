@@ -60,6 +60,11 @@ service StuLog {
       get: "/v1/stu_log/rule",
     };
   };
+  rpc GetDormList (GetDormRequest) returns (GetDormReply) {
+    option (google.api.http) = {
+      get: "/v1/stu_log/dorm",
+    };
+  };
 }
 
 message ReportStuLogRequest {
@@ -130,4 +135,18 @@ message GetRuleRequest {
 
 message GetRuleReply {
   repeated RuleItem list = 1;
+}
+message DormItem {
+  string dormBuilding = 1;
+  string dormNum = 2;
+  string sex = 3;
+  string gradeName = 4;
+  int64 id = 5;
+}
+message GetDormRequest {
+
+}
+
+message GetDormReply {
+  repeated DormItem list = 1;
 }

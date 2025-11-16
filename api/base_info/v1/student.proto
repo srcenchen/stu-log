@@ -73,6 +73,7 @@ message QueryStudentListRequest {
   int32 pageSize = 2;
   optional int64 gradeId = 3;
   optional int64 classId = 4;
+  optional int64 dormId = 6;
   optional string search = 5;
 }
 message QueryStudentListReply {

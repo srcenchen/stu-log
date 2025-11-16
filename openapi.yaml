@@ -121,6 +121,10 @@ paths:
                   in: query
                   schema:
                     type: string
+                - name: dormId
+                  in: query
+                  schema:
+                    type: string
                 - name: search
                   in: query
                   schema:
@@ -149,6 +153,18 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/api.base_info.v1.StuLogItem'
+    /v1/stu_log/dorm:
+        get:
+            tags:
+                - StuLog
+            operationId: StuLog_GetDormList
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/api.base_info.v1.GetDormReply'
     /v1/stu_log/export:
         get:
             tags:
@@ -340,6 +356,19 @@ components:
                     type: string
                 stuNum:
                     type: string
+        api.base_info.v1.DormItem:
+            type: object
+            properties:
+                dormBuilding:
+                    type: string
+                dormNum:
+                    type: string
+                sex:
+                    type: string
+                gradeName:
+                    type: string
+                id:
+                    type: string
         api.base_info.v1.ExportStuLogReply:
             type: object
             properties:
@@ -350,6 +379,13 @@ components:
             properties:
                 exportPath:
                     type: string
+        api.base_info.v1.GetDormReply:
+            type: object
+            properties:
+                list:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/api.base_info.v1.DormItem'
         api.base_info.v1.GetGradesReply:
             type: object
             properties:
